@@ -1,1 +1,1 @@
-export type View = "dashboard" | "schedule" | "modules" | "achievements";
+export type View = "dashboard" | "schedule" | "modules" | "gacha" | "achievements";

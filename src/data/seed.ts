@@ -84,6 +84,12 @@ export function seedData(): AppData {
       bestStreak: 0,
       achievements: [],
       syllabusImported: false,
+      // Start with enough for one summon so the loop is discoverable — then you
+      // have to actually study to earn more.
+      crystals: 120,
+      spirits: {},
+      pityCount: 0,
+      equippedSpirit: null,
     },
   };
 }

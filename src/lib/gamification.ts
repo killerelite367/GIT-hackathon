@@ -53,9 +53,10 @@ export function levelProgress(xp: number): {
  */
 export function applyCompletion(
   game: GameState,
-  a: Assignment
+  a: Assignment,
+  xpMultiplier = 1
 ): { game: GameState; gainedXp: number; leveledUp: boolean; streakUp: boolean } {
-  const gainedXp = xpForCompletion(a);
+  const gainedXp = Math.round(xpForCompletion(a) * xpMultiplier);
   const prevLevel = levelFromXp(game.xp);
   const xp = game.xp + gainedXp;
 

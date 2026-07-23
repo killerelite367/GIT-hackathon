@@ -4,6 +4,7 @@ import {
   BookOpen,
   Trophy,
   Sparkles,
+  Gem,
 } from "lucide-react";
 import type { View } from "../nav";
 import { levelProgress } from "../lib/gamification";
@@ -13,6 +14,7 @@ export const NAV: { view: View; icon: typeof LayoutDashboard; label: string }[] 
   { view: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { view: "schedule", icon: CalendarDays, label: "Schedule" },
   { view: "modules", icon: BookOpen, label: "Modules" },
+  { view: "gacha", icon: Gem, label: "Summon" },
   { view: "achievements", icon: Trophy, label: "Achievements" },
 ];
 

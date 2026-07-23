@@ -15,11 +15,19 @@ import { unlockedIds } from "../lib/achievements";
 import { ACHIEVEMENTS } from "../lib/achievements";
 import type { ParsedAssignment } from "../lib/parser";
 import { toAssignments } from "../lib/parser";
+import {
+  pull as gachaPull,
+  canAfford,
+  crystalsForCompletion,
+  equippedXpMultiplier,
+  SPIRIT_BY_ID,
+  type PullOutcome,
+} from "../lib/gacha";
 
 export interface Toast {
   id: number;
   message: string;
-  kind: "xp" | "level" | "achievement" | "info";
+  kind: "xp" | "level" | "achievement" | "crystal" | "info";
 }
 
 interface StoreValue {
@@ -35,6 +43,10 @@ interface StoreValue {
   toggleBlockDone: (id: string) => void;
   updateModule: (code: string, patch: Partial<Module>) => void;
   resetAll: () => void;
+  /** Summon `count` Study Spirits, spending Focus Crystals. Returns what was
+   *  pulled (empty array if you can't afford it). */
+  pullGacha: (count: number) => PullOutcome[];
+  equipSpirit: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -131,11 +143,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const target = d.assignments.find((a) => a.id === id);
         if (!target || target.completed) return d;
 
-        const { game, gainedXp, leveledUp, streakUp } = applyCompletion(
-          d.game,
-          target
-        );
+        const mult = equippedXpMultiplier(d.game);
+        const completion = applyCompletion(d.game, target, mult);
+        const { gainedXp, leveledUp, streakUp } = completion;
+
+        // Completing real work is the ONLY way to earn Focus Crystals.
+        const earnedCrystals = crystalsForCompletion(target);
+        const game = {
+          ...completion.game,
+          crystals: completion.game.crystals + earnedCrystals,
+        };
+
         pushToast(`+${gainedXp} XP · ${target.title}`, "xp");
+        pushToast(`+${earnedCrystals} 💎 Focus Crystals`, "crystal");
         if (streakUp && game.streakDays > 1)
           pushToast(`🔥 ${game.streakDays}-day streak!`, "info");
         if (leveledUp) pushToast(`⭐ Level up! You're now level ${levelFromXp(game.xp)}`, "level");
@@ -210,6 +230,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     pushToast("Reset to demo data", "info");
   }, [pushToast]);
 
+  const pullGacha = useCallback(
+    (count: number): PullOutcome[] => {
+      if (!canAfford(data.game, count)) {
+        pushToast("Not enough Focus Crystals — complete a quest to earn more.", "info");
+        return [];
+      }
+      const { game, outcomes } = gachaPull(data.game, count);
+      setData((d) => withAchievements({ ...d, game }));
+      const legendary = outcomes.find((o) => o.spirit.rarity === "legendary");
+      if (legendary)
+        pushToast(`🌟 LEGENDARY! ${legendary.spirit.emoji} ${legendary.spirit.name} joined you!`, "level");
+      return outcomes;
+    },
+    [data.game, pushToast, withAchievements]
+  );
+
+  const equipSpirit = useCallback(
+    (id: string) => {
+      setData((d) => ({ ...d, game: { ...d.game, equippedSpirit: id } }));
+      const s = SPIRIT_BY_ID[id];
+      if (s) pushToast(`${s.emoji} ${s.name} equipped · ${s.buff}`, "info");
+    },
+    [pushToast]
+  );
+
   const value = useMemo<StoreValue>(
     () => ({
       data,
@@ -224,6 +269,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleBlockDone,
       updateModule,
       resetAll,
+      pullGacha,
+      equipSpirit,
     }),
     [
       data,
@@ -238,6 +285,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleBlockDone,
       updateModule,
       resetAll,
+      pullGacha,
+      equipSpirit,
     ]
   );
 

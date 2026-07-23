@@ -5,6 +5,7 @@ const styles: Record<string, string> = {
   xp: "border-neon-green/40 bg-neon-green/10 text-neon-green",
   level: "border-neon-yellow/40 bg-neon-yellow/10 text-neon-yellow",
   achievement: "border-neon-purple/40 bg-neon-purple/10 text-neon-purple",
+  crystal: "border-neon-pink/40 bg-neon-pink/10 text-neon-pink",
   info: "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan",
 };
 

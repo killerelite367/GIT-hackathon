@@ -42,6 +42,12 @@ export interface GameState {
   bestStreak: number;
   achievements: string[]; // unlocked achievement ids
   syllabusImported: boolean;
+
+  // ── Gacha ("Study Spirits") ──────────────────────────────
+  crystals: number; // Focus Crystals — earned ONLY by completing study work
+  spirits: Record<string, number>; // spirit id -> copies owned
+  pityCount: number; // pulls since the last Epic+ (drives the pity guarantee)
+  equippedSpirit: string | null; // the spirit whose XP buff is active
 }
 
 /** Everything we persist for a user, in one blob. */

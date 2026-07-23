@@ -6,6 +6,7 @@ import SyllabusImport from "./components/SyllabusImport";
 import DashboardView from "./views/DashboardView";
 import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
+import GachaView from "./views/GachaView";
 import AchievementsView from "./views/AchievementsView";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
@@ -29,6 +30,11 @@ const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     kicker: "▸ academic progress",
     heading: "Modules & GPA",
     sub: "Live, credit-weighted GPA on the poly scale.",
+  },
+  gacha: {
+    kicker: "▸ summon circle",
+    heading: "Study Spirits",
+    sub: "Study to earn crystals, summon spirits, power up your XP.",
   },
   achievements: {
     kicker: "▸ rewards",
@@ -117,6 +123,7 @@ export default function App() {
             )}
             {view === "schedule" && <ScheduleView />}
             {view === "modules" && <ModulesView />}
+            {view === "gacha" && <GachaView />}
             {view === "achievements" && <AchievementsView />}
           </div>
 
