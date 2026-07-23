@@ -328,6 +328,50 @@ body {
   animation: chroma-spin 6s linear infinite;
 }
 
+/* ── Escalating awaken effects (legendary → ???) ─────────── */
+@keyframes spin-cw { to { transform: rotate(360deg); } }
+@keyframes spin-ccw { to { transform: rotate(-360deg); } }
+.orbit-cw { animation: spin-cw 9s linear infinite; }
+.orbit-ccw { animation: spin-ccw 13s linear infinite; }
+
+/* Pulsing aura rings behind the hero. */
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50%      { transform: scale(1.18); opacity: 0.9; }
+}
+
+/* Energy / embers floating upward. Each sets --x. */
+@keyframes rise-up {
+  0%   { transform: translateY(30px) scale(1); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translateY(-260px) scale(0.2); opacity: 0; }
+}
+
+/* Reality-glitch flicker for the ??? tier. */
+@keyframes glitch-flick {
+  0%, 100% { opacity: 0; transform: translateX(0); }
+  10% { opacity: 0.5; transform: translateX(-4px); }
+  12% { opacity: 0; transform: translateX(4px); }
+  40% { opacity: 0; }
+  42% { opacity: 0.6; transform: translateX(6px) skewX(6deg); }
+  44% { opacity: 0; transform: translateX(0) skewX(0); }
+  70% { opacity: 0.4; transform: translateX(-6px); }
+  72% { opacity: 0; }
+}
+.gq-glitch {
+  background: repeating-linear-gradient(0deg, rgba(184,255,255,0.15) 0 2px, transparent 2px 5px);
+  animation: glitch-flick 1.6s steps(1) infinite;
+}
+
+/* Whole-scene tremble for the Demon tier. */
+@keyframes tremble {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-1px, -2px); }
+}
+.gq-tremble { animation: tremble 0.14s linear infinite; }
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   html {

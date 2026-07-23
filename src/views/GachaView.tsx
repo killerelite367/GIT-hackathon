@@ -1,5 +1,5 @@
 import { useState, useEffect, type CSSProperties } from "react";
-import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX } from "lucide-react";
+import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import {
@@ -24,6 +24,8 @@ import {
   collectionCount,
   equippedXpMultiplier,
   voiceLine,
+  setLucky,
+  isLucky,
   AWAKEN_TIER,
   type PullOutcome,
   type Rarity,
@@ -48,6 +50,7 @@ export default function GachaView() {
   const [reveal, setReveal] = useState<PullOutcome[] | null>(null);
 
   const [muted, setMuted] = useState(isMuted());
+  const [lucky, setLuckyState] = useState(isLucky());
 
   const { owned, total } = collectionCount(game);
   const mult = equippedXpMultiplier(game);
@@ -80,14 +83,32 @@ export default function GachaView() {
             ))}
           </div>
 
-          {/* Sound toggle */}
-          <button
-            onClick={() => setMuted(toggleMuted())}
-            aria-label={muted ? "Unmute summon sound" : "Mute summon sound"}
-            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/60 transition hover:text-white"
-          >
-            {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
+          {/* Sound + demo-luck toggles */}
+          <div className="absolute right-4 top-4 z-10 flex gap-2">
+            <button
+              onClick={() => {
+                const v = !lucky;
+                setLucky(v);
+                setLuckyState(v);
+              }}
+              aria-pressed={lucky}
+              title="Demo: force Legendary+ so you can show the animations"
+              className={`flex h-9 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold transition ${
+                lucky
+                  ? "border-neon-green/60 bg-neon-green/15 text-neon-green"
+                  : "border-white/15 bg-black/30 text-white/50 hover:text-white"
+              }`}
+            >
+              <Clover size={14} /> Lucky
+            </button>
+            <button
+              onClick={() => setMuted(toggleMuted())}
+              aria-label={muted ? "Unmute summon sound" : "Mute summon sound"}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/60 transition hover:text-white"
+            >
+              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+          </div>
 
           <div className="relative flex flex-col items-center text-center">
             <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-neon-yellow">
@@ -481,16 +502,17 @@ function RevealOverlay({
 
       {/* ── AWAKEN ── the star flies out, wakes up, and SPEAKS (legendary+) ── */}
       {phase === "awaken" && (
-        <div className="relative flex flex-col items-center gap-5">
-          {/* rarity backdrop */}
-          {best.spirit.art.rainbow ? (
-            <div className="chroma-bg pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[150vh] w-[150vh] -translate-x-1/2 -translate-y-1/2 opacity-20" />
-          ) : (
-            <div
-              className="pointer-events-none absolute inset-0 -z-10 opacity-30"
-              style={{ background: `radial-gradient(circle at 50% 42%, ${bestMeta.glow}, transparent 42%)` }}
-            />
-          )}
+        <div
+          className={`relative flex flex-col items-center gap-5 ${
+            bestMeta.tier >= RARITY.demon.tier ? "gq-tremble" : ""
+          }`}
+        >
+          {/* escalating effects — richer for each higher rarity */}
+          <AwakenEffects
+            tier={bestMeta.tier}
+            glow={bestMeta.glow}
+            rainbow={!!best.spirit.art.rainbow}
+          />
           {CONFETTI.map((c, i) => (
             <span
               key={i}
@@ -667,3 +689,124 @@ const CONFETTI = [
   { x: "85%", e: "⭐", dur: "3.0s", delay: "0.1s" },
   { x: "92%", e: "✨", dur: "2.9s", delay: "0.9s" },
 ];
+
+/** Rising particle positions (energy / embers). */
+const RISERS = Array.from({ length: 16 }, (_, i) => ({
+  x: `${6 + i * 6}%`,
+  dur: 1.8 + (i % 5) * 0.4,
+  delay: (i % 7) * 0.25,
+}));
+
+/**
+ * Escalating spectacle behind the awakening hero. Effects stack as rarity
+ * climbs: orbiting sparks → aura rings → rising energy → rainbow storm →
+ * demon flames → reality glitch. Higher rarity = visibly more going on.
+ */
+function AwakenEffects({
+  tier,
+  glow,
+  rainbow,
+}: {
+  tier: number;
+  glow: string;
+  rainbow: boolean;
+}) {
+  const orbits = Math.min(6 + tier, 16);
+  return (
+    <>
+      {/* soft radial base */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-30"
+        style={{ background: `radial-gradient(circle at 50% 42%, ${glow}, transparent 42%)` }}
+      />
+
+      {/* rainbow storm — chromatic+ (or any rainbow spirit) */}
+      {(rainbow || tier >= RARITY.chromatic.tier) && (
+        <div className="chroma-bg pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[170vh] w-[170vh] -translate-x-1/2 -translate-y-1/2 opacity-20" />
+      )}
+
+      {/* demon inferno — demon+ */}
+      {tier >= RARITY.demon.tier && (
+        <div
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{ background: "radial-gradient(circle at 50% 88%, rgba(255,59,44,0.45), transparent 55%)" }}
+        />
+      )}
+
+      {/* glitch — ??? only */}
+      {tier >= RARITY.secret.tier && (
+        <div className="gq-glitch pointer-events-none absolute inset-0 -z-10" />
+      )}
+
+      {/* orbiting sparks — always (legendary+), more as tier climbs */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="orbit-cw relative h-72 w-72">
+          {Array.from({ length: orbits }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute left-1/2 top-1/2"
+              style={{
+                transform: `rotate(${(i / orbits) * 360}deg) translateY(-150px)`,
+                color: glow,
+                textShadow: `0 0 8px ${glow}`,
+              }}
+            >
+              ✦
+            </span>
+          ))}
+        </div>
+        {/* second counter-rotating ring for mythic+ */}
+        {tier >= RARITY.mythic.tier && (
+          <div className="orbit-ccw absolute h-96 w-96">
+            {Array.from({ length: orbits }).map((_, i) => (
+              <span
+                key={i}
+                className="absolute left-1/2 top-1/2 text-sm"
+                style={{
+                  transform: `rotate(${(i / orbits) * 360}deg) translateY(-200px)`,
+                  color: glow,
+                }}
+              >
+                ✦
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* pulsing aura rings — mythic+ */}
+      {tier >= RARITY.mythic.tier &&
+        [0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="pointer-events-none absolute left-1/2 top-1/2 rounded-full border-2"
+            style={{
+              width: 230 + i * 80,
+              height: 230 + i * 80,
+              marginLeft: -(115 + i * 40),
+              marginTop: -(115 + i * 40),
+              borderColor: glow,
+              animation: `ring-pulse ${2.2 + i * 0.5}s ease-in-out ${i * 0.2}s infinite`,
+            }}
+          />
+        ))}
+
+      {/* rising energy — ultra mythic+ (embers for demon) */}
+      {tier >= RARITY.ultramythic.tier &&
+        RISERS.map((r, i) => (
+          <span
+            key={i}
+            className="pointer-events-none absolute bottom-8 rounded-full"
+            style={{
+              left: r.x,
+              width: 6,
+              height: 6,
+              background: tier >= RARITY.demon.tier ? "#ff6a2c" : glow,
+              boxShadow: `0 0 10px 2px ${tier >= RARITY.demon.tier ? "#ff3b00" : glow}`,
+              animation: `rise-up ${r.dur}s ease-out ${r.delay}s infinite`,
+            }}
+          />
+        ))}
+    </>
+  );
+}

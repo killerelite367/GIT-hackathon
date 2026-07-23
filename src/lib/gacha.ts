@@ -168,6 +168,11 @@ export const SPIRITS: Spirit[] = [
     blurb: "A starlit textbook — pure motivation. Burns brightest at 2am.",
     art: { body: "#8a6bff", trim: "#6247e0", belly: "#ded6ff", accessory: "sparkle" },
   },
+  {
+    id: "volt", name: "Voltbook", emoji: "⚡", rarity: "epic", xpBonus: 0.22, buff: "+22% XP",
+    blurb: "Crackling with energy. Zaps you awake for that 8am class.",
+    art: { body: "#6f8bff", trim: "#4a5bd0", belly: "#d6dcff", accessory: "star" },
+  },
 
   // ── Legendary ───────────────────────────────────────────
   {
@@ -182,6 +187,12 @@ export const SPIRITS: Spirit[] = [
     art: { body: "#ffe7a1", trim: "#d9b64a", belly: "#fff6d6", accessory: "crown" },
     voice: "By my crown, we shall ace this semester!",
   },
+  {
+    id: "titanus", name: "Titanus", emoji: "🛡️", rarity: "legendary", xpBonus: 0.34, buff: "+34% XP",
+    blurb: "A steel-bound tome that guards your focus like a fortress.",
+    art: { body: "#cfd6e0", trim: "#8a93a3", belly: "#eef2f7", accessory: "crown" },
+    voice: "None shall pass... without studying!",
+  },
 
   // ── Mythic ──────────────────────────────────────────────
   {
@@ -189,6 +200,18 @@ export const SPIRITS: Spirit[] = [
     blurb: "A mythic tome humming with pink energy. Bends focus to its will.",
     art: { body: "#ff6fd6", trim: "#d63fb0", belly: "#ffd6f2", accessory: "sparkle" },
     voice: "Mythic power... awakened! Let's go!",
+  },
+  {
+    id: "aurora", name: "Aurora", emoji: "🌌", rarity: "mythic", xpBonus: 0.52, buff: "+52% XP",
+    blurb: "Glows with northern lights. Makes even 3am revision feel magical.",
+    art: { body: "#6fe0ff", trim: "#3aa8d0", belly: "#d6f6ff", accessory: "sparkle" },
+    voice: "Shining bright, just like you!",
+  },
+  {
+    id: "seraph", name: "Seraph", emoji: "😇", rarity: "mythic", xpBonus: 0.55, buff: "+55% XP",
+    blurb: "A radiant tome of blessings. Answers your prayers before finals.",
+    art: { body: "#fff0b0", trim: "#e0c34a", belly: "#fffbe0", accessory: "star" },
+    voice: "Blessings upon your grades!",
   },
 
   // ── Ultra Mythic ────────────────────────────────────────
@@ -198,6 +221,18 @@ export const SPIRITS: Spirit[] = [
     art: { body: "#ff9a3d", trim: "#e0670f", belly: "#ffe0b0", accessory: "star" },
     voice: "Feel the burning power of study!",
   },
+  {
+    id: "vortex", name: "Vortex", emoji: "🌀", rarity: "ultramythic", xpBonus: 0.78, buff: "+78% XP",
+    blurb: "A spiralling tome that pulls every distraction into oblivion.",
+    art: { body: "#b06bff", trim: "#7a3fd0", belly: "#e6d6ff", accessory: "sparkle" },
+    voice: "Round and round... into focus!",
+  },
+  {
+    id: "genesis", name: "Genesis", emoji: "✨", rarity: "ultramythic", xpBonus: 0.8, buff: "+80% XP",
+    blurb: "The first textbook. Every subject was born from its pages.",
+    art: { body: "#ff6f8f", trim: "#d63f6a", belly: "#ffd6df", accessory: "star" },
+    voice: "A new beginning... let's ace it!",
+  },
 
   // ── Chromatic ───────────────────────────────────────────
   {
@@ -205,6 +240,12 @@ export const SPIRITS: Spirit[] = [
     blurb: "A shifting rainbow textbook. Every colour, every subject, mastered.",
     art: { body: "#ff5fa2", trim: "#ffffff", belly: "#ffffff", accessory: "sparkle", rainbow: true },
     voice: "Taste the rainbow of knowledge!",
+  },
+  {
+    id: "spectra", name: "Spectra", emoji: "💠", rarity: "chromatic", xpBonus: 1.05, buff: "+105% XP",
+    blurb: "Refracts pure knowledge into a spectrum of straight-A grades.",
+    art: { body: "#5fd0ff", trim: "#ffffff", belly: "#ffffff", accessory: "star", rainbow: true },
+    voice: "Every colour, every subject, mastered!",
   },
 
   // ── Demon ───────────────────────────────────────────────
@@ -214,6 +255,12 @@ export const SPIRITS: Spirit[] = [
     art: { body: "#3a0e18", trim: "#ff3b5c", belly: "#ff3b5c", accessory: "horns", angry: true },
     voice: "Your deadlines... shall PERISH.",
   },
+  {
+    id: "diabolus", name: "Diabolus", emoji: "👹", rarity: "demon", xpBonus: 1.55, buff: "+155% XP",
+    blurb: "Lord of the all-nighter. It does not sleep, and neither will you.",
+    art: { body: "#2a0810", trim: "#ff5a2c", belly: "#ff7a2c", accessory: "horns", angry: true },
+    voice: "Burn the midnight oil... FOREVER.",
+  },
 
   // ── ??? (Secret) ────────────────────────────────────────
   {
@@ -221,6 +268,12 @@ export const SPIRITS: Spirit[] = [
     blurb: "It should not exist. Yet here it is, watching you study.",
     art: { body: "#0d0d16", trim: "#b8ffff", belly: "#6fffff", accessory: "sparkle" },
     voice: "You were not... supposed to find me.",
+  },
+  {
+    id: "secret2", name: "???", emoji: "⬛", rarity: "secret", xpBonus: 2.1, buff: "+210% XP",
+    blurb: "The other one. There were never supposed to be two.",
+    art: { body: "#0a0a12", trim: "#ff6fff", belly: "#b8ffff", accessory: "sparkle" },
+    voice: "Two of us now... impossible.",
   },
 ];
 
@@ -280,19 +333,31 @@ function rollRarity(): Rarity {
   return "common";
 }
 
-/** Roll restricted to Epic or better (used by the pity guarantee). */
-function rollEpicPlus(): Rarity {
-  const pool = RARITY_ORDER.filter((r) => RARITY[r].tier >= RARITY.epic.tier);
+/** Weighted roll restricted to rarities at or above `minTier`. */
+function rollAtLeast(minTier: number, fallback: Rarity): Rarity {
+  const pool = RARITY_ORDER.filter((r) => RARITY[r].tier >= minTier);
   const total = pool.reduce((n, r) => n + RARITY[r].weight, 0);
   let roll = Math.random() * total;
   for (const r of pool) {
     roll -= RARITY[r].weight;
     if (roll < 0) return r;
   }
-  return "epic";
+  return fallback;
 }
 
 const isEpicPlus = (r: Rarity) => RARITY[r].tier >= RARITY.epic.tier;
+
+/**
+ * Demo "lucky" mode — when on, every pull is Legendary or better, so the grand
+ * awakening animations can be shown on demand (e.g. to judges). Off by default.
+ */
+let luckyMode = false;
+export function setLucky(v: boolean) {
+  luckyMode = v;
+}
+export function isLucky() {
+  return luckyMode;
+}
 
 /**
  * Perform `count` pulls. Pure over Math.random: reads crystals + pity from the
@@ -309,8 +374,10 @@ export function pull(game: GameState, count: number): PullResult {
   for (let i = 0; i < count; i++) {
     pity += 1;
     let rarity: Rarity;
-    if (pity >= PITY_THRESHOLD) {
-      rarity = rollEpicPlus();
+    if (luckyMode) {
+      rarity = rollAtLeast(RARITY.legendary.tier, "legendary");
+    } else if (pity >= PITY_THRESHOLD) {
+      rarity = rollAtLeast(RARITY.epic.tier, "epic");
     } else {
       rarity = rollRarity();
     }
