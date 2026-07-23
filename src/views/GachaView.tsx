@@ -1,5 +1,5 @@
 import { useState, useEffect, type CSSProperties } from "react";
-import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover } from "lucide-react";
+import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import {
@@ -45,7 +45,7 @@ const RARITY_GRAD: Record<Rarity, string> = {
 };
 
 export default function GachaView() {
-  const { data, pullGacha, equipSpirit } = useStore();
+  const { data, pullGacha, equipSpirit, giftCrystals } = useStore();
   const { game } = data;
   const [reveal, setReveal] = useState<PullOutcome[] | null>(null);
 
@@ -83,8 +83,15 @@ export default function GachaView() {
             ))}
           </div>
 
-          {/* Sound + demo-luck toggles */}
+          {/* Sound + demo toggles */}
           <div className="absolute right-4 top-4 z-10 flex gap-2">
+            <button
+              onClick={() => giftCrystals(100000)}
+              title="Demo: gift 100,000 crystals to chase the rare pulls"
+              className="flex h-9 items-center gap-1 rounded-full border border-neon-pink/50 bg-neon-pink/10 px-2.5 text-xs font-semibold text-neon-pink transition hover:bg-neon-pink/20"
+            >
+              <Gift size={14} /> +100k
+            </button>
             <button
               onClick={() => {
                 const v = !lucky;
@@ -505,7 +512,7 @@ function RevealOverlay({
         <div
           className={`relative flex flex-col items-center gap-5 ${
             bestMeta.tier >= RARITY.demon.tier ? "gq-tremble" : ""
-          }`}
+          } ${bestMeta.tier >= RARITY.secret.tier ? "gq-invert" : ""}`}
         >
           {/* escalating effects — richer for each higher rarity */}
           <AwakenEffects
@@ -531,7 +538,18 @@ function RevealOverlay({
           </p>
 
           {/* the character flies in, then walks (paces) around, feet moving */}
-          <div className="sp-stroll">
+          <div className="sp-stroll relative">
+            {/* RGB-split ghost duplicates — ??? only */}
+            {bestMeta.tier >= RARITY.secret.tier && (
+              <>
+                <div className="gq-rgb-r pointer-events-none absolute inset-0 mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(-50deg)" }}>
+                  <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
+                </div>
+                <div className="gq-rgb-b pointer-events-none absolute inset-0 mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(150deg)" }}>
+                  <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
+                </div>
+              </>
+            )}
             <div className="sp-flyin" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
               <div className="sp-hop">
                 <SpiritArt spirit={best.spirit} size={190} talking />
@@ -725,17 +743,63 @@ function AwakenEffects({
         <div className="chroma-bg pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[170vh] w-[170vh] -translate-x-1/2 -translate-y-1/2 opacity-20" />
       )}
 
-      {/* demon inferno — demon+ */}
-      {tier >= RARITY.demon.tier && (
-        <div
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: "radial-gradient(circle at 50% 88%, rgba(255,59,44,0.45), transparent 55%)" }}
-        />
+      {/* demon inferno + lightning + cracked ground — demon only (??? gets its own scene below) */}
+      {tier === RARITY.demon.tier && (
+        <>
+          <div
+            className="gq-vignette pointer-events-none absolute inset-0 -z-10"
+            style={{ background: "radial-gradient(circle at 50% 88%, rgba(255,59,44,0.55), transparent 55%)" }}
+          />
+          {/* screen-wide flash on each bolt strike */}
+          <div className="gq-bolt pointer-events-none absolute inset-0 -z-10 bg-[#ff3b5c]/25" />
+          {/* jagged lightning bolts */}
+          <svg
+            className="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-72 -translate-x-1/2"
+            viewBox="0 0 200 260"
+          >
+            <path
+              className="gq-bolt"
+              d="M70 0 L90 70 L60 80 L110 180 L85 110 L120 100 Z"
+              fill="#fff2e0"
+              style={{ filter: "drop-shadow(0 0 10px #ff3b5c)" }}
+            />
+            <path
+              className="gq-bolt"
+              style={{ animationDelay: "1.3s", filter: "drop-shadow(0 0 10px #ff3b5c)" }}
+              d="M150 10 L165 60 L142 66 L175 140 L155 90 L182 84 Z"
+              fill="#fff2e0"
+            />
+          </svg>
+          {/* cracked ground beneath the hero */}
+          <svg
+            className="pointer-events-none absolute bottom-2 left-1/2 -z-10 h-16 w-64 -translate-x-1/2"
+            viewBox="0 0 260 60"
+          >
+            <path
+              className="gq-crack"
+              d="M10 30 L70 25 L90 40 L130 20 L160 38 L200 15 L250 32"
+              stroke="#ff3b5c"
+              strokeWidth="2.5"
+              fill="none"
+              style={{ filter: "drop-shadow(0 0 6px #ff3b5c)" }}
+            />
+          </svg>
+        </>
       )}
 
-      {/* glitch — ??? only */}
+      {/* reality tear + RGB split glitch — ??? only */}
       {tier >= RARITY.secret.tier && (
-        <div className="gq-glitch pointer-events-none absolute inset-0 -z-10" />
+        <>
+          <div
+            className="pointer-events-none absolute inset-0 -z-10"
+            style={{ background: "radial-gradient(circle at 50% 45%, rgba(10,10,20,0.6), transparent 60%)" }}
+          />
+          <div className="gq-glitch pointer-events-none absolute inset-0 -z-10" />
+          <div
+            className="gq-tear pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[70vh] w-1 -translate-x-1/2 -translate-y-1/2 bg-white"
+            style={{ boxShadow: "0 0 40px 8px rgba(200,255,255,0.9)" }}
+          />
+        </>
       )}
 
       {/* orbiting sparks — always (legendary+), more as tier climbs */}

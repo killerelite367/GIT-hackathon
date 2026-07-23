@@ -47,6 +47,9 @@ interface StoreValue {
    *  pulled (empty array if you can't afford it). */
   pullGacha: (count: number) => PullOutcome[];
   equipSpirit: (id: string) => void;
+  /** Demo-only: grant crystals directly so high rarities can be chased without
+   *  waiting on real study progress. */
+  giftCrystals: (amount: number) => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -255,6 +258,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [pushToast]
   );
 
+  const giftCrystals = useCallback(
+    (amount: number) => {
+      setData((d) => ({ ...d, game: { ...d.game, crystals: d.game.crystals + amount } }));
+      pushToast(`💎 +${amount.toLocaleString()} Focus Crystals gifted`, "crystal");
+    },
+    [pushToast]
+  );
+
   const value = useMemo<StoreValue>(
     () => ({
       data,
@@ -271,6 +282,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resetAll,
       pullGacha,
       equipSpirit,
+      giftCrystals,
     }),
     [
       data,
@@ -287,6 +299,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resetAll,
       pullGacha,
       equipSpirit,
+      giftCrystals,
     ]
   );
 
