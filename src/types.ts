@@ -52,6 +52,9 @@ export interface GameState {
   // ── Reminders ─────────────────────────────────────────────
   remindersEnabled: boolean; // opted into in-tab browser notifications
   lastReminderDate: string | null; // ISO date a reminder was last shown (once/day)
+
+  // ── Activity log ──────────────────────────────────────────
+  activityLog: Record<string, number>; // ISO date -> XP earned that day (drives the study heatmap)
 }
 
 /** Everything we persist for a user, in one blob. */

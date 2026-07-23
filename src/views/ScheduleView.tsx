@@ -2,6 +2,7 @@ import { RefreshCw, Check, CalendarDays } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { shortDate, todayISO, daysUntil } from "../lib/date";
 import { DAILY_CAP } from "../lib/scheduler";
+import SemesterTimeline from "../components/SemesterTimeline";
 
 export default function ScheduleView() {
   const { data, regenerateSchedule, toggleBlockDone } = useStore();
@@ -38,6 +39,8 @@ export default function ScheduleView() {
           <RefreshCw size={15} /> Regenerate
         </button>
       </div>
+
+      <SemesterTimeline assignments={assignments} blocks={blocks} />
 
       {days.length === 0 ? (
         <div className="rounded-xl border border-dashed border-edge bg-panel2/30 p-10 text-center text-white/50">

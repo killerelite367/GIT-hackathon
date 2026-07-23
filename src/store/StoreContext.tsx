@@ -64,6 +64,11 @@ const StoreContext = createContext<StoreValue | null>(null);
 let toastSeq = 0;
 let idSeq = 0;
 
+/** Record XP earned toward today's cell in the study heatmap. */
+function bumpActivity(log: Record<string, number>, date: string, amount: number) {
+  return { ...log, [date]: (log[date] ?? 0) + amount };
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(() => {
     const d = loadData();
@@ -162,6 +167,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const game = {
           ...completion.game,
           crystals: completion.game.crystals + earnedCrystals,
+          activityLog: bumpActivity(completion.game.activityLog, todayISO(), gainedXp),
         };
 
         pushToast(`+${gainedXp} XP · ${target.title}`, "xp");
@@ -307,6 +313,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           bestStreak: Math.max(d.game.bestStreak, streakDays),
           lastActiveDate: today,
           crystals: d.game.crystals + gainedCrystals,
+          activityLog: bumpActivity(d.game.activityLog, today, gainedXp),
         };
 
         pushToast(`+${gainedXp} XP · ${minutes}m on ${target.title}`, "xp");

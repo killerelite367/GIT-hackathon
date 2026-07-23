@@ -92,6 +92,7 @@ export function seedData(): AppData {
       equippedSpirit: null,
       remindersEnabled: false,
       lastReminderDate: null,
+      activityLog: {},
     },
   };
 }

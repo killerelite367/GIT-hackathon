@@ -2,6 +2,7 @@ import { Lock } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { ACHIEVEMENTS } from "../lib/achievements";
 import { levelProgress } from "../lib/gamification";
+import StudyHeatmap from "../components/StudyHeatmap";
 
 export default function AchievementsView() {
   const { data } = useStore();
@@ -36,6 +37,8 @@ export default function AchievementsView() {
           />
         </div>
       </div>
+
+      <StudyHeatmap activityLog={data.game.activityLog} />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {ACHIEVEMENTS.map((a) => {
