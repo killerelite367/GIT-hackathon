@@ -35,6 +35,10 @@ export default {
         "glow-purple": "0 0 0 1px rgba(169,139,255,0.25), 0 0 28px -6px rgba(169,139,255,0.4)",
       },
       keyframes: {
+        floaty: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
         slideup: {
           "0%": { transform: "translateY(12px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
@@ -56,6 +60,7 @@ export default {
         },
       },
       animation: {
+        floaty: "floaty 4s ease-in-out infinite",
         slideup: "slideup 0.28s cubic-bezier(0.22,1,0.36,1)",
         popin: "popin 0.2s cubic-bezier(0.22,1,0.36,1)",
         rise: "rise 0.45s cubic-bezier(0.22,1,0.36,1) both",

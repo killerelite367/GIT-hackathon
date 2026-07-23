@@ -14,11 +14,15 @@ export default function BurnoutRadar({ assignments }: { assignments: Assignment[
   const maxWeight = Math.max(40, ...weeks.map((w) => w.totalWeight));
 
   return (
-    <div className="rounded-2xl border border-edge bg-panel/70 p-5">
+    <div
+      className={`rounded-2xl border p-5 transition ${
+        worst ? "border-neon-pink/30 shadow-glow" : "border-edge"
+      } bg-panel/70`}
+    >
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
           {worst ? (
-            <AlertTriangle size={18} className="text-neon-pink" />
+            <AlertTriangle size={18} className="animate-glowpulse text-neon-pink" />
           ) : (
             <ShieldCheck size={18} className="text-neon-green" />
           )}
