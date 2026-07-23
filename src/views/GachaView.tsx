@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import {
@@ -327,6 +327,8 @@ function RevealOverlay({
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "charge");
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
 
   useEffect(() => {
     if (reduced) {
@@ -349,6 +351,32 @@ function RevealOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Lock background scroll while the overlay is open and let Escape close
+  // it (skip the cinematic first, then dismiss) so keyboard users aren't
+  // stuck — the tap-anywhere affordance alone isn't reachable without a mouse.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (phaseRef.current === "cards") {
+        onClose();
+      } else {
+        playReveal(best.spirit.rarity);
+        setPhase("cards");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onClose]);
+
   // Tap skips the cinematic; once the cards are shown, tap dismisses.
   const handleBackdrop = () => {
     if (phase === "cards") onClose();
@@ -361,6 +389,9 @@ function RevealOverlay({
   return (
     <div
       onClick={handleBackdrop}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Summon result: ${best.spirit.name}, ${bestMeta.label} rarity`}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/90 p-6 backdrop-blur-md"
       style={{ animation: "gacha-fade 0.25s ease-out" }}
     >

@@ -48,6 +48,10 @@ export interface GameState {
   spirits: Record<string, number>; // spirit id -> copies owned
   pityCount: number; // pulls since the last Epic+ (drives the pity guarantee)
   equippedSpirit: string | null; // the spirit whose XP buff is active
+
+  // ── Reminders ─────────────────────────────────────────────
+  remindersEnabled: boolean; // opted into in-tab browser notifications
+  lastReminderDate: string | null; // ISO date a reminder was last shown (once/day)
 }
 
 /** Everything we persist for a user, in one blob. */

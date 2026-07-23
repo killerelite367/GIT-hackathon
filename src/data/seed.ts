@@ -90,6 +90,8 @@ export function seedData(): AppData {
       spirits: {},
       pityCount: 0,
       equippedSpirit: null,
+      remindersEnabled: false,
+      lastReminderDate: null,
     },
   };
 }

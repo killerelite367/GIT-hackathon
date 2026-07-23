@@ -4,6 +4,8 @@ import StatCard from "../components/StatCard";
 import GpaRing from "../components/GpaRing";
 import AssignmentCard from "../components/AssignmentCard";
 import BurnoutRadar from "../components/BurnoutRadar";
+import DailyBriefing from "../components/DailyBriefing";
+import FocusTimer from "../components/FocusTimer";
 import { useStore } from "../store/StoreContext";
 import { byPriority } from "../lib/priority";
 import { computeGpa } from "../lib/gpa";
@@ -42,6 +44,10 @@ export default function DashboardView({
 
   return (
     <>
+      <div className="mb-6">
+        <DailyBriefing />
+      </div>
+
       {/* Stat row */}
       <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard
@@ -172,6 +178,8 @@ export default function DashboardView({
               ))}
             </div>
           </div>
+
+          <FocusTimer assignments={open} />
 
           <BurnoutRadar assignments={assignments} />
         </section>

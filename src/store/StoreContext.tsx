@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { AppData, Assignment, Module } from "../types";
-import { loadData, saveData, resetData } from "../lib/storage";
+import { loadData, saveData, resetData, exportDataFile, parseImportedData } from "../lib/storage";
 import { applyCompletion, levelFromXp } from "../lib/gamification";
 import { buildSchedule } from "../lib/scheduler";
 import { unlockedIds } from "../lib/achievements";
@@ -23,6 +23,8 @@ import {
   SPIRIT_BY_ID,
   type PullOutcome,
 } from "../lib/gacha";
+import { xpForSession, crystalsForSession, progressDelta } from "../lib/focus";
+import { todayISO, daysBetween } from "../lib/date";
 
 export interface Toast {
   id: number;
@@ -47,6 +49,14 @@ interface StoreValue {
    *  pulled (empty array if you can't afford it). */
   pullGacha: (count: number) => PullOutcome[];
   equipSpirit: (id: string) => void;
+  /** Log a completed focus session against an assignment: awards XP + Focus
+   *  Crystals for the actual minutes spent and nudges progress forward. */
+  logFocusMinutes: (assignmentId: string, minutes: number) => void;
+  /** Opt in/out of in-tab daily reminders. `reminderDate` marks a reminder as
+   *  shown for that day (pass when firing one, omit otherwise). */
+  setReminders: (enabled: boolean, reminderDate?: string) => void;
+  exportData: () => void;
+  importData: (file: File) => Promise<boolean>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -255,6 +265,104 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [pushToast]
   );
 
+  const logFocusMinutes = useCallback(
+    (assignmentId: string, minutes: number) => {
+      if (minutes <= 0) return;
+      setData((d) => {
+        const target = d.assignments.find((a) => a.id === assignmentId);
+        if (!target || target.completed) return d;
+
+        const mult = equippedXpMultiplier(d.game);
+        const gainedXp = xpForSession(minutes, mult);
+        const gainedCrystals = crystalsForSession(minutes);
+        const delta = progressDelta(target, minutes);
+        const newProgress = Math.min(100, Math.round(target.progress + delta));
+        const willComplete = newProgress >= 100;
+
+        // Same day/streak accounting as completing a quest — a focused
+        // session is real study time and should keep the streak alive too.
+        const today = todayISO();
+        let streakDays = d.game.streakDays;
+        let streakUp = false;
+        if (d.game.lastActiveDate == null) {
+          streakDays = 1;
+          streakUp = true;
+        } else {
+          const gap = daysBetween(d.game.lastActiveDate, today);
+          if (gap === 1) {
+            streakDays += 1;
+            streakUp = true;
+          } else if (gap > 1) {
+            streakDays = 1;
+            streakUp = true;
+          }
+        }
+
+        const prevLevel = levelFromXp(d.game.xp);
+        const xp = d.game.xp + gainedXp;
+        const game = {
+          ...d.game,
+          xp,
+          streakDays,
+          bestStreak: Math.max(d.game.bestStreak, streakDays),
+          lastActiveDate: today,
+          crystals: d.game.crystals + gainedCrystals,
+        };
+
+        pushToast(`+${gainedXp} XP · ${minutes}m on ${target.title}`, "xp");
+        pushToast(`+${gainedCrystals} 💎 Focus Crystals`, "crystal");
+        if (streakUp && streakDays > 1) pushToast(`🔥 ${streakDays}-day streak!`, "info");
+        if (levelFromXp(xp) > prevLevel)
+          pushToast(`⭐ Level up! You're now level ${levelFromXp(xp)}`, "level");
+        if (willComplete) pushToast(`✅ ${target.title} completed via focus session!`, "info");
+
+        const assignments = d.assignments.map((a) =>
+          a.id === assignmentId
+            ? { ...a, progress: newProgress, completed: willComplete }
+            : a
+        );
+
+        return withAchievements({
+          ...d,
+          assignments,
+          blocks: buildSchedule(assignments),
+          game,
+        });
+      });
+    },
+    [pushToast, withAchievements]
+  );
+
+  const setReminders = useCallback((enabled: boolean, reminderDate?: string) => {
+    setData((d) => ({
+      ...d,
+      game: {
+        ...d.game,
+        remindersEnabled: enabled,
+        lastReminderDate: reminderDate ?? d.game.lastReminderDate,
+      },
+    }));
+  }, []);
+
+  const exportData = useCallback(() => {
+    exportDataFile(data);
+    pushToast("📦 Backup downloaded", "info");
+  }, [data, pushToast]);
+
+  const importData = useCallback(
+    async (file: File): Promise<boolean> => {
+      const parsed = await parseImportedData(file);
+      if (!parsed) {
+        pushToast("Import failed — that doesn't look like a StudyQuest backup.", "info");
+        return false;
+      }
+      setData(parsed);
+      pushToast("📥 Backup restored", "info");
+      return true;
+    },
+    [pushToast]
+  );
+
   const value = useMemo<StoreValue>(
     () => ({
       data,
@@ -271,6 +379,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resetAll,
       pullGacha,
       equipSpirit,
+      logFocusMinutes,
+      setReminders,
+      exportData,
+      importData,
     }),
     [
       data,
@@ -287,6 +399,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resetAll,
       pullGacha,
       equipSpirit,
+      logFocusMinutes,
+      setReminders,
+      exportData,
+      importData,
     ]
   );
 
