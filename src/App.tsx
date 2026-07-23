@@ -1,61 +1,37 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Sidebar, { BottomNav } from "./components/Sidebar";
 import Toasts from "./components/Toasts";
 import AssignmentModal from "./components/AssignmentModal";
 import SyllabusImport from "./components/SyllabusImport";
-import DashboardView from "./views/DashboardView";
+import FocusModal from "./components/FocusModal";
+import TodayView from "./views/TodayView";
 import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
-import GachaView from "./views/GachaView";
-import AchievementsView from "./views/AchievementsView";
+import RewardsView from "./views/RewardsView";
+import SettingsView from "./views/SettingsView";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
-import { isSupabaseConfigured } from "./lib/supabase";
 import { levelFromXp } from "./lib/gamification";
-import { Sparkles, RotateCcw, Download, Upload } from "lucide-react";
+import { useDailyReminder } from "./lib/useDailyReminder";
+import { Sparkles, Settings, Flame } from "lucide-react";
 
-const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
-  dashboard: {
-    kicker: "Mission briefing",
-    heading: "Welcome back, quester",
-    sub: "Your whole semester, auto-organised and prioritised for you.",
-  },
-  schedule: {
-    kicker: "Study plan",
-    heading: "Your schedule",
-    sub: "Every deadline, broken into bite-sized daily study blocks.",
-  },
-  modules: {
-    kicker: "Academic progress",
-    heading: "Modules & GPA",
-    sub: "Live, credit-weighted GPA on the poly scale.",
-  },
-  gacha: {
-    kicker: "Summon circle",
-    heading: "Study Spirits",
-    sub: "Study to earn crystals, summon spirits, power up your XP.",
-  },
-  achievements: {
-    kicker: "Rewards",
-    heading: "Achievements",
-    sub: "Earn XP, keep your streak alive, and level up.",
-  },
-};
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function App() {
-  const { data, resetAll, exportData, importData } = useStore();
-  const [view, setView] = useState<View>("dashboard");
+  const { data } = useStore();
+  useDailyReminder();
+  const [view, setView] = useState<View>("today");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-selecting the same file next time
-    if (file) await importData(file);
-  };
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [focusOpen, setFocusOpen] = useState(false);
 
   const openAdd = () => {
     setEditing(null);
@@ -65,10 +41,39 @@ export default function App() {
     setEditing(a);
     setModalOpen(true);
   };
+  const openFocus = (id?: string) => {
+    setFocusId(id ?? null);
+    setFocusOpen(true);
+  };
 
+  const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
+    today: {
+      kicker: "Today",
+      heading: `${greeting()}, quester`,
+      sub: "Here's what matters most right now.",
+    },
+    planner: {
+      kicker: "Planner",
+      heading: "Your semester plan",
+      sub: "Every deadline, spread into daily study blocks.",
+    },
+    grades: {
+      kicker: "Grades",
+      heading: "Modules & GPA",
+      sub: "Live, credit-weighted GPA on the poly scale.",
+    },
+    rewards: {
+      kicker: "Rewards",
+      heading: "Your progress",
+      sub: "Earn XP by studying, then summon Study Spirits.",
+    },
+    settings: {
+      kicker: "Settings",
+      heading: "Settings & data",
+      sub: "Reminders, backups, and demo data.",
+    },
+  };
   const t = TITLES[view];
-  const chipBtn =
-    "flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-dusk shadow-soft transition hover:border-line2 hover:text-night active:scale-95";
 
   return (
     <div className="app-shell flex min-h-screen">
@@ -84,71 +89,55 @@ export default function App() {
             <span className="font-display text-base font-bold text-night">StudyQuest</span>
           </div>
 
-          {/* Header */}
-          <header className="flex flex-wrap items-end justify-between gap-4">
+          {/* Page header */}
+          <header className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
                 {t.kicker}
-                <span className="text-line2">·</span>
-                <span className="text-haze">Level {levelFromXp(data.game.xp)}</span>
               </p>
-              <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-night sm:text-[2.7rem]">
+              <h1 className="mt-1.5 text-balance font-display text-[1.9rem] font-bold leading-[1.05] tracking-tighter2 text-night sm:text-[2.5rem]">
                 {t.heading}
               </h1>
               <p className="mt-2 max-w-md text-[15px] text-dusk">{t.sub}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button onClick={exportData} title="Download a backup of all your data" className={chipBtn}>
-                <Download size={12} /> Export
-              </button>
+
+            {/* Compact HUD: streak + level, and settings */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-night shadow-soft">
+                <Flame size={15} className="text-warm" />
+                {data.game.streakDays}
+                <span className="text-haze">·</span>
+                <span className="text-brand-deep">Lv {levelFromXp(data.game.xp)}</span>
+              </div>
               <button
-                onClick={() => fileInputRef.current?.click()}
-                title="Restore from a backup file"
-                className={chipBtn}
+                onClick={() => setView("settings")}
+                aria-label="Settings"
+                aria-current={view === "settings" ? "page" : undefined}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border shadow-soft transition active:scale-95 ${
+                  view === "settings"
+                    ? "border-brand/40 bg-brand-soft text-brand-deep"
+                    : "border-line bg-surface text-dusk hover:text-night"
+                }`}
               >
-                <Upload size={12} /> Import
+                <Settings size={16} />
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json"
-                onChange={handleImportFile}
-                className="hidden"
-              />
-              <button onClick={resetAll} title="Reset to demo data" className={chipBtn}>
-                <RotateCcw size={12} /> Reset
-              </button>
-              <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-dusk shadow-soft">
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${isSupabaseConfigured ? "bg-grass" : "bg-warm"}`}
-                />
-                {isSupabaseConfigured ? "Supabase connected" : "Local storage"}
-              </span>
             </div>
           </header>
 
           <div className="mt-8">
-            {view === "dashboard" && (
-              <DashboardView onAdd={openAdd} onEdit={openEdit} onImport={() => setImportOpen(true)} />
+            {view === "today" && (
+              <TodayView
+                onAdd={openAdd}
+                onEdit={openEdit}
+                onImport={() => setImportOpen(true)}
+                onFocus={openFocus}
+              />
             )}
-            {view === "schedule" && <ScheduleView />}
-            {view === "modules" && <ModulesView />}
-            {view === "gacha" && (
-              /* The Summon view is a deliberate dark "chamber" within the bright app. */
-              <div className="summon-stage overflow-hidden rounded-[1.75rem] p-4 shadow-pop ring-1 ring-brand/20 sm:p-6">
-                <GachaView />
-              </div>
-            )}
-            {view === "achievements" && <AchievementsView />}
+            {view === "planner" && <ScheduleView />}
+            {view === "grades" && <ModulesView />}
+            {view === "rewards" && <RewardsView />}
+            {view === "settings" && <SettingsView onImportSyllabus={() => setImportOpen(true)} />}
           </div>
-
-          <footer className="mt-12 border-t border-line pt-5 text-xs text-haze">
-            StudyQuest · Semester 2026-S2 ·{" "}
-            <span className="font-medium text-dusk">
-              {data.assignments.filter((a) => !a.completed).length} open quests
-            </span>{" "}
-            · built for RP students
-          </footer>
         </div>
       </main>
 
@@ -161,6 +150,11 @@ export default function App() {
         onClose={() => setModalOpen(false)}
       />
       {importOpen && <SyllabusImport onClose={() => setImportOpen(false)} />}
+      <FocusModal
+        open={focusOpen}
+        initialAssignmentId={focusId}
+        onClose={() => setFocusOpen(false)}
+      />
       <Toasts />
     </div>
   );

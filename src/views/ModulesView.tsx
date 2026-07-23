@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Calculator } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
+import GpaRing from "../components/GpaRing";
 
 export default function ModulesView() {
   const { data, updateModule } = useStore();
@@ -14,22 +15,21 @@ export default function ModulesView() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h2 className="font-display text-xl font-bold tracking-tightish text-night">Modules &amp; GPA</h2>
-        <p className="text-sm text-dusk">
-          Credit-weighted on the 0–4 poly scale · edit any running score to see your GPA update live.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-line bg-surface p-5 shadow-soft">
-        <div className="mb-4 flex items-baseline gap-3">
-          <span className="font-display text-4xl font-bold tabular text-brand-deep">
-            {gpa.toFixed(2)}
-          </span>
-          <span className="text-sm font-medium text-dusk">current GPA / 4.00</span>
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* GPA ring feature */}
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6 text-center shadow-soft">
+          <GpaRing gpa={gpa} />
+          <p className="mt-3 max-w-[16rem] text-xs font-medium text-dusk">
+            Credit-weighted on the 0–4 poly scale. Edit any score to watch it update live.
+          </p>
         </div>
 
-        <div className="space-y-3">
+        {/* Module scores */}
+        <div className="rounded-2xl border border-line bg-surface p-5 shadow-soft md:col-span-2">
+          <h3 className="mb-3 font-display text-lg font-bold tracking-tightish text-night">
+            Running scores
+          </h3>
+          <div className="space-y-3">
           {modules.map((m) => {
             const g = m.grade != null ? scoreToGrade(m.grade) : null;
             return (
@@ -68,6 +68,7 @@ export default function ModulesView() {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 

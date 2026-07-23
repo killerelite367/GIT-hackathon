@@ -1,8 +1,9 @@
 import type { Assignment } from "../types";
-import { Clock, Check, Pencil, Trash2, Hourglass } from "lucide-react";
+import { Clock, Check, Pencil, Trash2, Hourglass, Timer } from "lucide-react";
 import { relativeDue, daysUntil } from "../lib/date";
 import { priorityTier, priorityScore } from "../lib/priority";
 import { useStore } from "../store/StoreContext";
+import Button from "./Button";
 
 const tierDot: Record<string, string> = {
   high: "bg-berry",
@@ -18,9 +19,11 @@ const tierText: Record<string, string> = {
 export default function AssignmentCard({
   a,
   onEdit,
+  onFocus,
 }: {
   a: Assignment;
   onEdit: (a: Assignment) => void;
+  onFocus?: (id: string) => void;
 }) {
   const { completeAssignment, deleteAssignment } = useStore();
   const tier = priorityTier(a);
@@ -86,31 +89,42 @@ export default function AssignmentCard({
         </span>
       </div>
 
-      {/* Actions */}
-      <div className="mt-3 flex items-center gap-2">
-        {!a.completed && (
-          <button
+      {/* Actions — Focus is the primary "do the work" action, the rest recede */}
+      {!a.completed && (
+        <div className="mt-3 flex items-center gap-2">
+          {onFocus && (
+            <Button variant="primary" size="sm" icon={<Timer size={13} />} onClick={() => onFocus(a.id)}>
+              Focus
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Check size={13} />}
             onClick={() => completeAssignment(a.id)}
-            className="flex items-center gap-1 rounded-lg bg-grass px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-grass-deep active:scale-95"
           >
-            <Check size={13} /> Complete
-          </button>
-        )}
-        <button
-          onClick={() => onEdit(a)}
-          aria-label={`Edit ${a.title}`}
-          className="flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-dusk transition hover:border-line2 hover:text-night active:scale-95"
-        >
-          <Pencil size={13} /> Edit
-        </button>
-        <button
-          onClick={() => deleteAssignment(a.id)}
-          aria-label={`Delete ${a.title}`}
-          className="ml-auto flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs text-haze transition hover:border-berry/40 hover:text-berry-deep active:scale-95"
-        >
-          <Trash2 size={13} />
-        </button>
-      </div>
+            Done
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Edit ${a.title}`}
+            onClick={() => onEdit(a)}
+            className="ml-auto !px-2 text-haze"
+          >
+            <Pencil size={14} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Delete ${a.title}`}
+            onClick={() => deleteAssignment(a.id)}
+            className="!px-2 text-haze hover:!text-berry-deep"
+          >
+            <Trash2 size={14} />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

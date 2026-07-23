@@ -3,6 +3,8 @@ import { useStore } from "../store/StoreContext";
 import { shortDate, todayISO, daysUntil } from "../lib/date";
 import { DAILY_CAP } from "../lib/scheduler";
 import SemesterTimeline from "../components/SemesterTimeline";
+import BurnoutRadar from "../components/BurnoutRadar";
+import Button from "../components/Button";
 
 export default function ScheduleView() {
   const { data, regenerateSchedule, toggleBlockDone } = useStore();
@@ -22,24 +24,20 @@ export default function ScheduleView() {
 
   return (
     <section>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="font-display text-xl font-bold tracking-tightish text-night">
-            Auto-scheduled study plan
-          </h2>
-          <p className="text-sm text-dusk">
-            Effort spread backward from each deadline · max {DAILY_CAP}h per task per day
-          </p>
-        </div>
-        <button
-          onClick={regenerateSchedule}
-          className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-medium text-dusk shadow-soft transition hover:border-line2 hover:text-night active:scale-95"
-        >
-          <RefreshCw size={15} /> Regenerate
-        </button>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-dusk">
+          Effort spread backward from each deadline · max {DAILY_CAP}h per task per day.
+        </p>
+        <Button variant="secondary" size="sm" icon={<RefreshCw size={14} />} onClick={regenerateSchedule}>
+          Regenerate
+        </Button>
       </div>
 
       <SemesterTimeline assignments={assignments} blocks={blocks} />
+
+      <div className="mb-6">
+        <BurnoutRadar assignments={assignments} />
+      </div>
 
       {days.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line2 bg-surface/60 p-10 text-center text-dusk">

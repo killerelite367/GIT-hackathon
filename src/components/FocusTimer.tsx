@@ -15,15 +15,28 @@ function formatClock(totalSeconds: number): string {
  * and Focus Crystals. This is the piece that was missing: completing an
  * assignment card is a single click, but this rewards the actual time spent.
  */
-export default function FocusTimer({ assignments }: { assignments: Assignment[] }) {
+export default function FocusTimer({
+  assignments,
+  initialAssignmentId,
+}: {
+  assignments: Assignment[];
+  initialAssignmentId?: string;
+}) {
   const { logFocusMinutes } = useStore();
-  const [assignmentId, setAssignmentId] = useState(assignments[0]?.id ?? "");
+  const [assignmentId, setAssignmentId] = useState(
+    initialAssignmentId ?? assignments[0]?.id ?? ""
+  );
   const [presetMinutes, setPresetMinutes] = useState<number>(PRESET_MINUTES[1]);
   const [remaining, setRemaining] = useState(presetMinutes * 60);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<number>();
   const elapsedSecRef = useRef(0);
   const remainingRef = useRef(presetMinutes * 60);
+
+  // Focus a specific task when launched from its card / the Today hero.
+  useEffect(() => {
+    if (initialAssignmentId) setAssignmentId(initialAssignmentId);
+  }, [initialAssignmentId]);
 
   // Keep the selection valid as assignments get completed/deleted elsewhere.
   useEffect(() => {
