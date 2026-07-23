@@ -79,7 +79,7 @@ export default function ModulesView() {
       {/* What-if calculator */}
       <div className="rounded-2xl border border-edge bg-panel/70 p-5">
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-          <Calculator size={18} className="text-neon-cyan" /> What-if calculator
+          <Calculator size={18} className="text-white/50" /> What-if calculator
         </h3>
         <p className="mt-1 text-sm text-white/50">
           What score does one module need to hit a target GPA?
@@ -90,7 +90,7 @@ export default function ModulesView() {
             <select
               value={focusModule}
               onChange={(e) => setFocusModule(e.target.value)}
-              className="mt-1 block rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan/50"
+              className="mt-1 block rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
             >
               {modules.map((m) => (
                 <option key={m.code} value={m.code}>
@@ -108,10 +108,10 @@ export default function ModulesView() {
               step={0.1}
               value={target}
               onChange={(e) => setTarget(Number(e.target.value))}
-              className="mt-1 block w-24 rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan/50"
+              className="mt-1 block w-24 rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
             />
           </label>
-          <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 px-4 py-2">
+          <div className="rounded-xl border border-edge bg-panel2/50 px-4 py-2">
             {needed == null ? (
               <span className="text-sm text-neon-pink">
                 Not reachable with this module alone
@@ -119,7 +119,7 @@ export default function ModulesView() {
             ) : (
               <span className="text-sm text-white">
                 Need{" "}
-                <span className="font-mono text-lg font-bold text-neon-cyan">
+                <span className="font-mono text-lg font-bold text-neon-green">
                   {needed}
                 </span>{" "}
                 in {focusModule}

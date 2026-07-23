@@ -24,12 +24,12 @@ import {
   type Rarity,
 } from "../lib/gacha";
 
-/** Rarity → gradient used for owned cards & reveal auras. */
+/** Rarity → subtle tint used for owned cards & reveal auras. */
 const RARITY_GRAD: Record<Rarity, string> = {
-  common: "linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))",
-  rare: "linear-gradient(155deg, rgba(95,208,255,0.30), rgba(95,208,255,0.04))",
-  epic: "linear-gradient(155deg, rgba(169,139,255,0.34), rgba(169,139,255,0.05))",
-  legendary: "linear-gradient(155deg, rgba(255,225,77,0.40), rgba(255,95,162,0.12))",
+  common: "rgba(255,255,255,0.06)",
+  rare: "rgba(143,176,201,0.1)",
+  epic: "rgba(167,148,209,0.12)",
+  legendary: "rgba(224,168,77,0.14)",
 };
 
 export default function GachaView() {
@@ -53,22 +53,22 @@ export default function GachaView() {
     <>
       {/* ══ Summon hero ══════════════════════════════════════ */}
       <section className="relative overflow-hidden rounded-3xl border border-white/10 p-[1.5px]">
-        {/* animated gradient frame */}
-        <div className="gq-aurora absolute inset-0 opacity-60" />
-        <div className="relative rounded-3xl bg-panel/90 p-6 sm:p-8">
-          {/* rotating beams + sparkles */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
-            <div className="gq-beams absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 opacity-30" />
-            {SPARKLES.map((s, i) => (
-              <span
-                key={i}
-                className="gq-twinkle absolute text-neon-yellow"
-                style={{ left: s.x, top: s.y, fontSize: s.size, animationDelay: s.delay }}
-              >
-                ✦
-              </span>
-            ))}
-          </div>
+        {/* quiet animated frame — a hint of motion, not a rainbow */}
+        <div className="gq-aurora absolute inset-0 opacity-25" />
+        <div className="relative rounded-3xl bg-panel/95 p-6 sm:p-8">
+          {SPARKLES.length > 0 && (
+            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+              {SPARKLES.slice(0, 3).map((s, i) => (
+                <span
+                  key={i}
+                  className="gq-twinkle absolute text-neon-green/70"
+                  style={{ left: s.x, top: s.y, fontSize: s.size, animationDelay: s.delay }}
+                >
+                  ✦
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Sound toggle */}
           <button
@@ -80,31 +80,27 @@ export default function GachaView() {
           </button>
 
           <div className="relative flex flex-col items-center text-center">
-            <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-neon-yellow">
+            <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] text-white/40">
               <Sparkles size={13} /> summon circle
             </p>
 
             {/* Central crystal orb */}
             <div className="relative my-5 flex h-40 w-40 items-center justify-center">
               <div
-                className="gq-orb-ring absolute inset-0 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(169,139,255,0.55), transparent 68%)" }}
-              />
-              <div
                 className="gq-orb-ring absolute inset-3 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(255,95,162,0.5), transparent 66%)", animationDelay: "0.6s" }}
+                style={{ background: "radial-gradient(circle, rgba(167,148,209,0.35), transparent 68%)" }}
               />
-              <div className="gq-bob relative text-7xl drop-shadow-[0_0_25px_rgba(169,139,255,0.8)]">
+              <div className="gq-bob relative text-7xl drop-shadow-[0_0_18px_rgba(167,148,209,0.5)]">
                 💎
               </div>
             </div>
 
             {/* Balance */}
             <div className="flex items-baseline gap-2">
-              <span className="tabular bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-purple bg-clip-text font-mono text-4xl font-extrabold text-transparent">
+              <span className="tabular font-mono text-4xl font-extrabold text-white">
                 {game.crystals.toLocaleString()}
               </span>
-              <span className="text-sm font-semibold text-neon-pink">💎 crystals</span>
+              <span className="text-sm font-semibold text-neon-purple">💎 crystals</span>
             </div>
             <p className="mt-2 max-w-sm text-sm text-white/60">
               Earned <span className="font-semibold text-white">only</span> by completing real study
@@ -116,25 +112,25 @@ export default function GachaView() {
               <button
                 onClick={() => summon(1)}
                 disabled={!canAfford(game, 1)}
-                className="gq-shine group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-neon-purple/60 bg-gradient-to-br from-neon-purple/30 to-neon-purple/10 px-5 py-4 font-bold text-white shadow-[0_0_28px_-6px_rgba(169,139,255,0.6)] transition hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                className="group relative flex flex-1 items-center justify-center gap-2 rounded-2xl border border-neon-purple/40 bg-panel2 px-5 py-4 font-bold text-white transition hover:border-neon-purple/60 hover:bg-panel3 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Sparkles size={18} className="text-neon-purple transition group-hover:rotate-45" />
                 Summon ×1
-                <span className="flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-xs text-neon-pink">
+                <span className="flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white/70">
                   <Gem size={11} /> {PULL_COST}
                 </span>
               </button>
               <button
                 onClick={() => summon(MULTI_PULLS)}
                 disabled={!canAfford(game, MULTI_PULLS)}
-                className="gq-shine group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-neon-yellow/60 bg-gradient-to-br from-neon-yellow/25 via-neon-pink/20 to-neon-purple/20 px-5 py-4 font-bold text-white shadow-[0_0_28px_-6px_rgba(255,225,77,0.6)] transition hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                className="group relative flex flex-1 items-center justify-center gap-2 rounded-2xl border border-neon-green/40 bg-panel2 px-5 py-4 font-bold text-white transition hover:border-neon-green/60 hover:bg-panel3 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <span className="absolute -top-2 right-3 rounded-full bg-neon-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase text-ink">
+                <span className="absolute -top-2 right-3 rounded-full bg-neon-green px-1.5 py-0.5 text-[9px] font-bold uppercase text-ink">
                   1 free
                 </span>
-                <Sparkles size={18} className="text-neon-yellow transition group-hover:rotate-45" />
+                <Sparkles size={18} className="text-neon-green transition group-hover:rotate-45" />
                 Summon ×{MULTI_PULLS}
-                <span className="flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-xs text-neon-pink">
+                <span className="flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white/70">
                   <Gem size={11} /> {MULTI_COST}
                 </span>
               </button>
@@ -144,13 +140,13 @@ export default function GachaView() {
             <div className="mt-5 w-full max-w-md">
               <div className="flex items-center justify-between text-[11px] text-white/50">
                 <span>Pity — Epic+ guaranteed</span>
-                <span className="tabular font-mono text-neon-yellow">
+                <span className="tabular font-mono text-neon-purple">
                   {game.pityCount}/{PITY_THRESHOLD}
                 </span>
               </div>
               <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-yellow transition-all duration-500"
+                  className="h-full rounded-full bg-neon-purple transition-all duration-500"
                   style={{ width: `${pityPct}%` }}
                 />
               </div>
@@ -169,7 +165,7 @@ export default function GachaView() {
             className="flex h-14 w-14 items-center justify-center rounded-2xl border text-3xl"
             style={{
               background: equipped ? RARITY_GRAD[equipped.rarity] : undefined,
-              borderColor: equipped ? RARITY[equipped.rarity].glow : "#25252f",
+              borderColor: equipped ? RARITY[equipped.rarity].glow : "#2c2820",
             }}
           >
             {equipped ? equipped.emoji : "—"}
@@ -182,7 +178,7 @@ export default function GachaView() {
             {equipped && <p className={`text-xs ${RARITY[equipped.rarity].text}`}>{equipped.blurb}</p>}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-3.5 py-2 text-sm font-bold text-neon-green shadow-[0_0_20px_-6px_rgba(124,255,107,0.6)]">
+        <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-3.5 py-2 text-sm font-bold text-neon-green">
           <Zap size={15} /> ×{mult.toFixed(2)} XP
         </div>
       </section>
@@ -248,7 +244,7 @@ function RarityRow({
           return (
             <div
               key={s.id}
-              className={`gq-shine relative flex flex-col overflow-hidden rounded-2xl border p-3.5 transition ${
+              className={`relative flex flex-col overflow-hidden rounded-2xl border p-3.5 transition ${
                 isOwned ? "hover:-translate-y-1" : "border-edge opacity-55"
               }`}
               style={
@@ -256,7 +252,6 @@ function RarityRow({
                   ? {
                       background: RARITY_GRAD[rarity],
                       borderColor: meta.glow,
-                      boxShadow: `0 0 26px -10px ${meta.glow}`,
                     }
                   : { background: "rgba(22,22,31,0.6)" }
               }
@@ -506,8 +501,8 @@ function RevealOverlay({
                   }}
                 >
                   {o.isNew && (
-                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink shadow-[0_0_10px_rgba(124,255,107,0.8)]">
-                      New!
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink">
+                      New
                     </span>
                   )}
                   <div className="gq-bob text-5xl drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]">
@@ -526,10 +521,10 @@ function RevealOverlay({
           <div className="relative flex flex-col items-center gap-3">
             {legendary && (
               <p
-                className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-yellow bg-clip-text font-display text-xl font-extrabold text-transparent"
+                className="font-display text-xl font-extrabold text-neon-green"
                 style={{ animation: "gacha-rise 0.5s ease-out 0.3s both" }}
               >
-                🌟 A LEGENDARY spirit answered your call! 🌟
+                A legendary spirit answered your call.
               </p>
             )}
             <div className="flex gap-3">

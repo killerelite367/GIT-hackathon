@@ -69,14 +69,14 @@ export default function App() {
   const t = TITLES[view];
 
   return (
-    <div className="app-shell grid-bg flex min-h-screen">
+    <div className="app-shell flex min-h-screen">
       <Sidebar view={view} setView={setView} />
 
       <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
         <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
           {/* Mobile brand */}
           <div className="mb-4 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-green to-neon-cyan text-ink">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neon-green text-ink">
               <Sparkles size={16} />
             </div>
             <span className="font-display text-base font-bold text-white">StudyQuest</span>
@@ -85,10 +85,10 @@ export default function App() {
           {/* Header */}
           <header className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-neon-green">
+              <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-white/40">
                 {t.kicker}
-                <span className="text-white/25">/</span>
-                <span className="text-white/45">level {levelFromXp(data.game.xp)}</span>
+                <span className="text-white/20">·</span>
+                <span>level {levelFromXp(data.game.xp)}</span>
               </p>
               <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-white sm:text-[2.6rem]">
                 {t.heading}

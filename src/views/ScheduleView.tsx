@@ -34,7 +34,7 @@ export default function ScheduleView() {
         </div>
         <button
           onClick={regenerateSchedule}
-          className="flex items-center gap-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-sm font-medium text-neon-cyan transition hover:bg-neon-cyan/20"
+          className="flex items-center gap-2 rounded-lg border border-edge px-3 py-2 text-sm font-medium text-white/70 transition hover:border-edge2 hover:text-white"
         >
           <RefreshCw size={15} /> Regenerate
         </button>
@@ -110,7 +110,7 @@ export default function ScheduleView() {
                           {moduleOf(b.assignmentId)}
                         </span>
                       </span>
-                      <span className="shrink-0 font-mono text-xs text-neon-cyan">
+                      <span className="shrink-0 font-mono text-xs text-white/60">
                         {b.hours}h
                       </span>
                     </button>

@@ -25,14 +25,14 @@ export default function AchievementsView() {
       {/* Level bar */}
       <div className="rounded-2xl border border-edge bg-panel/70 p-5">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-mono text-neon-yellow">LEVEL {lp.level}</span>
+          <span className="font-mono text-neon-green">LEVEL {lp.level}</span>
           <span className="text-white/40">
             {lp.intoLevel}/{lp.span} XP · {lp.toNext} to level {lp.level + 1}
           </span>
         </div>
         <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-neon-yellow to-neon-pink transition-all"
+            className="h-full rounded-full bg-neon-green transition-all"
             style={{ width: `${lp.pct}%` }}
           />
         </div>
@@ -48,7 +48,7 @@ export default function AchievementsView() {
               key={a.id}
               className={`rounded-2xl border p-4 text-center transition ${
                 on
-                  ? "border-neon-purple/40 bg-neon-purple/10 shadow-glow"
+                  ? "border-neon-purple/30 bg-panel2/60"
                   : "border-edge bg-panel2/40 opacity-60"
               }`}
             >

@@ -108,7 +108,7 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
   return (
     <div className="rounded-2xl border border-edge bg-panel/80 p-5 shadow-card">
       <h3 className="flex items-center gap-2 font-display text-lg font-semibold tracking-tightish text-white">
-        <TimerIcon size={18} className="text-neon-cyan" /> Focus session
+        <TimerIcon size={18} className="text-neon-green" /> Focus session
       </h3>
 
       <label className="mt-3 block text-[11px] uppercase tracking-wider text-white/45">
@@ -117,7 +117,7 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
           value={assignmentId}
           onChange={(e) => setAssignmentId(e.target.value)}
           disabled={running}
-          className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan/50 disabled:opacity-60"
+          className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50 disabled:opacity-60"
         >
           {assignments.map((a) => (
             <option key={a.id} value={a.id}>
@@ -130,13 +130,13 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
       <div className="mt-4 flex items-center justify-center">
         <div className="relative flex h-32 w-32 items-center justify-center">
           <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="44" fill="none" stroke="#20202c" strokeWidth="7" />
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#2c2820" strokeWidth="7" />
             <circle
               cx="50"
               cy="50"
               r="44"
               fill="none"
-              stroke="#5fd0ff"
+              stroke="#e0a84d"
               strokeWidth="7"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 44}
@@ -158,7 +158,7 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
             disabled={running}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition disabled:opacity-40 ${
               presetMinutes === m
-                ? "border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan"
+                ? "border-neon-green/50 bg-neon-green/10 text-neon-green"
                 : "border-edge text-white/50 hover:text-white"
             }`}
           >
@@ -172,14 +172,14 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
           <button
             onClick={() => setRunning(true)}
             disabled={!selected}
-            className="flex items-center gap-1.5 rounded-lg border border-neon-cyan/50 bg-neon-cyan/10 px-4 py-2 text-sm font-medium text-neon-cyan transition hover:bg-neon-cyan/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-neon-green/50 bg-neon-green/10 px-4 py-2 text-sm font-medium text-neon-green transition hover:bg-neon-green/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Play size={14} /> Start
           </button>
         ) : (
           <button
             onClick={handleStop}
-            className="flex items-center gap-1.5 rounded-lg border border-neon-yellow/50 bg-neon-yellow/10 px-4 py-2 text-sm font-medium text-neon-yellow transition hover:bg-neon-yellow/20 active:scale-95"
+            className="flex items-center gap-1.5 rounded-lg border border-edge2 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 active:scale-95"
           >
             <Pause size={14} /> End & log
           </button>

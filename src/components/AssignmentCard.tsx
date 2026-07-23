@@ -4,10 +4,15 @@ import { relativeDue, daysUntil } from "../lib/date";
 import { priorityTier, priorityScore } from "../lib/priority";
 import { useStore } from "../store/StoreContext";
 
-const tierStyle: Record<string, string> = {
-  high: "text-neon-pink border-neon-pink/40 bg-neon-pink/10",
-  medium: "text-neon-yellow border-neon-yellow/40 bg-neon-yellow/10",
-  low: "text-neon-cyan border-neon-cyan/40 bg-neon-cyan/10",
+const tierDot: Record<string, string> = {
+  high: "bg-neon-pink",
+  medium: "bg-neon-yellow",
+  low: "bg-neon-cyan",
+};
+const tierText: Record<string, string> = {
+  high: "text-neon-pink",
+  medium: "text-white/50",
+  low: "text-white/50",
 };
 
 export default function AssignmentCard({
@@ -26,7 +31,7 @@ export default function AssignmentCard({
       className={`group rounded-xl border p-4 shadow-card transition duration-200 ${
         a.completed
           ? "border-edge/50 bg-panel2/30 opacity-55"
-          : "border-edge bg-panel2/70 hover:-translate-y-0.5 hover:border-neon-green/40 hover:shadow-glow"
+          : "border-edge bg-panel2/70 hover:-translate-y-0.5 hover:border-edge2"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -54,8 +59,9 @@ export default function AssignmentCard({
         </div>
         {!a.completed && (
           <span
-            className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${tierStyle[tier]}`}
+            className={`flex shrink-0 items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide ${tierText[tier]}`}
           >
+            <span className={`h-1.5 w-1.5 rounded-full ${tierDot[tier]}`} />
             {tier}
           </span>
         )}
@@ -63,7 +69,7 @@ export default function AssignmentCard({
 
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-neon-green to-neon-cyan shadow-[0_0_10px_-2px_rgba(124,255,107,0.6)] transition-[width] duration-500 ease-out"
+          className="h-full rounded-full bg-neon-green transition-[width] duration-500 ease-out"
           style={{ width: `${a.progress}%` }}
         />
       </div>

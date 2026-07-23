@@ -76,7 +76,7 @@ export default function SemesterTimeline({
                   title={`${shortDate(d.date)} · ${d.hours}h planned`}
                 >
                   <div
-                    className={`w-full rounded-sm ${isToday ? "bg-neon-green" : "bg-neon-cyan/70"}`}
+                    className={`w-full rounded-sm ${isToday ? "bg-neon-green" : "bg-neon-green/45"}`}
                     style={{ height: `${barPct}%` }}
                   />
                 </div>
@@ -102,7 +102,7 @@ export default function SemesterTimeline({
           <span className="h-1.5 w-1.5 rounded-full bg-neon-cyan" /> low
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-1.5 w-2 rounded-sm bg-neon-cyan/70" /> planned study hours
+          <span className="h-1.5 w-2 rounded-sm bg-neon-green/45" /> planned study hours
         </span>
       </div>
     </div>

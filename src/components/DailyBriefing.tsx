@@ -46,11 +46,7 @@ export default function DailyBriefing() {
   return (
     <section
       className={`rounded-2xl border p-5 shadow-card transition ${
-        briefing.overdue.length > 0
-          ? "border-neon-pink/30 bg-neon-pink/[0.04]"
-          : briefing.dueToday.length > 0
-          ? "border-neon-yellow/30 bg-neon-yellow/[0.04]"
-          : "border-edge bg-panel/70"
+        briefing.overdue.length > 0 ? "border-neon-pink/25 bg-panel/70" : "border-edge bg-panel/70"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -61,7 +57,7 @@ export default function DailyBriefing() {
                 ? "bg-neon-green/10 text-neon-green"
                 : briefing.overdue.length > 0
                 ? "bg-neon-pink/10 text-neon-pink"
-                : "bg-neon-yellow/10 text-neon-yellow"
+                : "bg-white/[0.06] text-white/60"
             }`}
           >
             {briefing.allClear ? <CheckCircle2 size={18} /> : <AlarmClock size={18} />}
@@ -92,7 +88,7 @@ export default function DailyBriefing() {
             }
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
               game.remindersEnabled
-                ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+                ? "border-neon-green/40 bg-neon-green/10 text-neon-green"
                 : "border-edge text-white/50 hover:border-edge2 hover:text-white"
             }`}
           >
@@ -103,16 +99,19 @@ export default function DailyBriefing() {
       </div>
 
       {(briefing.overdue.length > 0 || briefing.dueToday.length > 0) && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-edge pt-3">
           {[...briefing.overdue, ...briefing.dueToday].slice(0, 4).map((a) => (
             <span
               key={a.id}
-              className={`rounded-full border px-2.5 py-1 text-[11px] ${
-                daysUntilOverdue(a.dueDate)
-                  ? "border-neon-pink/30 bg-neon-pink/[0.06] text-neon-pink/90"
-                  : "border-neon-yellow/30 bg-neon-yellow/[0.06] text-neon-yellow/90"
+              className={`flex items-center gap-1.5 text-[11px] ${
+                daysUntilOverdue(a.dueDate) ? "text-neon-pink/90" : "text-white/55"
               }`}
             >
+              <span
+                className={`h-1 w-1 rounded-full ${
+                  daysUntilOverdue(a.dueDate) ? "bg-neon-pink" : "bg-white/40"
+                }`}
+              />
               {a.title} · {relativeDue(a.dueDate)}
             </span>
           ))}
