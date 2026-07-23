@@ -4,27 +4,111 @@
 
 :root {
   color-scheme: dark;
+  --bg: #07070d;
+  --grid-line: rgba(124, 255, 107, 0.05);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   font-family: "Space Grotesk", system-ui, sans-serif;
-  background:
-    radial-gradient(1000px 600px at 10% -10%, rgba(124, 255, 107, 0.08), transparent 60%),
-    radial-gradient(900px 600px at 100% 0%, rgba(95, 208, 255, 0.08), transparent 55%),
-    #0a0a12;
-  color: #e8e8f0;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  color: #e9e9f2;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* subtle scanline grid, nods to the "quest brief" terminal look */
-.grid-bg {
+/* Ambient depth: soft auroras layered over near-black. Sits behind everything. */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(900px 620px at 8% -8%, rgba(124, 255, 107, 0.1), transparent 55%),
+    radial-gradient(820px 560px at 102% 2%, rgba(95, 208, 255, 0.09), transparent 52%),
+    radial-gradient(760px 640px at 50% 118%, rgba(169, 139, 255, 0.08), transparent 55%),
+    var(--bg);
+}
+
+/*
+ * A faint terminal grid that fades into darkness at the edges — a nod to the
+ * "quest brief" blueprint look without the flat full-strength overlay.
+ */
+.grid-bg::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 12%, transparent 78%);
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 12%, transparent 78%);
 }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #262636; border-radius: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
+::selection {
+  background: rgba(124, 255, 107, 0.28);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4e;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Numeric data should never reflow as values change. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Accessible keyboard focus ring, consistent across the neon theme */
+:focus-visible {
+  outline: 2px solid #7cff6b;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

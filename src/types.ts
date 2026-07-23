@@ -1,14 +1,31 @@
 export type Priority = "low" | "medium" | "high";
 
+export type AssignmentType =
+  | "CA"
+  | "Group Project"
+  | "Reflection"
+  | "Exam"
+  | "Quiz";
+
 export interface Assignment {
   id: string;
   title: string;
-  module: string;
-  type: "CA" | "Group Project" | "Reflection" | "Exam" | "Quiz";
-  dueDate: string; // ISO date
+  module: string; // module code, e.g. "C240"
+  type: AssignmentType;
+  dueDate: string; // ISO date (YYYY-MM-DD)
   progress: number; // 0-100
-  priority: Priority;
   weight: number; // % of module grade
+  estHours: number; // estimated effort in hours (drives the scheduler)
+  completed: boolean;
+  createdAt: string; // ISO timestamp
+}
+
+export interface StudyBlock {
+  id: string;
+  assignmentId: string;
+  date: string; // ISO date (YYYY-MM-DD)
+  hours: number;
+  done: boolean;
 }
 
 export interface Module {
@@ -18,11 +35,19 @@ export interface Module {
   credits: number;
 }
 
-export interface StudentStats {
-  gpa: number;
-  streakDays: number;
+export interface GameState {
   xp: number;
-  level: number;
-  tasksDoneThisWeek: number;
-  tasksPlannedThisWeek: number;
+  streakDays: number;
+  lastActiveDate: string | null; // ISO date of last completed task
+  bestStreak: number;
+  achievements: string[]; // unlocked achievement ids
+  syllabusImported: boolean;
+}
+
+/** Everything we persist for a user, in one blob. */
+export interface AppData {
+  modules: Module[];
+  assignments: Assignment[];
+  blocks: StudyBlock[];
+  game: GameState;
 }
