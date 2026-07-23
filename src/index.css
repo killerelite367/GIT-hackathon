@@ -231,6 +231,59 @@ body {
   100% { transform: translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; }
 }
 
+/* ── Cute spirit character animation ─────────────────────── */
+/* Whole body bobs. */
+@keyframes sp-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.sp-bob { animation: sp-bob 2.4s ease-in-out infinite; }
+
+/* Eyes blink together. */
+@keyframes sp-blink {
+  0%, 88%, 100% { transform: scaleY(1); }
+  93%           { transform: scaleY(0.08); }
+}
+.sp-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sp-blink 4.6s infinite;
+}
+
+/* Feet step in place (alternating) — reads as walking. */
+@keyframes sp-foot {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.sp-foot { transform-box: fill-box; transform-origin: center; }
+.sp-foot-l { animation: sp-foot 0.6s ease-in-out infinite; }
+.sp-foot-r { animation: sp-foot 0.6s ease-in-out infinite; animation-delay: 0.3s; }
+
+/* Sparkle accessory twinkle. */
+@keyframes sp-tw {
+  0%, 100% { opacity: 0.2; transform: scale(0.6); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+.sp-tw { transform-box: fill-box; transform-origin: center; animation: sp-tw 2s ease-in-out infinite; }
+
+/* Dramatic flying swoop-in when a spirit is summoned. */
+@keyframes sp-flyin {
+  0%   { transform: translateY(150px) rotate(-45deg) scale(0.35); opacity: 0; }
+  35%  { opacity: 1; }
+  55%  { transform: translateY(-22px) rotate(14deg) scale(1.12); }
+  72%  { transform: translateY(6px) rotate(-7deg) scale(0.98); }
+  86%  { transform: translateY(-3px) rotate(3deg) scale(1.02); }
+  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+}
+.sp-flyin { animation: sp-flyin 0.95s cubic-bezier(0.34, 1.4, 0.5, 1) both; }
+
+/* Continuous gentle hover after landing (for the star reveal). */
+@keyframes sp-hover {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-7px) rotate(2deg); }
+}
+.sp-hover { animation: sp-hover 2.6s ease-in-out infinite; }
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   html {

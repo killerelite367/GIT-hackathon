@@ -14,10 +14,18 @@ import type { Assignment, GameState } from "../types";
 
 export type Rarity = "common" | "rare" | "epic" | "legendary";
 
+/** Drawing recipe for a spirit's cute textbook-buddy character. */
+export interface SpiritArt {
+  body: string; // cover colour
+  trim: string; // darker outline / limbs
+  belly: string; // page / label colour
+  accessory: "none" | "cat-ears" | "glasses" | "sparkle" | "star" | "horns" | "crown";
+}
+
 export interface Spirit {
   id: string;
   name: string;
-  emoji: string;
+  emoji: string; // small flavour icon (used in toasts)
   rarity: Rarity;
   /** Short flavour of what this spirit "does" for you. */
   buff: string;
@@ -25,6 +33,8 @@ export interface Spirit {
   xpBonus: number;
   /** One-line character blurb for the collection view. */
   blurb: string;
+  /** How to draw the character. */
+  art: SpiritArt;
 }
 
 export interface RarityMeta {
@@ -72,27 +82,75 @@ export const RARITY: Record<Rarity, RarityMeta> = {
 
 export const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary"];
 
-/** The full roster. Themed around study tools & scholarly creatures. */
+/** The full roster — a family of cute flavoured "snack-book" buddies. */
 export const SPIRITS: Spirit[] = [
-  // ── Common ──────────────────────────────────────────────
-  { id: "pomo", name: "Pomo", emoji: "🍅", rarity: "common", xpBonus: 0.02, buff: "+2% XP", blurb: "A tireless little tomato timer. Ticks away so you don't have to." },
-  { id: "inky", name: "Inky", emoji: "🖊️", rarity: "common", xpBonus: 0.02, buff: "+2% XP", blurb: "Never runs dry. Turns blank pages into finished reflections." },
-  { id: "flashy", name: "Flashy", emoji: "🃏", rarity: "common", xpBonus: 0.02, buff: "+2% XP", blurb: "A flashcard sprite that whispers definitions before quizzes." },
-  { id: "mocha", name: "Mocha", emoji: "☕", rarity: "common", xpBonus: 0.03, buff: "+3% XP", blurb: "Warm, dependable, mildly over-caffeinated study buddy." },
-  { id: "clip", name: "Clip", emoji: "📎", rarity: "common", xpBonus: 0.02, buff: "+2% XP", blurb: "Keeps every group-project doc from falling apart. Literally." },
+  // ── Common — flavoured textbooks ────────────────────────
+  {
+    id: "pomo", name: "Butterbook", emoji: "🧈", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    blurb: "A warm slab of butter-yellow textbook. Melts study stress away.",
+    art: { body: "#ffdd7a", trim: "#e0af3c", belly: "#fff3cf", accessory: "none" },
+  },
+  {
+    id: "inky", name: "Chocobook", emoji: "🍫", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    blurb: "Rich cocoa covers. Sweetens even the driest chapter.",
+    art: { body: "#8a5233", trim: "#5f3620", belly: "#cf9264", accessory: "none" },
+  },
+  {
+    id: "flashy", name: "Matchabook", emoji: "🍵", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    blurb: "Grassy-green and quietly focused. Sips knowledge slowly.",
+    art: { body: "#9fd47c", trim: "#68a544", belly: "#e6f6d4", accessory: "none" },
+  },
+  {
+    id: "mocha", name: "Berrybook", emoji: "🍓", rarity: "common", xpBonus: 0.03, buff: "+3% XP",
+    blurb: "Strawberry-pink and endlessly encouraging. Never gives up on you.",
+    art: { body: "#ff9ec4", trim: "#e56fa0", belly: "#ffdcea", accessory: "none" },
+  },
+  {
+    id: "clip", name: "Blueberrybook", emoji: "🫐", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    blurb: "Cool blueberry cover. Keeps a clear head under deadlines.",
+    art: { body: "#7aa7ff", trim: "#5178dd", belly: "#d9e6ff", accessory: "none" },
+  },
 
   // ── Rare ────────────────────────────────────────────────
-  { id: "foxfocus", name: "Focus Fox", emoji: "🦊", rarity: "rare", xpBonus: 0.08, buff: "+8% XP", blurb: "Sharp-eyed and single-minded. Distractions don't stand a chance." },
-  { id: "owlbiblio", name: "Biblio", emoji: "🦉", rarity: "rare", xpBonus: 0.08, buff: "+8% XP", blurb: "A night-owl librarian who's read everything, twice." },
-  { id: "serpentstreak", name: "Streak Serpent", emoji: "🐍", rarity: "rare", xpBonus: 0.1, buff: "+10% XP", blurb: "Coils tighter with every day you show up. Guards your streak." },
+  {
+    id: "foxfocus", name: "Caramel Cub", emoji: "🦊", rarity: "rare", xpBonus: 0.08, buff: "+8% XP",
+    blurb: "A caramel textbook with little fox ears. Sniffs out distractions.",
+    art: { body: "#eaa24d", trim: "#c47a28", belly: "#ffe1b8", accessory: "cat-ears" },
+  },
+  {
+    id: "owlbiblio", name: "Professor Grape", emoji: "🍇", rarity: "rare", xpBonus: 0.08, buff: "+8% XP",
+    blurb: "A grape-purple tome in tiny spectacles. Has read everything, twice.",
+    art: { body: "#b07adf", trim: "#8b53c0", belly: "#e7d4f7", accessory: "glasses" },
+  },
+  {
+    id: "serpentstreak", name: "Minty", emoji: "🌿", rarity: "rare", xpBonus: 0.1, buff: "+10% XP",
+    blurb: "Fresh mint cover that coils around your streak and guards it.",
+    art: { body: "#66e0c0", trim: "#37b697", belly: "#d3f7ec", accessory: "sparkle" },
+  },
 
   // ── Epic ────────────────────────────────────────────────
-  { id: "chrono", name: "Chrono", emoji: "⏳", rarity: "epic", xpBonus: 0.18, buff: "+18% XP", blurb: "Keeper of deadlines. Bends time so your plan always fits." },
-  { id: "nova", name: "Nova", emoji: "🌟", rarity: "epic", xpBonus: 0.2, buff: "+20% XP", blurb: "Pure motivation given form. Burns brightest at 2am." },
+  {
+    id: "chrono", name: "Honey Chrono", emoji: "⏳", rarity: "epic", xpBonus: 0.18, buff: "+18% XP",
+    blurb: "Golden honey pages that bend time so your plan always fits.",
+    art: { body: "#ffc531", trim: "#e0a013", belly: "#fff0c2", accessory: "star" },
+  },
+  {
+    id: "nova", name: "Cosmic Nova", emoji: "🌟", rarity: "epic", xpBonus: 0.2, buff: "+20% XP",
+    blurb: "A starlit textbook — pure motivation. Burns brightest at 2am.",
+    art: { body: "#8a6bff", trim: "#6247e0", belly: "#ded6ff", accessory: "sparkle" },
+  },
 
   // ── Legendary ───────────────────────────────────────────
-  { id: "sage", name: "Sage", emoji: "🐉", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP", blurb: "The Dean's Dragon. Hoards knowledge instead of gold." },
-  { id: "athena", name: "Athena", emoji: "👑", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP", blurb: "Scholar-sovereign of the quest. Wisdom incarnate, GPA immaculate." },
+  {
+    id: "sage", name: "Sage the Dragonbook", emoji: "🐉", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
+    blurb: "The Dean's dragon in book form. Hoards knowledge instead of gold.",
+    art: { body: "#ffd76a", trim: "#cf9a24", belly: "#fff2c8", accessory: "horns" },
+  },
+  {
+    id: "athena", name: "Queen Athena", emoji: "👑", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP",
+    blurb: "Crowned scholar-sovereign. Wisdom incarnate, GPA immaculate.",
+    art: { body: "#ffe7a1", trim: "#d9b64a", belly: "#fff6d6", accessory: "crown" },
+  },
 ];
 
 export const SPIRIT_BY_ID: Record<string, Spirit> = Object.fromEntries(

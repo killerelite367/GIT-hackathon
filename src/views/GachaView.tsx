@@ -1,6 +1,7 @@
 import { useState, useEffect, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX } from "lucide-react";
 import { useStore } from "../store/StoreContext";
+import SpiritArt from "../components/SpiritArt";
 import {
   playCharge,
   playBurst,
@@ -166,13 +167,13 @@ export default function GachaView() {
       <section className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-edge bg-panel/70 p-4">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-14 w-14 items-center justify-center rounded-2xl border text-3xl"
+            className="flex h-16 w-16 items-center justify-center rounded-2xl border"
             style={{
               background: equipped ? RARITY_GRAD[equipped.rarity] : undefined,
               borderColor: equipped ? RARITY[equipped.rarity].glow : "#25252f",
             }}
           >
-            {equipped ? equipped.emoji : "—"}
+            {equipped ? <SpiritArt spirit={equipped} size={48} /> : <span className="text-3xl text-white/30">—</span>}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-white/40">Equipped spirit</p>
@@ -266,8 +267,12 @@ function RarityRow({
                   ×{count}
                 </span>
               )}
-              <div className={`text-4xl ${isOwned ? "gq-bob" : "grayscale"}`}>
-                {isOwned ? s.emoji : "❔"}
+              <div className="flex h-16 items-center justify-center">
+                {isOwned ? (
+                  <SpiritArt spirit={s} size={58} />
+                ) : (
+                  <span className="text-4xl grayscale">❔</span>
+                )}
               </div>
               <p className="mt-2 font-display text-sm font-bold text-white">
                 {isOwned ? s.name : "???"}
@@ -479,8 +484,11 @@ function RevealOverlay({
                       New!
                     </span>
                   )}
-                  <div className="gq-bob text-5xl drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]">
-                    {o.spirit.emoji}
+                  <div
+                    className="sp-flyin drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]"
+                    style={{ animationDelay: `${i * 80 + 120}ms` }}
+                  >
+                    <SpiritArt spirit={o.spirit} size={76} />
                   </div>
                   <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
                   <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
