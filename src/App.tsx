@@ -17,29 +17,29 @@ import { Sparkles, RotateCcw, Download, Upload } from "lucide-react";
 
 const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
   dashboard: {
-    kicker: "▸ mission briefing",
+    kicker: "Mission briefing",
     heading: "Welcome back, quester",
-    sub: "Your workload, auto-organised and prioritised.",
+    sub: "Your whole semester, auto-organised and prioritised for you.",
   },
   schedule: {
-    kicker: "▸ study plan",
+    kicker: "Study plan",
     heading: "Your schedule",
-    sub: "Every deadline, broken into daily study blocks.",
+    sub: "Every deadline, broken into bite-sized daily study blocks.",
   },
   modules: {
-    kicker: "▸ academic progress",
+    kicker: "Academic progress",
     heading: "Modules & GPA",
     sub: "Live, credit-weighted GPA on the poly scale.",
   },
   gacha: {
-    kicker: "▸ summon circle",
+    kicker: "Summon circle",
     heading: "Study Spirits",
     sub: "Study to earn crystals, summon spirits, power up your XP.",
   },
   achievements: {
-    kicker: "▸ rewards",
+    kicker: "Rewards",
     heading: "Achievements",
-    sub: "Earn XP, keep the streak, level up.",
+    sub: "Earn XP, keep your streak alive, and level up.",
   },
 };
 
@@ -67,46 +67,44 @@ export default function App() {
   };
 
   const t = TITLES[view];
+  const chipBtn =
+    "flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-dusk shadow-soft transition hover:border-line2 hover:text-night active:scale-95";
 
   return (
     <div className="app-shell flex min-h-screen">
       <Sidebar view={view} setView={setView} />
 
-      <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-        <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
+      <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-9">
           {/* Mobile brand */}
-          <div className="mb-4 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neon-green text-ink">
+          <div className="mb-5 flex items-center gap-2 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-white shadow-brand">
               <Sparkles size={16} />
             </div>
-            <span className="font-display text-base font-bold text-white">StudyQuest</span>
+            <span className="font-display text-base font-bold text-night">StudyQuest</span>
           </div>
 
           {/* Header */}
           <header className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-white/40">
+              <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
                 {t.kicker}
-                <span className="text-white/20">·</span>
-                <span>level {levelFromXp(data.game.xp)}</span>
+                <span className="text-line2">·</span>
+                <span className="text-haze">Level {levelFromXp(data.game.xp)}</span>
               </p>
-              <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-white sm:text-[2.6rem]">
+              <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-night sm:text-[2.7rem]">
                 {t.heading}
               </h1>
-              <p className="mt-2 max-w-md text-[15px] text-white/55">{t.sub}</p>
+              <p className="mt-2 max-w-md text-[15px] text-dusk">{t.sub}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={exportData}
-                title="Download a backup of all your data"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
-              >
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={exportData} title="Download a backup of all your data" className={chipBtn}>
                 <Download size={12} /> Export
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 title="Restore from a backup file"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
+                className={chipBtn}
               >
                 <Upload size={12} /> Import
               </button>
@@ -117,24 +115,12 @@ export default function App() {
                 onChange={handleImportFile}
                 className="hidden"
               />
-              <button
-                onClick={resetAll}
-                title="Reset to demo data"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
-              >
+              <button onClick={resetAll} title="Reset to demo data" className={chipBtn}>
                 <RotateCcw size={12} /> Reset
               </button>
-              <span
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${
-                  isSupabaseConfigured
-                    ? "border-neon-green/40 bg-neon-green/10 text-neon-green"
-                    : "border-neon-cyan/30 bg-neon-cyan/[0.07] text-neon-cyan/90"
-                }`}
-              >
+              <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-dusk shadow-soft">
                 <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    isSupabaseConfigured ? "bg-neon-green" : "bg-neon-cyan"
-                  } animate-glowpulse`}
+                  className={`h-1.5 w-1.5 rounded-full ${isSupabaseConfigured ? "bg-grass" : "bg-warm"}`}
                 />
                 {isSupabaseConfigured ? "Supabase connected" : "Local storage"}
               </span>
@@ -143,20 +129,25 @@ export default function App() {
 
           <div className="mt-8">
             {view === "dashboard" && (
-              <DashboardView
-                onAdd={openAdd}
-                onEdit={openEdit}
-                onImport={() => setImportOpen(true)}
-              />
+              <DashboardView onAdd={openAdd} onEdit={openEdit} onImport={() => setImportOpen(true)} />
             )}
             {view === "schedule" && <ScheduleView />}
             {view === "modules" && <ModulesView />}
-            {view === "gacha" && <GachaView />}
+            {view === "gacha" && (
+              /* The Summon view is a deliberate dark "chamber" within the bright app. */
+              <div className="summon-stage overflow-hidden rounded-[1.75rem] p-4 shadow-pop ring-1 ring-brand/20 sm:p-6">
+                <GachaView />
+              </div>
+            )}
             {view === "achievements" && <AchievementsView />}
           </div>
 
-          <footer className="mt-10 border-t border-edge pt-4 font-mono text-xs text-white/30">
-            $ studyquest --semester 2026-S2 · {data.assignments.filter((a) => !a.completed).length} open quests · auto-organised
+          <footer className="mt-12 border-t border-line pt-5 text-xs text-haze">
+            StudyQuest · Semester 2026-S2 ·{" "}
+            <span className="font-medium text-dusk">
+              {data.assignments.filter((a) => !a.completed).length} open quests
+            </span>{" "}
+            · built for RP students
           </footer>
         </div>
       </main>

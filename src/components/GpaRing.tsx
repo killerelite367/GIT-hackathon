@@ -23,14 +23,14 @@ export default function GpaRing({ gpa, max = 4 }: Props) {
   return (
     <div className="relative h-44 w-44">
       <svg className="h-44 w-44 -rotate-90" viewBox="0 0 128 128">
-        <circle cx="64" cy="64" r={r} fill="none" stroke="#2c2820" strokeWidth="9" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="#eae7f4" strokeWidth="10" />
         <circle
           cx="64"
           cy="64"
           r={r}
           fill="none"
-          stroke="#e0a84d"
-          strokeWidth="9"
+          stroke="#6d49ff"
+          strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={offset}
@@ -38,10 +38,10 @@ export default function GpaRing({ gpa, max = 4 }: Props) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-mono text-[2rem] font-bold tabular leading-none text-white">
+        <span className="font-display text-[2rem] font-bold tabular leading-none text-night">
           {shown.toFixed(2)}
         </span>
-        <span className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/50">
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-haze">
           GPA / {max.toFixed(1)}
         </span>
       </div>

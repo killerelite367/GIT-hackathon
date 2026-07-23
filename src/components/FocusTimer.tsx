@@ -98,7 +98,7 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
 
   if (assignments.length === 0) {
     return (
-      <div className="rounded-2xl border border-edge bg-panel/70 p-5 text-center text-sm text-white/40 shadow-card">
+      <div className="rounded-2xl border border-line bg-surface p-5 text-center text-sm font-medium text-haze shadow-soft">
         <TimerIcon className="mx-auto mb-2" size={20} />
         No open quests to focus on — add one to start a session.
       </div>
@@ -106,18 +106,18 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
   }
 
   return (
-    <div className="rounded-2xl border border-edge bg-panel/80 p-5 shadow-card">
-      <h3 className="flex items-center gap-2 font-display text-lg font-semibold tracking-tightish text-white">
-        <TimerIcon size={18} className="text-neon-green" /> Focus session
+    <div className="rounded-2xl border border-line bg-surface p-5 shadow-soft">
+      <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tightish text-night">
+        <TimerIcon size={18} className="text-brand" /> Focus session
       </h3>
 
-      <label className="mt-3 block text-[11px] uppercase tracking-wider text-white/45">
+      <label className="mt-3 block text-[11px] font-semibold uppercase tracking-wide text-haze">
         Studying
         <select
           value={assignmentId}
           onChange={(e) => setAssignmentId(e.target.value)}
           disabled={running}
-          className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50 disabled:opacity-60"
+          className="mt-1 w-full rounded-xl border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night outline-none focus:border-brand/50 disabled:opacity-60"
         >
           {assignments.map((a) => (
             <option key={a.id} value={a.id}>
@@ -130,21 +130,21 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
       <div className="mt-4 flex items-center justify-center">
         <div className="relative flex h-32 w-32 items-center justify-center">
           <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="44" fill="none" stroke="#2c2820" strokeWidth="7" />
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#eae7f4" strokeWidth="8" />
             <circle
               cx="50"
               cy="50"
               r="44"
               fill="none"
-              stroke="#e0a84d"
-              strokeWidth="7"
+              stroke="#6d49ff"
+              strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 44}
               strokeDashoffset={2 * Math.PI * 44 * (1 - pct / 100)}
               style={{ transition: "stroke-dashoffset 1s linear" }}
             />
           </svg>
-          <span className="tabular absolute font-mono text-2xl font-bold text-white">
+          <span className="tabular absolute font-mono text-2xl font-bold text-night">
             {formatClock(remaining)}
           </span>
         </div>
@@ -156,10 +156,10 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
             key={m}
             onClick={() => setPresetMinutes(m)}
             disabled={running}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition disabled:opacity-40 ${
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition disabled:opacity-40 ${
               presetMinutes === m
-                ? "border-neon-green/50 bg-neon-green/10 text-neon-green"
-                : "border-edge text-white/50 hover:text-white"
+                ? "border-brand/40 bg-brand-soft text-brand-deep"
+                : "border-line text-dusk hover:text-night"
             }`}
           >
             {m}m
@@ -172,14 +172,14 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
           <button
             onClick={() => setRunning(true)}
             disabled={!selected}
-            className="flex items-center gap-1.5 rounded-lg border border-neon-green/50 bg-neon-green/10 px-4 py-2 text-sm font-medium text-neon-green transition hover:bg-neon-green/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white shadow-brand transition hover:bg-brand-deep active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
           >
             <Play size={14} /> Start
           </button>
         ) : (
           <button
             onClick={handleStop}
-            className="flex items-center gap-1.5 rounded-lg border border-edge2 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl border border-line2 bg-surface2 px-4 py-2 text-sm font-semibold text-night transition hover:bg-line active:scale-95"
           >
             <Pause size={14} /> End & log
           </button>
@@ -187,13 +187,13 @@ export default function FocusTimer({ assignments }: { assignments: Assignment[] 
         <button
           onClick={handleReset}
           title="Reset timer"
-          className="flex items-center justify-center rounded-lg border border-edge px-3 py-2 text-white/50 transition hover:text-white active:scale-95"
+          className="flex items-center justify-center rounded-xl border border-line px-3 py-2 text-haze transition hover:text-night active:scale-95"
         >
           <RotateCcw size={14} />
         </button>
       </div>
 
-      <p className="mt-3 text-center text-[11px] text-white/40">
+      <p className="mt-3 text-center text-[11px] font-medium text-haze">
         A full {presetMinutes}m session earns ~{previewXp} XP · {previewCrystals} 💎
       </p>
     </div>

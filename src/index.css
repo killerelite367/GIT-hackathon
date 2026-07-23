@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  --bg: #0c0b09;
+  color-scheme: light;
+  --bg: #f3f2fb;
 }
 
 * {
@@ -21,16 +21,16 @@ body {
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.005em;
-  color: #e9e9f2;
+  color: #1c1830;
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 /*
- * Ambient depth: a single, quiet warm glow low in the frame. Deliberately
- * restrained — no rainbow radials, no decorative grid overlay. The surface
- * should read as considered, not generated.
+ * Ambient warmth: two soft, wide colour washes high in the frame — a violet
+ * and a honey glow — so the bright canvas feels alive rather than flat white.
+ * Deliberately faint; the cards do the talking.
  */
 .app-shell {
   position: relative;
@@ -42,13 +42,14 @@ body {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(1100px 560px at 50% -12%, rgba(224, 168, 77, 0.05), transparent 60%),
+    radial-gradient(1000px 520px at 92% -12%, rgba(109, 73, 255, 0.08), transparent 60%),
+    radial-gradient(920px 500px at 0% -8%, rgba(243, 154, 26, 0.06), transparent 58%),
     var(--bg);
 }
 
 ::selection {
-  background: rgba(224, 168, 77, 0.28);
-  color: #fff;
+  background: rgba(109, 73, 255, 0.18);
+  color: #1c1830;
 }
 
 ::-webkit-scrollbar {
@@ -56,13 +57,13 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3a;
+  background: #d6d0e8;
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a4e;
+  background: #c3bcda;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
@@ -77,9 +78,26 @@ body {
 
 /* Accessible keyboard focus ring, consistent across the theme */
 :focus-visible {
-  outline: 2px solid #e0a84d;
+  outline: 2px solid #6d49ff;
   outline-offset: 2px;
   border-radius: 8px;
+}
+
+/*
+ * The Summon view is a deliberate dark "chamber" embedded in the bright app.
+ * This stage restores a dark backdrop + light-on-dark scrollbar so Jayden's
+ * gacha spectacle reads as intentional immersion, not a broken section.
+ */
+.summon-stage {
+  color-scheme: dark;
+  color: #e9e9f2;
+  background:
+    radial-gradient(1100px 620px at 50% -10%, rgba(169, 139, 255, 0.14), transparent 60%),
+    #0d0d16;
+}
+.summon-stage ::selection {
+  background: rgba(169, 139, 255, 0.32);
+  color: #fff;
 }
 
 /* ── Gacha summon animations ─────────────────────────────── */

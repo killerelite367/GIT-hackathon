@@ -22,19 +22,18 @@ export default function ScheduleView() {
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-xl font-semibold tracking-tightish text-white">
+          <h2 className="font-display text-xl font-bold tracking-tightish text-night">
             Auto-scheduled study plan
           </h2>
-          <p className="text-sm text-white/50">
-            Effort spread backward from each deadline · max {DAILY_CAP}h per task
-            per day
+          <p className="text-sm text-dusk">
+            Effort spread backward from each deadline · max {DAILY_CAP}h per task per day
           </p>
         </div>
         <button
           onClick={regenerateSchedule}
-          className="flex items-center gap-2 rounded-lg border border-edge px-3 py-2 text-sm font-medium text-white/70 transition hover:border-edge2 hover:text-white"
+          className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-medium text-dusk shadow-soft transition hover:border-line2 hover:text-night active:scale-95"
         >
           <RefreshCw size={15} /> Regenerate
         </button>
@@ -43,10 +42,10 @@ export default function ScheduleView() {
       <SemesterTimeline assignments={assignments} blocks={blocks} />
 
       {days.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-edge bg-panel2/30 p-10 text-center text-white/50">
-          <CalendarDays className="mx-auto mb-3 text-white/30" size={28} />
-          No study blocks yet. Add an assignment or import a syllabus and a plan
-          appears here automatically.
+        <div className="rounded-2xl border border-dashed border-line2 bg-surface/60 p-10 text-center text-dusk">
+          <CalendarDays className="mx-auto mb-3 text-haze" size={28} />
+          No study blocks yet. Add an assignment or import a syllabus and a plan appears here
+          automatically.
         </div>
       ) : (
         <div className="space-y-4">
@@ -56,25 +55,20 @@ export default function ScheduleView() {
             const isToday = day === todayISO();
             const d = daysUntil(day);
             return (
-              <div
-                key={day}
-                className="rounded-2xl border border-edge bg-panel/70 p-4"
-              >
+              <div key={day} className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 font-display font-semibold text-white">
+                  <h3 className="flex items-center gap-2 font-display font-bold text-night">
                     {shortDate(day)}
                     {isToday && (
-                      <span className="rounded-full border border-neon-green/40 bg-neon-green/10 px-2 py-0.5 text-[10px] uppercase text-neon-green">
+                      <span className="rounded-full border border-brand/30 bg-brand-soft px-2 py-0.5 text-[10px] font-semibold uppercase text-brand-deep">
                         today
                       </span>
                     )}
                     {!isToday && d > 0 && (
-                      <span className="text-xs font-normal text-white/40">
-                        in {d}d
-                      </span>
+                      <span className="text-xs font-medium text-haze">in {d}d</span>
                     )}
                   </h3>
-                  <span className="font-mono text-xs text-white/40">
+                  <span className="font-mono text-xs font-medium text-haze">
                     {Math.round(total * 10) / 10}h planned
                   </span>
                 </div>
@@ -83,34 +77,32 @@ export default function ScheduleView() {
                     <button
                       key={b.id}
                       onClick={() => toggleBlockDone(b.id)}
-                      className={`flex w-full items-center gap-3 rounded-lg border p-2.5 text-left transition ${
+                      className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition ${
                         b.done
-                          ? "border-neon-green/30 bg-neon-green/5 opacity-60"
-                          : "border-edge bg-panel2/50 hover:border-white/20"
+                          ? "border-grass/30 bg-grass-soft/50 opacity-70"
+                          : "border-line bg-surface2 hover:border-line2"
                       }`}
                     >
                       <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                          b.done
-                            ? "border-neon-green bg-neon-green/20 text-neon-green"
-                            : "border-white/30"
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                          b.done ? "border-grass bg-grass text-white" : "border-line2"
                         }`}
                       >
                         {b.done && <Check size={12} />}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span
-                          className={`block truncate text-sm ${
-                            b.done ? "text-white/50 line-through" : "text-white"
+                          className={`block truncate text-sm font-medium ${
+                            b.done ? "text-haze line-through" : "text-night"
                           }`}
                         >
                           {titleOf(b.assignmentId)}
                         </span>
-                        <span className="font-mono text-[10px] text-white/40">
+                        <span className="font-mono text-[10px] text-haze">
                           {moduleOf(b.assignmentId)}
                         </span>
                       </span>
-                      <span className="shrink-0 font-mono text-xs text-white/60">
+                      <span className="shrink-0 font-mono text-xs font-semibold text-brand-deep">
                         {b.hours}h
                       </span>
                     </button>

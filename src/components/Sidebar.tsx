@@ -29,12 +29,12 @@ export default function Sidebar({
   const lp = levelProgress(data.game.xp);
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-edge bg-panel/40 p-4 lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-surface/70 p-4 backdrop-blur-sm lg:flex">
       <div className="flex items-center gap-2.5 px-2 py-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neon-green text-ink">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-brand">
           <Sparkles size={18} />
         </div>
-        <span className="font-display text-lg font-bold tracking-tightish text-white">
+        <span className="font-display text-lg font-bold tracking-tightish text-night">
           StudyQuest
         </span>
       </div>
@@ -47,40 +47,42 @@ export default function Sidebar({
               key={v}
               onClick={() => setView(v)}
               aria-current={active ? "page" : undefined}
-              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition duration-150 ${
+              className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition duration-150 ${
                 active
-                  ? "bg-neon-green/10 text-neon-green"
-                  : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+                  ? "bg-brand-soft text-brand-deep"
+                  : "text-dusk hover:bg-surface2 hover:text-night"
               }`}
             >
               <Icon
                 size={18}
-                className={active ? "" : "text-white/40 group-hover:text-white/80"}
+                className={active ? "text-brand" : "text-haze group-hover:text-dusk"}
               />
               {label}
-              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-neon-green" />}
+              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" />}
             </button>
           );
         })}
       </nav>
 
       {/* Level widget */}
-      <div className="mt-6 rounded-xl border border-edge bg-panel2/60 p-3">
+      <div className="mt-6 rounded-2xl border border-line bg-surface2 p-3.5 shadow-soft">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-neon-yellow">LVL {lp.level}</span>
-          <span className="text-white/40">{lp.toNext} XP to next</span>
+          <span className="font-mono font-bold text-brand-deep">LVL {lp.level}</span>
+          <span className="text-haze">{lp.toNext} XP to next</span>
         </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-line">
           <div
-            className="h-full rounded-full bg-neon-green transition-all"
+            className="h-full rounded-full bg-brand transition-all"
             style={{ width: `${lp.pct}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-auto rounded-xl border border-edge bg-panel2/60 p-3 text-xs text-white/50">
-        <p className="font-mono text-neon-green">$ tip</p>
-        <p className="mt-1">
+      <div className="mt-auto rounded-2xl border border-warm/30 bg-warm-soft p-3.5 text-xs text-warm-deep">
+        <p className="flex items-center gap-1.5 font-semibold">
+          <Sparkles size={12} /> Tip
+        </p>
+        <p className="mt-1 leading-relaxed text-dusk">
           Paste a syllabus and StudyQuest auto-schedules every deadline for you.
         </p>
       </div>
@@ -97,7 +99,7 @@ export function BottomNav({
   setView: (v: View) => void;
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-edge bg-panel/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-8px_rgba(80,70,130,0.2)] backdrop-blur-lg lg:hidden">
       {NAV.map(({ icon: Icon, label, view: v }) => {
         const active = view === v;
         return (
@@ -105,12 +107,12 @@ export function BottomNav({
             key={v}
             onClick={() => setView(v)}
             aria-current={active ? "page" : undefined}
-            className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition ${
-              active ? "text-neon-green" : "text-white/40"
+            className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition ${
+              active ? "text-brand" : "text-haze"
             }`}
           >
             {active && (
-              <span className="absolute top-0 h-0.5 w-8 rounded-full bg-neon-green shadow-[0_0_8px_0_rgba(124,255,107,0.8)]" />
+              <span className="absolute top-0 h-1 w-9 rounded-full bg-brand" />
             )}
             <Icon size={20} />
             {label}

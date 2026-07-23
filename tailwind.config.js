@@ -12,38 +12,58 @@ export default {
         tighter2: "-0.03em",
       },
       colors: {
-        // Warm-neutral dark base (one consistent hue family, not cool blue-black).
-        ink: "#0c0b09",
+        /*
+         * ── Main app: bright & friendly light theme ──────────────
+         * A warm-but-cool near-white canvas with white cards, one confident
+         * violet brand color, and friendly semantic hues. High-contrast ink
+         * for text. This is what the whole app (except the Summon view) uses.
+         */
+        canvas: "#f3f2fb", // body background — light, faint violet-grey (not cream)
+        surface: "#ffffff", // cards
+        surface2: "#f5f3fd", // insets / inputs
+        line: "#e7e3f2", // hairline borders
+        line2: "#d6d0e8", // stronger borders / hover
+        night: "#1c1830", // primary text (violet-black)
+        dusk: "#4f4866", // secondary text
+        haze: "#5e5678", // tertiary text / muted labels (AA on the light canvas)
+        brand: { DEFAULT: "#6d49ff", soft: "#ece7ff", deep: "#4a2fd0" }, // violet
+        warm: { DEFAULT: "#f39a1a", soft: "#fdeecd", deep: "#b5730b" }, // honey — XP / rewards / streak
+        grass: { DEFAULT: "#17a06a", soft: "#d7f1e5", deep: "#0d8256" }, // success / done
+        berry: { DEFAULT: "#e5476a", soft: "#fbdde4", deep: "#c72d50" }, // danger / high priority / overdue
+        sky: { DEFAULT: "#2f8fe0", soft: "#dcecfb", deep: "#1f6fb8" }, // info / low priority
+
+        /*
+         * ── Summon (gacha) sub-brand: dark immersive stage ───────
+         * Left intact for the Study Spirits view, which is a deliberate dark
+         * "chamber" within the bright app. Do not use these in the main app.
+         */
+        ink: "#0d0d16",
         panel: "#17150f",
         panel2: "#1c1a13",
         panel3: "#232019",
         edge: "#2c2820",
         edge2: "#3a352a",
-        /*
-         * A single refined accent (warm amber/gold) carries every primary
-         * action, focus ring, and "brand" moment across the main app chrome.
-         * The remaining hues are desaturated and used ONLY for semantic
-         * meaning (status/priority), never as decoration. `neon.purple` is
-         * reserved for the Study Spirits gacha sub-brand and should not leak
-         * into the main app.
-         */
         neon: {
-          green: "#e0a84d", // primary accent
-          cyan: "#8fb0c9", // muted steel-blue — info / low priority
-          pink: "#d97b6c", // muted coral — danger / high priority / overdue
-          yellow: "#c99a5a", // muted bronze — warning / medium priority (gacha epic)
-          purple: "#a794d1", // muted violet — gacha sub-brand only
+          green: "#7cff6b",
+          cyan: "#5fd0ff",
+          pink: "#ff5fa2",
+          yellow: "#ffe14d",
+          purple: "#a98bff",
         },
       },
       boxShadow: {
-        // Layered elevation — a defined near-shadow, never a soft ghost halo.
+        // ── Light-theme depth: soft, violet-tinted, friendly ──
+        soft: "0 1px 2px rgba(28,24,48,0.05), 0 2px 8px -3px rgba(80,70,130,0.10)",
+        raised: "0 1px 2px rgba(28,24,48,0.05), 0 8px 22px -8px rgba(80,70,130,0.16)",
+        pop: "0 2px 6px rgba(28,24,48,0.06), 0 18px 40px -12px rgba(80,70,130,0.26)",
+        brand: "0 8px 20px -6px rgba(109,73,255,0.45)",
+        warm: "0 8px 20px -6px rgba(243,154,26,0.45)",
+        // ── Dark gacha tokens (kept for the Summon view) ──
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7)",
         lift: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 16px 40px -16px rgba(0,0,0,0.85)",
-        // Reserved for genuinely earned moments (level-up, legendary summon),
-        // not default hover states — kept subtle even there.
-        glow: "0 0 0 1px rgba(224,168,77,0.2), 0 0 14px -6px rgba(224,168,77,0.3)",
-        "glow-cyan": "0 0 0 1px rgba(143,176,201,0.18), 0 0 14px -6px rgba(143,176,201,0.28)",
-        "glow-purple": "0 0 0 1px rgba(167,148,209,0.2), 0 0 14px -6px rgba(167,148,209,0.32)",
+        glow: "0 0 0 1px rgba(255,225,77,0.25), 0 0 24px -6px rgba(255,225,77,0.4)",
+        "glow-cyan": "0 0 0 1px rgba(95,208,255,0.25), 0 0 24px -6px rgba(95,208,255,0.4)",
+        "glow-purple": "0 0 0 1px rgba(169,139,255,0.25), 0 0 24px -6px rgba(169,139,255,0.4)",
       },
       keyframes: {
         floaty: {

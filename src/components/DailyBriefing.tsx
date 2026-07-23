@@ -43,37 +43,35 @@ export default function DailyBriefing() {
   const supported = notificationsSupported();
   const denied = notificationPermission() === "denied";
 
+  const chip = briefing.allClear
+    ? "bg-grass-soft text-grass-deep"
+    : briefing.overdue.length > 0
+    ? "bg-berry-soft text-berry-deep"
+    : "bg-brand-soft text-brand";
+
   return (
     <section
-      className={`rounded-2xl border p-5 shadow-card transition ${
-        briefing.overdue.length > 0 ? "border-neon-pink/25 bg-panel/70" : "border-edge bg-panel/70"
+      className={`rounded-2xl border p-5 shadow-soft ${
+        briefing.overdue.length > 0 ? "border-berry/30 bg-berry-soft/40" : "border-line bg-surface"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span
-            className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-              briefing.allClear
-                ? "bg-neon-green/10 text-neon-green"
-                : briefing.overdue.length > 0
-                ? "bg-neon-pink/10 text-neon-pink"
-                : "bg-white/[0.06] text-white/60"
-            }`}
-          >
-            {briefing.allClear ? <CheckCircle2 size={18} /> : <AlarmClock size={18} />}
+          <span className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${chip}`}>
+            {briefing.allClear ? <CheckCircle2 size={20} /> : <AlarmClock size={20} />}
           </span>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/45">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-haze">
               Today's briefing
             </p>
-            <p className="mt-1 text-[15px] font-medium text-white">{headline}</p>
+            <p className="mt-1 text-[15px] font-semibold text-night">{headline}</p>
             {briefing.todayHours > 0 && (
-              <p className="mt-0.5 text-xs text-white/50">
+              <p className="mt-0.5 text-xs font-medium text-dusk">
                 {briefing.todayHours}h of study planned for today
               </p>
             )}
             {briefing.burnoutWarning && (
-              <p className="mt-0.5 text-xs text-neon-pink/80">⚠ {briefing.burnoutWarning}</p>
+              <p className="mt-0.5 text-xs font-medium text-berry-deep">⚠ {briefing.burnoutWarning}</p>
             )}
           </div>
         </div>
@@ -86,10 +84,10 @@ export default function DailyBriefing() {
                 ? "Turn off daily reminders"
                 : "Get a browser reminder once a day when something needs attention"
             }
-            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition active:scale-95 ${
               game.remindersEnabled
-                ? "border-neon-green/40 bg-neon-green/10 text-neon-green"
-                : "border-edge text-white/50 hover:border-edge2 hover:text-white"
+                ? "border-brand/40 bg-brand-soft text-brand-deep"
+                : "border-line bg-surface text-dusk hover:border-line2 hover:text-night"
             }`}
           >
             {game.remindersEnabled ? <Bell size={13} /> : <BellOff size={13} />}
@@ -99,17 +97,17 @@ export default function DailyBriefing() {
       </div>
 
       {(briefing.overdue.length > 0 || briefing.dueToday.length > 0) && (
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-edge pt-3">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-line pt-3">
           {[...briefing.overdue, ...briefing.dueToday].slice(0, 4).map((a) => (
             <span
               key={a.id}
-              className={`flex items-center gap-1.5 text-[11px] ${
-                daysUntilOverdue(a.dueDate) ? "text-neon-pink/90" : "text-white/55"
+              className={`flex items-center gap-1.5 text-[11px] font-medium ${
+                daysUntilOverdue(a.dueDate) ? "text-berry-deep" : "text-dusk"
               }`}
             >
               <span
-                className={`h-1 w-1 rounded-full ${
-                  daysUntilOverdue(a.dueDate) ? "bg-neon-pink" : "bg-white/40"
+                className={`h-1.5 w-1.5 rounded-full ${
+                  daysUntilOverdue(a.dueDate) ? "bg-berry" : "bg-warm"
                 }`}
               />
               {a.title} · {relativeDue(a.dueDate)}

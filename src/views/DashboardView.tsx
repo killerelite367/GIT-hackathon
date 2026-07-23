@@ -38,7 +38,7 @@ export default function DashboardView({
   const gpaCU = useCountUp(gpa, 900, 2);
   const streakCU = Math.round(useCountUp(game.streakDays, 500));
   const weekCU = Math.round(useCountUp(weekPct));
-  const gpaLetter = modules.some((m) => m.grade != null)
+  const gpaLabel = modules.some((m) => m.grade != null)
     ? `${modules.filter((m) => m.grade != null).length} modules graded`
     : "No grades yet";
 
@@ -52,43 +52,39 @@ export default function DashboardView({
       <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard
           index={0}
+          tone="warm"
           label="Streak"
           value={`${streakCU} ${streakCU === 1 ? "day" : "days"}`}
           sub={`Personal best: ${game.bestStreak}`}
           icon={<Flame size={18} />}
-          accent="text-neon-green"
           progress={game.bestStreak ? (game.streakDays / game.bestStreak) * 100 : 0}
-          barClass="bg-neon-green"
         />
         <StatCard
           index={1}
+          tone="brand"
           label="Level"
           value={`${xpCU.toLocaleString()} XP`}
           sub={`Level ${lp.level} · ${lp.toNext} to next`}
           icon={<Zap size={18} />}
-          accent="text-neon-green"
           progress={lp.pct}
-          barClass="bg-neon-green"
         />
         <StatCard
           index={2}
+          tone="grass"
           label="Completed"
           value={`${weekCU}%`}
           sub={`${weekDone} of ${assignments.length} quests done`}
           icon={<Target size={18} />}
-          accent="text-neon-green"
           progress={weekPct}
-          barClass="bg-neon-green"
         />
         <StatCard
           index={3}
+          tone="sky"
           label="GPA"
           value={gpaCU.toFixed(2)}
-          sub={gpaLetter}
+          sub={gpaLabel}
           icon={<GraduationCap size={18} />}
-          accent="text-neon-green"
           progress={(gpa / 4) * 100}
-          barClass="bg-neon-green"
         />
       </section>
 
@@ -96,31 +92,31 @@ export default function DashboardView({
         {/* Upcoming quests */}
         <section className="lg:col-span-2">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-semibold tracking-tightish text-white">
+            <h2 className="font-display text-lg font-bold tracking-tightish text-night">
               Upcoming quests
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={onImport}
-                className="flex items-center gap-1.5 rounded-lg border border-edge px-3 py-1.5 text-xs text-white/70 transition hover:border-edge2 hover:text-white active:scale-95"
+                className="flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-1.5 text-xs font-medium text-dusk shadow-soft transition hover:border-line2 hover:text-night active:scale-95"
               >
                 <Wand2 size={14} /> Import syllabus
               </button>
               <button
                 onClick={onAdd}
-                className="flex items-center gap-1.5 rounded-lg border border-neon-green/40 bg-neon-green/10 px-3 py-1.5 text-xs font-medium text-neon-green transition hover:bg-neon-green/20 active:scale-95"
+                className="flex items-center gap-1.5 rounded-xl bg-brand px-3 py-1.5 text-xs font-semibold text-white shadow-brand transition hover:bg-brand-deep active:scale-95"
               >
-                <Plus size={14} /> Add
+                <Plus size={14} /> Add quest
               </button>
             </div>
           </div>
 
           {open.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-edge bg-panel2/30 p-8 text-center">
-              <p className="text-white/60">No open quests. You're all caught up.</p>
+            <div className="rounded-2xl border border-dashed border-line2 bg-surface/60 p-8 text-center">
+              <p className="font-medium text-dusk">No open quests. You're all caught up! 🎉</p>
               <button
                 onClick={onImport}
-                className="mt-3 rounded-lg border border-edge px-3 py-1.5 text-xs text-white/70 hover:text-white"
+                className="mt-3 rounded-xl bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-brand transition hover:bg-brand-deep active:scale-95"
               >
                 Import a syllabus to plan ahead
               </button>
@@ -135,7 +131,7 @@ export default function DashboardView({
 
           {done.length > 0 && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm text-white/40 hover:text-white/70">
+              <summary className="cursor-pointer text-sm font-medium text-haze transition hover:text-dusk">
                 {done.length} completed
               </summary>
               <div className="mt-3 space-y-3">
@@ -149,26 +145,24 @@ export default function DashboardView({
 
         {/* Right column */}
         <section className="space-y-6">
-          <div className="flex flex-col items-center rounded-2xl border border-edge bg-panel/80 p-6 shadow-card">
-            <h3 className="self-start font-display text-lg font-semibold tracking-tightish text-white">
+          <div className="flex flex-col items-center rounded-2xl border border-line bg-surface p-6 shadow-soft">
+            <h3 className="self-start font-display text-lg font-bold tracking-tightish text-night">
               Academic progress
             </h3>
             <div className="my-5">
               <GpaRing gpa={gpa} />
             </div>
-            <div className="w-full space-y-1">
+            <div className="w-full space-y-0.5">
               {modules.map((m) => (
                 <div
                   key={m.code}
-                  className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm transition hover:bg-white/5"
+                  className="flex items-center justify-between rounded-xl px-2.5 py-2 text-sm transition hover:bg-surface2"
                 >
-                  <span className="flex items-center gap-2 text-white/70">
-                    <span className="font-mono text-[11px] text-white/40">{m.code}</span>
+                  <span className="flex items-center gap-2 text-dusk">
+                    <span className="font-mono text-[11px] font-medium text-haze">{m.code}</span>
                     {m.name}
                   </span>
-                  <span className="font-mono font-semibold tabular text-white">
-                    {m.grade ?? "—"}
-                  </span>
+                  <span className="font-mono font-bold tabular text-night">{m.grade ?? "—"}</span>
                 </div>
               ))}
             </div>

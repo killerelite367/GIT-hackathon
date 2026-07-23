@@ -2,10 +2,15 @@ import { AlertTriangle, ShieldCheck } from "lucide-react";
 import type { Assignment } from "../types";
 import { analyzeLoad, burnoutAdvice } from "../lib/burnout";
 
-const levelStyle: Record<string, string> = {
-  overload: "border-neon-pink/40 bg-neon-pink/10 text-neon-pink",
-  busy: "border-neon-yellow/40 bg-neon-yellow/10 text-neon-yellow",
-  calm: "border-neon-green/30 bg-neon-green/5 text-neon-green",
+const levelBar: Record<string, string> = {
+  overload: "bg-berry",
+  busy: "bg-warm",
+  calm: "bg-grass",
+};
+const levelChip: Record<string, string> = {
+  overload: "border-berry/30 bg-berry-soft text-berry-deep",
+  busy: "border-warm/30 bg-warm-soft text-warm-deep",
+  calm: "border-grass/30 bg-grass-soft text-grass-deep",
 };
 
 export default function BurnoutRadar({ assignments }: { assignments: Assignment[] }) {
@@ -15,61 +20,55 @@ export default function BurnoutRadar({ assignments }: { assignments: Assignment[
 
   return (
     <div
-      className={`rounded-2xl border p-5 transition ${
-        worst ? "border-neon-pink/30 shadow-glow" : "border-edge"
-      } bg-panel/70`}
+      className={`rounded-2xl border bg-surface p-5 shadow-soft ${
+        worst ? "border-berry/30" : "border-line"
+      }`}
     >
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
+        <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tightish text-night">
           {worst ? (
-            <AlertTriangle size={18} className="animate-glowpulse text-neon-pink" />
+            <AlertTriangle size={18} className="text-berry" />
           ) : (
-            <ShieldCheck size={18} className="text-neon-green" />
+            <ShieldCheck size={18} className="text-grass" />
           )}
           Burnout radar
         </h3>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-white/30">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-haze">
           next 5 weeks
         </span>
       </div>
 
       {worst ? (
-        <p className="mt-2 text-sm text-neon-pink/90">{burnoutAdvice(worst)}</p>
+        <p className="mt-2 text-sm font-medium text-berry-deep">{burnoutAdvice(worst)}</p>
       ) : (
-        <p className="mt-2 text-sm text-white/50">
+        <p className="mt-2 text-sm font-medium text-dusk">
           Your workload is evenly spread — no overloaded weeks ahead. Nice.
         </p>
       )}
 
       {weeks.length === 0 ? (
-        <p className="mt-4 text-sm text-white/40">No upcoming deadlines to plot.</p>
+        <p className="mt-4 text-sm font-medium text-haze">No upcoming deadlines to plot.</p>
       ) : (
         <div className="mt-4 space-y-3">
           {weeks.map((w) => (
             <div key={w.week}>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/60">{w.label}</span>
-                <span className="font-mono text-white/55">
+                <span className="font-medium text-dusk">{w.label}</span>
+                <span className="font-mono text-haze">
                   {w.count} tasks · {w.totalWeight}% · {w.totalHours}h
                 </span>
               </div>
-              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/10">
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-line">
                 <div
-                  className={`h-full rounded-full ${
-                    w.level === "overload"
-                      ? "bg-neon-pink"
-                      : w.level === "busy"
-                      ? "bg-neon-yellow"
-                      : "bg-neon-green"
-                  }`}
+                  className={`h-full rounded-full ${levelBar[w.level]}`}
                   style={{ width: `${Math.min(100, (w.totalWeight / maxWeight) * 100)}%` }}
                 />
               </div>
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-1.5 flex flex-wrap gap-1">
                 {w.items.map((a) => (
                   <span
                     key={a.id}
-                    className={`rounded border px-1.5 py-0.5 text-[10px] ${levelStyle[w.level]}`}
+                    className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${levelChip[w.level]}`}
                   >
                     {a.title.length > 22 ? a.title.slice(0, 21) + "…" : a.title}
                   </span>
