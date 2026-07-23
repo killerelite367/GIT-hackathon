@@ -190,6 +190,36 @@ export function playTalk(text: string, rarity = "common") {
   }
 }
 
+// Voices load asynchronously in most browsers — warm them up once.
+let cachedVoices: SpeechSynthesisVoice[] = [];
+function loadVoices() {
+  try {
+    cachedVoices = window.speechSynthesis?.getVoices() ?? [];
+  } catch {
+    cachedVoices = [];
+  }
+}
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+/** Pick the best-sounding available English voice, preferring natural ones. */
+function pickVoice(deep: boolean): SpeechSynthesisVoice | undefined {
+  if (!cachedVoices.length) loadVoices();
+  const en = cachedVoices.filter((v) => /en(-|_|$)/i.test(v.lang));
+  const pool = en.length ? en : cachedVoices;
+  // Preference order: natural/premium voices first, then a sensible gendered pick.
+  const preferred = deep
+    ? [/daniel/i, /google uk english male/i, /alex/i, /male/i]
+    : [/samantha/i, /google us english/i, /google uk english female/i, /jenny/i, /aria/i, /female/i];
+  for (const re of preferred) {
+    const hit = pool.find((v) => re.test(v.name));
+    if (hit) return hit;
+  }
+  return pool[0];
+}
+
 /** Actually speak the catchphrase aloud via the browser's speech engine. */
 export function speak(text: string, rarity = "common") {
   if (muted) return;
@@ -198,15 +228,19 @@ export function speak(text: string, rarity = "common") {
     if (!synth) return;
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    // Cute + high for books; deep + slow growl for demon/secret.
-    if (rarity === "demon" || rarity === "secret") {
-      u.pitch = 0.2;
-      u.rate = 0.8;
+    const deep = rarity === "demon" || rarity === "secret";
+    const voice = pickVoice(deep);
+    if (voice) u.voice = voice;
+    // Deep + slow + menacing for demon/secret; warm + lively for the rest.
+    // Tuned to stay in a natural range so it doesn't sound like a chipmunk.
+    if (deep) {
+      u.pitch = 0.35;
+      u.rate = 0.82;
     } else {
-      u.pitch = 1.6;
-      u.rate = 1.05;
+      u.pitch = 1.15;
+      u.rate = 1.0;
     }
-    u.volume = 0.9;
+    u.volume = 1;
     synth.speak(u);
   } catch {
     // speech not available — the on-screen bubble still shows the words

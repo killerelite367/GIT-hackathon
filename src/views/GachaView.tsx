@@ -2,6 +2,7 @@ import { useState, useEffect, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
+import CrystalGem from "../components/CrystalGem";
 import {
   playCharge,
   playBurst,
@@ -73,17 +74,20 @@ export default function GachaView() {
   return (
     <>
       {/* ══ Summon hero ══════════════════════════════════════ */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 p-[1.5px]">
-        {/* animated gradient frame */}
-        <div className="gq-aurora absolute inset-0 opacity-60" />
-        <div className="relative rounded-3xl bg-panel/90 p-6 sm:p-8">
-          {/* rotating beams + sparkles */}
+      <section
+        className="relative overflow-hidden rounded-3xl border border-neon-purple/25 shadow-lift"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 50% -10%, rgba(169,139,255,0.16), transparent 60%), linear-gradient(180deg, #14141f, #0d0d16)",
+        }}
+      >
+        <div className="relative rounded-3xl p-6 sm:p-8">
+          {/* a few still sparkles for depth — no spinning background */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
-            <div className="gq-beams absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 opacity-30" />
             {SPARKLES.map((s, i) => (
               <span
                 key={i}
-                className="gq-twinkle absolute text-neon-yellow"
+                className="gq-twinkle absolute text-white/50"
                 style={{ left: s.x, top: s.y, fontSize: s.size, animationDelay: s.delay }}
               >
                 ✦
@@ -130,27 +134,24 @@ export default function GachaView() {
               <Sparkles size={13} /> summon circle
             </p>
 
-            {/* Central crystal orb */}
-            <div className="relative my-5 flex h-40 w-40 items-center justify-center">
+            {/* Central faceted crystal — real SVG gem, gently bobbing */}
+            <div className="relative my-5 flex h-44 w-44 items-center justify-center">
               <div
-                className="gq-orb-ring absolute inset-0 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(169,139,255,0.55), transparent 68%)" }}
+                className="gq-orb-ring absolute inset-4 rounded-full blur-md"
+                style={{ background: "radial-gradient(circle, rgba(95,208,255,0.4), transparent 70%)" }}
               />
-              <div
-                className="gq-orb-ring absolute inset-3 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(255,95,162,0.5), transparent 66%)", animationDelay: "0.6s" }}
-              />
-              <div className="gq-bob relative text-7xl drop-shadow-[0_0_25px_rgba(169,139,255,0.8)]">
-                💎
+              <div className="gq-bob relative">
+                <CrystalGem size={150} />
               </div>
             </div>
 
             {/* Balance */}
-            <div className="flex items-baseline gap-2">
-              <span className="tabular bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-purple bg-clip-text font-mono text-4xl font-extrabold text-transparent">
+            <div className="flex items-center gap-2">
+              <Gem size={22} className="text-neon-cyan" />
+              <span className="tabular bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text font-mono text-4xl font-extrabold text-transparent">
                 {game.crystals.toLocaleString()}
               </span>
-              <span className="text-sm font-semibold text-neon-pink">💎 crystals</span>
+              <span className="text-sm font-semibold text-white/50">crystals</span>
             </div>
             <p className="mt-2 max-w-sm text-sm text-white/60">
               Earned <span className="font-semibold text-white">only</span> by completing real study
@@ -302,67 +303,82 @@ function RarityRow({
   const meta = RARITY[rarity];
   const list = SPIRITS.filter((s) => s.rarity === rarity);
 
+  const ownedCount = list.filter((s) => (game.spirits[s.id] ?? 0) > 0).length;
+
   return (
-    <div className="mb-5">
-      <p className={`mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest ${meta.text}`}>
-        <span className="h-2 w-2 rounded-full" style={{ background: meta.glow }} />
+    <div className="mb-6">
+      <p className={`mb-2.5 flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-widest ${meta.text}`}>
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: meta.glow, boxShadow: `0 0 8px ${meta.glow}` }} />
         {meta.label}
+        <span className="text-white/30">· {ownedCount}/{list.length}</span>
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {list.map((s) => {
           const count = game.spirits[s.id] ?? 0;
           const isOwned = count > 0;
           const isEquipped = game.equippedSpirit === s.id;
+
+          if (!isOwned) {
+            return (
+              <div
+                key={s.id}
+                className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 text-center"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-2xl text-white/20">
+                  ?
+                </div>
+                <p className="mt-2 font-display text-sm font-bold text-white/30">Locked</p>
+                <p className="text-[11px] text-white/20">not yet summoned</p>
+              </div>
+            );
+          }
+
           return (
             <div
               key={s.id}
-              className={`gq-shine relative flex flex-col overflow-hidden rounded-2xl border p-3.5 transition ${
-                isOwned ? "hover:-translate-y-1" : "border-edge opacity-55"
-              }`}
-              style={
-                isOwned
-                  ? {
-                      background: RARITY_GRAD[rarity],
-                      borderColor: meta.glow,
-                      boxShadow: `0 0 26px -10px ${meta.glow}`,
-                    }
-                  : { background: "rgba(22,22,31,0.6)" }
-              }
+              className="group relative flex flex-col items-center overflow-hidden rounded-2xl border p-3.5 text-center transition hover:-translate-y-1"
+              style={{
+                background: RARITY_GRAD[rarity],
+                borderColor: meta.glow,
+                boxShadow: isEquipped
+                  ? `0 0 24px -6px ${meta.glow}, inset 0 0 0 1px ${meta.glow}`
+                  : `0 8px 24px -14px #000`,
+              }}
             >
               {count > 1 && (
-                <span className="tabular absolute right-2 top-2 z-10 rounded-full bg-black/50 px-1.5 py-0.5 font-mono text-[10px] text-white/80">
+                <span className="tabular absolute right-2 top-2 z-10 rounded-full bg-black/55 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white/90">
                   ×{count}
                 </span>
               )}
-              <div className="flex h-16 items-center justify-center">
-                {isOwned ? (
-                  <SpiritArt spirit={s} size={58} />
-                ) : (
-                  <span className="text-4xl grayscale">❔</span>
-                )}
+              {/* character on a glowing pedestal */}
+              <div className="relative flex h-20 w-full items-center justify-center">
+                <div
+                  className="absolute bottom-1 h-6 w-16 rounded-[50%] blur-md"
+                  style={{ background: meta.glow, opacity: 0.5 }}
+                />
+                <div className="relative transition-transform duration-300 group-hover:scale-110">
+                  <SpiritArt spirit={s} size={62} />
+                </div>
               </div>
-              <p className="mt-2 font-display text-sm font-bold text-white">
-                {isOwned ? s.name : "???"}
-              </p>
-              <p className={`text-[11px] font-semibold ${meta.text}`}>
-                {isOwned ? s.buff : "Locked"}
-              </p>
-              {isOwned && (
-                <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/50">{s.blurb}</p>
+              <p className="mt-1 font-display text-sm font-bold text-white">{s.name}</p>
+              <span
+                className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.text}`}
+                style={{ background: "rgba(0,0,0,0.3)" }}
+              >
+                {s.buff}
+              </span>
+              {isEquipped ? (
+                <span className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-neon-green/50 bg-neon-green/15 py-1 text-[11px] font-bold text-neon-green">
+                  <Check size={12} /> Equipped
+                </span>
+              ) : (
+                <button
+                  onClick={() => onEquip(s.id)}
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-white/5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-neon-green/50 hover:bg-neon-green/10 hover:text-neon-green"
+                >
+                  Equip
+                </button>
               )}
-              {isOwned &&
-                (isEquipped ? (
-                  <span className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-neon-green/50 bg-neon-green/15 py-1 text-[11px] font-bold text-neon-green">
-                    <Check size={12} /> Equipped
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => onEquip(s.id)}
-                    className="mt-2 rounded-lg border border-white/15 bg-white/5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-neon-green/50 hover:text-neon-green"
-                  >
-                    Equip
-                  </button>
-                ))}
             </div>
           );
         })}
