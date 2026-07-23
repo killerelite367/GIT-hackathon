@@ -277,6 +277,43 @@ body {
 }
 .sp-flyin { animation: sp-flyin 0.95s cubic-bezier(0.34, 1.4, 0.5, 1) both; }
 
+/* ── Hatching: the hero forms INSIDE the crystal and emerges ── */
+/* The crystal shell sits where the charge-orb was, cracks, then splits open. */
+@keyframes shell-crack {
+  0%   { transform: scale(1); }
+  60%  { transform: scale(1.08); }
+  80%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+.shell-crack { animation: shell-crack 0.5s ease-in-out both; }
+
+@keyframes shell-split-l {
+  0%   { transform: translateX(0) rotate(0); opacity: 1; }
+  100% { transform: translateX(-70px) rotate(-50deg); opacity: 0; }
+}
+@keyframes shell-split-r {
+  0%   { transform: translateX(0) rotate(0); opacity: 1; }
+  100% { transform: translateX(70px) rotate(50deg); opacity: 0; }
+}
+.shell-half-l { animation: shell-split-l 0.55s cubic-bezier(0.4, 0, 0.6, 1) 0.5s both; }
+.shell-half-r { animation: shell-split-r 0.55s cubic-bezier(0.4, 0, 0.6, 1) 0.5s both; }
+
+/* Light blooms out the instant the shell splits. */
+@keyframes hatch-flash {
+  0%, 100% { opacity: 0; transform: scale(0.6); }
+  8%       { opacity: 1; transform: scale(1.6); }
+}
+.hatch-flash { animation: hatch-flash 0.5s ease-out 0.5s both; }
+
+/* The hero rises up out of the crystal's glow, forming into shape. */
+@keyframes sp-hatch {
+  0%   { transform: translateY(20px) scale(0.5); opacity: 0; filter: blur(6px) brightness(2); }
+  40%  { opacity: 0.4; filter: blur(3px) brightness(1.6); }
+  70%  { transform: translateY(-6px) scale(1.08); opacity: 1; filter: blur(0) brightness(1.2); }
+  100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0) brightness(1); }
+}
+.sp-hatch { animation: sp-hatch 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.62s both; }
+
 /* Continuous gentle hover after landing (for the star reveal). */
 @keyframes sp-hover {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
@@ -304,7 +341,7 @@ body {
   88%  { transform: translateX(-78px) scaleX(1); }
   100% { transform: translateX(0) scaleX(1); }
 }
-.sp-stroll { animation: sp-stroll 5s ease-in-out 0.95s infinite; }
+.sp-stroll { animation: sp-stroll 5s ease-in-out 2.3s infinite; }
 
 /* A little celebratory hop mixed into the walk. */
 @keyframes sp-hop {
@@ -419,6 +456,50 @@ body {
   94%, 96%      { filter: invert(1); }
 }
 .gq-invert { animation: invert-flash 4s infinite; }
+
+/* ── Cookie-Run style impact → power-up flourish ─────────── */
+/* Right after landing, the hero staggers from a "hit"... */
+@keyframes sp-impact {
+  0%   { transform: translateX(0) scale(1); filter: brightness(1) saturate(1); }
+  14%  { transform: translateX(-14px) rotate(-6deg) scale(0.92); filter: brightness(1.4) saturate(0.4); }
+  28%  { transform: translateX(10px) rotate(4deg) scale(0.95); filter: brightness(1.2); }
+  40%  { transform: translateX(-6px) rotate(-2deg) scale(0.97); }
+  52%  { transform: translateX(0) scale(0.9); filter: brightness(0.85); }
+  /* ...then EXPLODES upward with power */
+  62%  { transform: translateX(0) scale(1.35) translateY(-14px); filter: brightness(2) saturate(1.6); }
+  80%  { transform: translateX(0) scale(1.08) translateY(-4px); filter: brightness(1.3); }
+  100% { transform: translateX(0) scale(1) translateY(0); filter: brightness(1); }
+}
+.sp-impact { animation: sp-impact 1s cubic-bezier(0.32, 0.1, 0.2, 1) 1.1s both; }
+
+/* Expanding power-up ring at the moment the hero bursts upward. */
+@keyframes power-ring {
+  0%   { transform: scale(0.15); opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+.power-ring { animation: power-ring 0.75s ease-out 1.72s both; }
+
+/* Vertical light-column burst under the power-up. */
+@keyframes power-beam {
+  0%, 100% { opacity: 0; }
+  10%, 30% { opacity: 0.9; }
+}
+.power-beam { animation: power-beam 0.55s ease-out 1.72s both; }
+
+/* ── Demon: real flame particles + a licking fire sheet ──── */
+@keyframes flame-lick {
+  0%   { transform: translateY(0) scaleY(0.9) scaleX(1); opacity: 0.75; }
+  50%  { transform: translateY(-14px) scaleY(1.15) scaleX(0.9); opacity: 1; }
+  100% { transform: translateY(-32px) scaleY(0.6) scaleX(1.1); opacity: 0; }
+}
+.gq-flame { animation: flame-lick 1.1s ease-in infinite; transform-origin: bottom center; }
+
+@keyframes fire-sheet-flicker {
+  0%, 100% { opacity: 0.55; height: 90px; }
+  50%      { opacity: 0.8; height: 120px; }
+}
+.gq-fire-sheet { animation: fire-sheet-flicker 0.5s ease-in-out infinite; }
 
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {

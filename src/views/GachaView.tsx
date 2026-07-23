@@ -62,6 +62,14 @@ export default function GachaView() {
     if (outcomes.length) setReveal(outcomes);
   }
 
+  /** Dev/testing only: preview a rarity's animation instantly — free, no
+   *  crystals spent, doesn't touch your collection or pity. */
+  function previewRarity(rarity: Rarity) {
+    const pool = SPIRITS.filter((s) => s.rarity === rarity);
+    const spirit = pool[Math.floor(Math.random() * pool.length)];
+    setReveal([{ spirit, isNew: false }]);
+  }
+
   return (
     <>
       {/* ══ Summon hero ══════════════════════════════════════ */}
@@ -197,6 +205,28 @@ export default function GachaView() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ══ Test panel — instantly preview any rarity's animation ══ */}
+      <section className="mt-4 rounded-2xl border border-dashed border-white/15 bg-panel2/40 p-4">
+        <p className="mb-2.5 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-white/40">
+          <Sparkles size={12} /> preview a rarity (free — no crystals, no collection change)
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {RARITY_ORDER.map((r) => {
+            const meta = RARITY[r];
+            return (
+              <button
+                key={r}
+                onClick={() => previewRarity(r)}
+                className={`rounded-full border bg-white/[0.04] px-3 py-1.5 text-xs font-semibold transition hover:scale-105 hover:bg-white/[0.09] ${meta.text}`}
+                style={{ borderColor: meta.glow }}
+              >
+                {RARITY_ICON[r]} {meta.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -346,7 +376,20 @@ type Phase = "charge" | "burst" | "awaken" | "cards";
 // Timing of the summon cinematic (ms).
 const CHARGE_MS = 1500;
 const BURST_MS = 480;
-const AWAKEN_MS = 5000;
+const AWAKEN_MS = 6800;
+
+/** Small icon shown next to the rarity label so tiers read at a glance. */
+const RARITY_ICON: Record<Rarity, string> = {
+  common: "◇",
+  rare: "◆",
+  epic: "🔷",
+  legendary: "🌟",
+  mythic: "🔮",
+  ultramythic: "☀️",
+  chromatic: "🌈",
+  demon: "🔥",
+  secret: "👁️",
+};
 
 /** Cinematic summon: the orb charges, shakes, then EXPLODES into the reveal —
  *  with synchronised sound. Tap to skip ahead. */
@@ -371,12 +414,16 @@ function RevealOverlay({
 
   const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "charge");
 
-  // Fire the reveal sound + (for grand pulls) the spoken catchphrase.
+  // Reveal chime fires immediately (ties to the explosion); the spoken
+  // catchphrase is held until the power-up lands and the bubble pops in,
+  // so the voice feels connected to the character, not the explosion.
   const speakBest = () => {
-    const line = voiceLine(best.spirit);
     playReveal(best.spirit.rarity);
-    speak(line, best.spirit.rarity);
-    playTalk(line, best.spirit.rarity);
+    const line = voiceLine(best.spirit);
+    window.setTimeout(() => {
+      speak(line, best.spirit.rarity);
+      playTalk(line, best.spirit.rarity);
+    }, 2150);
   };
 
   useEffect(() => {
@@ -537,30 +584,77 @@ function RevealOverlay({
             {bestMeta.label}
           </p>
 
-          {/* the character flies in, then walks (paces) around, feet moving */}
-          <div className="sp-stroll relative">
+          {/* the crystal HATCHES — cracks, splits open, the hero rises out of
+              the light, gets knocked, then BURSTS with power, then walks/talks */}
+          <div className="sp-stroll relative flex h-52 w-52 items-center justify-center">
+            {/* the crystal shell, sitting where the charge-orb ended up */}
+            <div className="shell-crack pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div
+                className="shell-half-l absolute h-24 w-14 origin-right rounded-l-full"
+                style={{ right: "50%", background: `linear-gradient(135deg, #fff, ${bestMeta.glow})`, boxShadow: `0 0 30px 4px ${bestMeta.glow}` }}
+              />
+              <div
+                className="shell-half-r absolute h-24 w-14 origin-left rounded-r-full"
+                style={{ left: "50%", background: `linear-gradient(315deg, #fff, ${bestMeta.glow})`, boxShadow: `0 0 30px 4px ${bestMeta.glow}` }}
+              />
+            </div>
+            {/* light bloom the instant it splits */}
+            <div
+              className="hatch-flash pointer-events-none absolute h-40 w-40 rounded-full"
+              style={{ background: `radial-gradient(circle, #fff, ${bestMeta.glow} 55%, transparent 75%)` }}
+            />
+
+            {/* power-up ring + light beam, timed to the post-hatch impact burst */}
+            <div
+              className="power-ring pointer-events-none absolute h-40 w-40 rounded-full border-4"
+              style={{ borderColor: bestMeta.glow, boxShadow: `0 0 40px 4px ${bestMeta.glow}` }}
+            />
+            <div
+              className="power-beam pointer-events-none absolute h-64 w-10"
+              style={{ background: `linear-gradient(to bottom, transparent, ${bestMeta.glow}, transparent)` }}
+            />
+
             {/* RGB-split ghost duplicates — ??? only */}
             {bestMeta.tier >= RARITY.secret.tier && (
               <>
-                <div className="gq-rgb-r pointer-events-none absolute inset-0 mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(-50deg)" }}>
+                <div className="gq-rgb-r pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(-50deg)" }}>
                   <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
                 </div>
-                <div className="gq-rgb-b pointer-events-none absolute inset-0 mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(150deg)" }}>
+                <div className="gq-rgb-b pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(150deg)" }}>
                   <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
                 </div>
               </>
             )}
-            <div className="sp-flyin" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
-              <div className="sp-hop">
-                <SpiritArt spirit={best.spirit} size={190} talking />
+
+            {/* rising flame particles licking up around the hero — demon only */}
+            {bestMeta.tier === RARITY.demon.tier &&
+              FLAMES.map((f, i) => (
+                <span
+                  key={i}
+                  className="gq-flame pointer-events-none absolute bottom-2 text-2xl"
+                  style={{ left: f.x, animationDelay: `${f.delay}s` }}
+                >
+                  🔥
+                </span>
+              ))}
+
+            <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
+              <div className="sp-impact">
+                <div className="sp-hop">
+                  <SpiritArt spirit={best.spirit} size={190} talking />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* speech bubble */}
+          {/* speech bubble — appears right as the power-up lands, not before */}
           <div
-            className="bubble-pop relative max-w-xs rounded-2xl border-2 bg-panel/95 px-5 py-3 text-center"
-            style={{ borderColor: bestMeta.glow, boxShadow: `0 0 30px -8px ${bestMeta.glow}` }}
+            className="bubble-pop relative max-w-xs rounded-2xl border-2 bg-panel/95 px-5 py-3 text-center opacity-0"
+            style={{
+              borderColor: bestMeta.glow,
+              boxShadow: `0 0 30px -8px ${bestMeta.glow}`,
+              animationDelay: "2.15s",
+            }}
           >
             <p className="font-display text-base font-bold text-white">
               “{voiceLine(best.spirit)}”
@@ -571,7 +665,10 @@ function RevealOverlay({
             />
           </div>
 
-          <p className="font-display text-2xl font-extrabold text-white" style={{ animation: "gacha-rise 0.6s ease-out 0.2s both" }}>
+          <p
+            className="font-display text-2xl font-extrabold text-white opacity-0"
+            style={{ animation: "gacha-rise 0.6s ease-out 2.3s both" }}
+          >
             {best.spirit.name}
           </p>
           <button
@@ -714,6 +811,16 @@ const RISERS = Array.from({ length: 16 }, (_, i) => ({
   dur: 1.8 + (i % 5) * 0.4,
   delay: (i % 7) * 0.25,
 }));
+
+/** Flame emoji positions ringing the demon hero's feet. */
+const FLAMES = [
+  { x: "18%", delay: 0 },
+  { x: "30%", delay: 0.3 },
+  { x: "42%", delay: 0.6 },
+  { x: "54%", delay: 0.15 },
+  { x: "66%", delay: 0.45 },
+  { x: "78%", delay: 0.75 },
+];
 
 /**
  * Escalating spectacle behind the awakening hero. Effects stack as rarity
