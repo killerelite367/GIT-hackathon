@@ -118,6 +118,78 @@ body {
   50% { transform: translateY(-6px); }
 }
 
+/* A slow shifting aurora for the summon hero background. */
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gq-aurora {
+  background: linear-gradient(120deg, #a98bff, #ff5fa2, #5fd0ff, #7cff6b, #a98bff);
+  background-size: 300% 300%;
+  animation: aurora-shift 12s ease infinite;
+}
+
+/* Rotating light beams behind the summon orb / reveal. */
+@keyframes beam-spin { to { transform: rotate(360deg); } }
+.gq-beams {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0.10) 0deg 8deg,
+    transparent 8deg 22deg
+  );
+  animation: beam-spin 18s linear infinite;
+}
+
+/* Pulsing glow rings around the central crystal. */
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50%      { transform: scale(1.14); opacity: 0.95; }
+}
+.gq-orb-ring { animation: orb-pulse 3.4s ease-in-out infinite; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.gq-bob { animation: bob 4s ease-in-out infinite; }
+
+/* Twinkling sparkles. */
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+.gq-twinkle { animation: twinkle 2.4s ease-in-out infinite; }
+
+/* A light streak that sweeps across buttons / owned cards. */
+@keyframes shine-sweep {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(320%) skewX(-18deg); }
+}
+.gq-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: shine-sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Whole-screen flash the instant a summon resolves. */
+@keyframes gq-flash {
+  0%   { opacity: 0; }
+  10%  { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+.gq-flash { animation: gq-flash 0.6s ease-out forwards; }
+
+/* Confetti sparks for a legendary drop. */
+@keyframes spark-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(90vh) rotate(360deg); opacity: 0; }
+}
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   html {

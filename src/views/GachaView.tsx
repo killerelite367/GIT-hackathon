@@ -17,6 +17,14 @@ import {
   type Rarity,
 } from "../lib/gacha";
 
+/** Rarity → gradient used for owned cards & reveal auras. */
+const RARITY_GRAD: Record<Rarity, string> = {
+  common: "linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))",
+  rare: "linear-gradient(155deg, rgba(95,208,255,0.30), rgba(95,208,255,0.04))",
+  epic: "linear-gradient(155deg, rgba(169,139,255,0.34), rgba(169,139,255,0.05))",
+  legendary: "linear-gradient(155deg, rgba(255,225,77,0.40), rgba(255,95,162,0.12))",
+};
+
 export default function GachaView() {
   const { data, pullGacha, equipSpirit } = useStore();
   const { game } = data;
@@ -25,6 +33,7 @@ export default function GachaView() {
   const { owned, total } = collectionCount(game);
   const mult = equippedXpMultiplier(game);
   const equipped = game.equippedSpirit ? SPIRIT_BY_ID[game.equippedSpirit] : null;
+  const pityPct = Math.min((game.pityCount / PITY_THRESHOLD) * 100, 100);
 
   function summon(count: number) {
     const outcomes = pullGacha(count);
@@ -33,111 +42,140 @@ export default function GachaView() {
 
   return (
     <>
-      {/* ── Summon banner ─────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-2xl border border-neon-purple/30 bg-panel/80 p-6 shadow-card">
-        <div
-          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(169,139,255,0.35), transparent 70%)" }}
-        />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-neon-purple">
-              <Sparkles size={13} /> summon circle
-            </p>
-            <h2 className="mt-1 font-display text-2xl font-bold tracking-tightish text-white">
-              Study Spirits
-            </h2>
-            <p className="mt-1 max-w-md text-sm text-white/55">
-              Companions summoned with <span className="text-neon-pink">Focus Crystals</span> — the
-              currency you earn <span className="text-white/80">only</span> by completing real study
-              work. Each spirit boosts your XP.
-            </p>
+      {/* ══ Summon hero ══════════════════════════════════════ */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 p-[1.5px]">
+        {/* animated gradient frame */}
+        <div className="gq-aurora absolute inset-0 opacity-60" />
+        <div className="relative rounded-3xl bg-panel/90 p-6 sm:p-8">
+          {/* rotating beams + sparkles */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+            <div className="gq-beams absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 opacity-30" />
+            {SPARKLES.map((s, i) => (
+              <span
+                key={i}
+                className="gq-twinkle absolute text-neon-yellow"
+                style={{ left: s.x, top: s.y, fontSize: s.size, animationDelay: s.delay }}
+              >
+                ✦
+              </span>
+            ))}
           </div>
 
-          {/* Crystal balance */}
-          <div className="flex items-center gap-2 rounded-xl border border-neon-pink/30 bg-neon-pink/[0.08] px-4 py-3">
-            <Gem size={22} className="text-neon-pink" />
-            <div className="leading-none">
-              <div className="tabular font-mono text-2xl font-bold text-white">
+          <div className="relative flex flex-col items-center text-center">
+            <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-neon-yellow">
+              <Sparkles size={13} /> summon circle
+            </p>
+
+            {/* Central crystal orb */}
+            <div className="relative my-5 flex h-40 w-40 items-center justify-center">
+              <div
+                className="gq-orb-ring absolute inset-0 rounded-full"
+                style={{ background: "radial-gradient(circle, rgba(169,139,255,0.55), transparent 68%)" }}
+              />
+              <div
+                className="gq-orb-ring absolute inset-3 rounded-full"
+                style={{ background: "radial-gradient(circle, rgba(255,95,162,0.5), transparent 66%)", animationDelay: "0.6s" }}
+              />
+              <div className="gq-bob relative text-7xl drop-shadow-[0_0_25px_rgba(169,139,255,0.8)]">
+                💎
+              </div>
+            </div>
+
+            {/* Balance */}
+            <div className="flex items-baseline gap-2">
+              <span className="tabular bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-purple bg-clip-text font-mono text-4xl font-extrabold text-transparent">
                 {game.crystals.toLocaleString()}
+              </span>
+              <span className="text-sm font-semibold text-neon-pink">💎 crystals</span>
+            </div>
+            <p className="mt-2 max-w-sm text-sm text-white/60">
+              Earned <span className="font-semibold text-white">only</span> by completing real study
+              quests. Spend them to summon <span className="text-neon-purple">Study Spirits</span>.
+            </p>
+
+            {/* Pull buttons */}
+            <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => summon(1)}
+                disabled={!canAfford(game, 1)}
+                className="gq-shine group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-neon-purple/60 bg-gradient-to-br from-neon-purple/30 to-neon-purple/10 px-5 py-4 font-bold text-white shadow-[0_0_28px_-6px_rgba(169,139,255,0.6)] transition hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              >
+                <Sparkles size={18} className="text-neon-purple transition group-hover:rotate-45" />
+                Summon ×1
+                <span className="flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-xs text-neon-pink">
+                  <Gem size={11} /> {PULL_COST}
+                </span>
+              </button>
+              <button
+                onClick={() => summon(MULTI_PULLS)}
+                disabled={!canAfford(game, MULTI_PULLS)}
+                className="gq-shine group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl border border-neon-yellow/60 bg-gradient-to-br from-neon-yellow/25 via-neon-pink/20 to-neon-purple/20 px-5 py-4 font-bold text-white shadow-[0_0_28px_-6px_rgba(255,225,77,0.6)] transition hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              >
+                <span className="absolute -top-2 right-3 rounded-full bg-neon-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase text-ink">
+                  1 free
+                </span>
+                <Sparkles size={18} className="text-neon-yellow transition group-hover:rotate-45" />
+                Summon ×{MULTI_PULLS}
+                <span className="flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-xs text-neon-pink">
+                  <Gem size={11} /> {MULTI_COST}
+                </span>
+              </button>
+            </div>
+
+            {/* Pity bar */}
+            <div className="mt-5 w-full max-w-md">
+              <div className="flex items-center justify-between text-[11px] text-white/50">
+                <span>Pity — Epic+ guaranteed</span>
+                <span className="tabular font-mono text-neon-yellow">
+                  {game.pityCount}/{PITY_THRESHOLD}
+                </span>
               </div>
-              <div className="mt-1 text-[10px] uppercase tracking-wider text-white/45">
-                Focus Crystals
+              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-yellow transition-all duration-500"
+                  style={{ width: `${pityPct}%` }}
+                />
               </div>
+              <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-white/40">
+                <Info size={12} /> Legendary 3% · Epic 9% · Rare 28% · Common 60%
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Pull buttons */}
-        <div className="relative mt-5 flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={() => summon(1)}
-            disabled={!canAfford(game, 1)}
-            className="group flex flex-1 items-center justify-center gap-2 rounded-xl border border-neon-purple/50 bg-neon-purple/10 px-5 py-3.5 font-semibold text-neon-purple transition hover:bg-neon-purple/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Sparkles size={18} className="transition group-hover:rotate-12" />
-            Summon ×1
-            <span className="ml-1 flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-neon-pink">
-              <Gem size={11} /> {PULL_COST}
-            </span>
-          </button>
-          <button
-            onClick={() => summon(MULTI_PULLS)}
-            disabled={!canAfford(game, MULTI_PULLS)}
-            className="group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl border border-neon-yellow/50 bg-gradient-to-r from-neon-yellow/15 to-neon-pink/15 px-5 py-3.5 font-semibold text-white transition hover:from-neon-yellow/25 hover:to-neon-pink/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <span className="absolute -top-2 right-2 rounded-full bg-neon-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase text-ink">
-              1 free
-            </span>
-            <Sparkles size={18} className="text-neon-yellow transition group-hover:rotate-12" />
-            Summon ×{MULTI_PULLS}
-            <span className="ml-1 flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-neon-pink">
-              <Gem size={11} /> {MULTI_COST}
-            </span>
-          </button>
-        </div>
-
-        {/* Pity + odds line */}
-        <div className="relative mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-white/40">
-          <span className="flex items-center gap-1">
-            <Info size={12} /> Rates — Legendary 3% · Epic 9% · Rare 28% · Common 60%
-          </span>
-          <span>
-            Pity: <span className="tabular font-mono text-neon-yellow">{game.pityCount}/{PITY_THRESHOLD}</span>{" "}
-            → Epic+ guaranteed
-          </span>
-        </div>
       </section>
 
-      {/* ── Equipped spirit ───────────────────────────────── */}
+      {/* ══ Equipped spirit ══════════════════════════════════ */}
       <section className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-edge bg-panel/70 p-4">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-xl border text-2xl ${
-              equipped ? RARITY[equipped.rarity].border : "border-edge"
-            }`}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl border text-3xl"
+            style={{
+              background: equipped ? RARITY_GRAD[equipped.rarity] : undefined,
+              borderColor: equipped ? RARITY[equipped.rarity].glow : "#25252f",
+            }}
           >
             {equipped ? equipped.emoji : "—"}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-white/40">Equipped spirit</p>
-            <p className="font-display font-semibold text-white">
+            <p className="font-display text-lg font-bold text-white">
               {equipped ? equipped.name : "None yet"}
             </p>
+            {equipped && <p className={`text-xs ${RARITY[equipped.rarity].text}`}>{equipped.blurb}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-neon-green/30 bg-neon-green/10 px-3 py-1.5 text-sm font-semibold text-neon-green">
-          <Zap size={14} /> ×{mult.toFixed(2)} XP
+        <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-3.5 py-2 text-sm font-bold text-neon-green shadow-[0_0_20px_-6px_rgba(124,255,107,0.6)]">
+          <Zap size={15} /> ×{mult.toFixed(2)} XP
         </div>
       </section>
 
-      {/* ── Collection ────────────────────────────────────── */}
+      {/* ══ Collection ═══════════════════════════════════════ */}
       <section className="mt-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-display text-lg font-semibold tracking-tightish text-white">
             Spirit collection
           </h3>
-          <span className="tabular font-mono text-sm text-white/45">
+          <span className="tabular rounded-full border border-edge bg-panel2/60 px-3 py-1 font-mono text-sm text-white/60">
             {owned} / {total} collected
           </span>
         </div>
@@ -147,10 +185,23 @@ export default function GachaView() {
         ))}
       </section>
 
-      {reveal && <RevealOverlay outcomes={reveal} onClose={() => setReveal(null)} onEquip={equipSpirit} />}
+      {reveal && (
+        <RevealOverlay outcomes={reveal} onClose={() => setReveal(null)} onEquip={equipSpirit} />
+      )}
     </>
   );
 }
+
+/** Precomputed sparkle positions for the hero backdrop. */
+const SPARKLES = [
+  { x: "12%", y: "22%", size: "14px", delay: "0s" },
+  { x: "84%", y: "18%", size: "18px", delay: "0.5s" },
+  { x: "22%", y: "72%", size: "12px", delay: "1s" },
+  { x: "72%", y: "68%", size: "16px", delay: "1.4s" },
+  { x: "48%", y: "12%", size: "12px", delay: "0.8s" },
+  { x: "90%", y: "50%", size: "14px", delay: "1.8s" },
+  { x: "6%", y: "52%", size: "12px", delay: "0.3s" },
+];
 
 /** One rarity band of the collection grid. */
 function RarityRow({
@@ -167,7 +218,8 @@ function RarityRow({
 
   return (
     <div className="mb-5">
-      <p className={`mb-2 font-mono text-[11px] uppercase tracking-widest ${meta.text}`}>
+      <p className={`mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest ${meta.text}`}>
+        <span className="h-2 w-2 rounded-full" style={{ background: meta.glow }} />
         {meta.label}
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -178,35 +230,45 @@ function RarityRow({
           return (
             <div
               key={s.id}
-              className={`relative flex flex-col rounded-xl border bg-panel2/60 p-3 transition ${
-                isOwned ? `${meta.border} hover:-translate-y-0.5` : "border-edge opacity-60"
+              className={`gq-shine relative flex flex-col overflow-hidden rounded-2xl border p-3.5 transition ${
+                isOwned ? "hover:-translate-y-1" : "border-edge opacity-55"
               }`}
-              style={isOwned ? { boxShadow: `0 0 20px -10px ${meta.glow}` } : undefined}
+              style={
+                isOwned
+                  ? {
+                      background: RARITY_GRAD[rarity],
+                      borderColor: meta.glow,
+                      boxShadow: `0 0 26px -10px ${meta.glow}`,
+                    }
+                  : { background: "rgba(22,22,31,0.6)" }
+              }
             >
               {count > 1 && (
-                <span className="absolute right-2 top-2 tabular rounded-full bg-black/40 px-1.5 py-0.5 font-mono text-[10px] text-white/70">
+                <span className="tabular absolute right-2 top-2 z-10 rounded-full bg-black/50 px-1.5 py-0.5 font-mono text-[10px] text-white/80">
                   ×{count}
                 </span>
               )}
-              <div className={`text-3xl ${isOwned ? "" : "grayscale"}`}>
+              <div className={`text-4xl ${isOwned ? "gq-bob" : "grayscale"}`}>
                 {isOwned ? s.emoji : "❔"}
               </div>
-              <p className="mt-2 font-display text-sm font-semibold text-white">
+              <p className="mt-2 font-display text-sm font-bold text-white">
                 {isOwned ? s.name : "???"}
               </p>
-              <p className={`text-[11px] ${meta.text}`}>{isOwned ? s.buff : "Locked"}</p>
+              <p className={`text-[11px] font-semibold ${meta.text}`}>
+                {isOwned ? s.buff : "Locked"}
+              </p>
               {isOwned && (
-                <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/40">{s.blurb}</p>
+                <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/50">{s.blurb}</p>
               )}
               {isOwned &&
                 (isEquipped ? (
-                  <span className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-neon-green/40 bg-neon-green/10 py-1 text-[11px] font-semibold text-neon-green">
+                  <span className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-neon-green/50 bg-neon-green/15 py-1 text-[11px] font-bold text-neon-green">
                     <Check size={12} /> Equipped
                   </span>
                 ) : (
                   <button
                     onClick={() => onEquip(s.id)}
-                    className="mt-2 rounded-lg border border-edge py-1 text-[11px] text-white/60 transition hover:border-neon-green/40 hover:text-neon-green"
+                    className="mt-2 rounded-lg border border-white/15 bg-white/5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-neon-green/50 hover:text-neon-green"
                   >
                     Equip
                   </button>
@@ -219,7 +281,7 @@ function RarityRow({
   );
 }
 
-/** Full-screen summon reveal with a rarity flare per card. */
+/** Full-screen summon reveal with beams, flash, and a rarity flare per card. */
 function RevealOverlay({
   outcomes,
   onClose,
@@ -233,23 +295,48 @@ function RevealOverlay({
     RARITY_ORDER.indexOf(o.spirit.rarity) > RARITY_ORDER.indexOf(b.spirit.rarity) ? o : b
   );
   const bestMeta = RARITY[best.spirit.rarity];
+  const legendary = best.spirit.rarity === "legendary";
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black/80 p-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/85 p-6 backdrop-blur-md"
       style={{ animation: "gacha-fade 0.25s ease-out" }}
     >
-      {/* Radiant backdrop tinted by the best pull */}
+      {/* rotating beams tinted by the best rarity */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div
+          className="gq-beams h-[180vh] w-[180vh] opacity-25"
+          style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}
+        />
+      </div>
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: `radial-gradient(circle at 50% 45%, ${bestMeta.glow}, transparent 60%)` }}
+        style={{ background: `radial-gradient(circle at 50% 42%, ${bestMeta.glow}, transparent 58%)` }}
       />
+      {/* opening flash */}
+      <div
+        className="gq-flash pointer-events-none absolute inset-0"
+        style={{ background: bestMeta.glow }}
+      />
+
+      {/* legendary confetti */}
+      {legendary &&
+        CONFETTI.map((c, i) => (
+          <span
+            key={i}
+            className="pointer-events-none absolute top-0 text-lg"
+            style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
+          >
+            {c.e}
+          </span>
+        ))}
+
       <p
-        className={`relative font-mono text-xs uppercase tracking-[0.3em] ${bestMeta.text}`}
+        className={`relative font-mono text-xs uppercase tracking-[0.4em] ${bestMeta.text}`}
         style={{ animation: "gacha-rise 0.4s ease-out both" }}
       >
-        ✦ Summoning ✦
+        ✦ ✦ ✦ Summoning ✦ ✦ ✦
       </p>
 
       <div className="relative flex max-w-2xl flex-wrap items-stretch justify-center gap-3">
@@ -258,38 +345,40 @@ function RevealOverlay({
           return (
             <div
               key={i}
-              className={`relative flex w-32 flex-col items-center rounded-2xl border-2 bg-panel/90 p-4 ${meta.border}`}
+              className="relative flex w-32 flex-col items-center rounded-2xl border-2 p-4"
               style={{
-                boxShadow: `0 0 30px -6px ${meta.glow}`,
-                animation: `gacha-pop 0.45s cubic-bezier(0.22,1,0.36,1) both`,
+                background: RARITY_GRAD[o.spirit.rarity],
+                borderColor: meta.glow,
+                boxShadow: `0 0 36px -4px ${meta.glow}`,
+                animation: `gacha-pop 0.5s cubic-bezier(0.22,1,0.36,1) both`,
                 animationDelay: `${i * 90}ms`,
               }}
             >
               {o.isNew && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink shadow-[0_0_10px_rgba(124,255,107,0.8)]">
                   New!
                 </span>
               )}
-              <div className="text-5xl" style={{ animation: "gacha-float 3s ease-in-out infinite" }}>
+              <div className="gq-bob text-5xl drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]">
                 {o.spirit.emoji}
               </div>
               <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
-              <p className={`font-mono text-[10px] uppercase tracking-wider ${meta.text}`}>
+              <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
                 {meta.label}
               </p>
-              <p className={`mt-1 text-[11px] ${meta.text}`}>{o.spirit.buff}</p>
+              <p className={`mt-1 text-[11px] font-semibold ${meta.text}`}>{o.spirit.buff}</p>
             </div>
           );
         })}
       </div>
 
-      <div className="relative flex flex-col items-center gap-2">
-        {best.spirit.rarity === "legendary" && (
+      <div className="relative flex flex-col items-center gap-3">
+        {legendary && (
           <p
-            className="font-display text-lg font-bold text-neon-yellow"
+            className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-yellow bg-clip-text font-display text-xl font-extrabold text-transparent"
             style={{ animation: "gacha-rise 0.5s ease-out 0.3s both" }}
           >
-            🌟 A LEGENDARY spirit answered your call!
+            🌟 A LEGENDARY spirit answered your call! 🌟
           </p>
         )}
         <div className="flex gap-3">
@@ -299,19 +388,30 @@ function RevealOverlay({
               onEquip(best.spirit.id);
               onClose();
             }}
-            className="rounded-xl border border-neon-green/50 bg-neon-green/10 px-5 py-2.5 text-sm font-semibold text-neon-green transition hover:bg-neon-green/20"
+            className="rounded-xl border border-neon-green/60 bg-neon-green/15 px-5 py-2.5 text-sm font-bold text-neon-green transition hover:scale-105 hover:bg-neon-green/25"
           >
             Equip {best.spirit.name}
           </button>
           <button
             onClick={onClose}
-            className="rounded-xl border border-edge px-5 py-2.5 text-sm text-white/70 transition hover:text-white"
+            className="rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:text-white"
           >
             Continue
           </button>
         </div>
-        <p className="text-[11px] text-white/35">tap anywhere to dismiss</p>
+        <p className="text-[11px] text-white/40">tap anywhere to dismiss</p>
       </div>
     </div>
   );
 }
+
+/** Legendary confetti spec. */
+const CONFETTI = [
+  { x: "10%", e: "✨", dur: "2.6s", delay: "0s" },
+  { x: "25%", e: "🌟", dur: "3.1s", delay: "0.3s" },
+  { x: "40%", e: "⭐", dur: "2.8s", delay: "0.7s" },
+  { x: "55%", e: "✨", dur: "3.3s", delay: "0.2s" },
+  { x: "70%", e: "🌟", dur: "2.7s", delay: "0.6s" },
+  { x: "85%", e: "⭐", dur: "3.0s", delay: "0.1s" },
+  { x: "92%", e: "✨", dur: "2.9s", delay: "0.9s" },
+];

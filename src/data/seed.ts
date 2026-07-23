@@ -84,9 +84,9 @@ export function seedData(): AppData {
       bestStreak: 0,
       achievements: [],
       syllabusImported: false,
-      // Start with enough for one summon so the loop is discoverable — then you
-      // have to actually study to earn more.
-      crystals: 120,
+      // Welcome bonus: enough for one big 10× summon so the loop is exciting on
+      // first open — after that you earn crystals by completing real study work.
+      crystals: 1000,
       spirits: {},
       pityCount: 0,
       equippedSpirit: null,
