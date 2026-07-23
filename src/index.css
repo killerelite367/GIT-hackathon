@@ -190,6 +190,47 @@ body {
   100% { transform: translateY(90vh) rotate(360deg); opacity: 0; }
 }
 
+/* ── Cinematic summon: charge → burst ────────────────────── */
+/* Orb swells as it charges up. */
+@keyframes charge-grow {
+  0%   { transform: scale(0.12); opacity: 0; }
+  25%  { opacity: 1; }
+  85%  { transform: scale(1.05); }
+  100% { transform: scale(1.28); opacity: 1; }
+}
+.gq-charge-grow { animation: charge-grow 1.5s cubic-bezier(0.5, 0, 0.9, 0.4) forwards; }
+
+/* Fast nervous jitter that reads as building energy. */
+@keyframes gq-shake {
+  0%   { transform: translate(1px, -1px); }
+  20%  { transform: translate(-2px, 1px); }
+  40%  { transform: translate(2px, 2px); }
+  60%  { transform: translate(-1px, -2px); }
+  80%  { transform: translate(2px, -1px); }
+  100% { transform: translate(-1px, 1px); }
+}
+.gq-shake { animation: gq-shake 0.08s linear infinite; }
+
+/* Energy motes flying inward to feed the orb. Each sets --x/--y. */
+@keyframes converge {
+  0%   { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translate(0, 0) scale(0.2); opacity: 0; }
+}
+
+/* Expanding shockwave ring at the moment of the explosion. */
+@keyframes shockwave {
+  0%   { transform: scale(0); opacity: 0.9; }
+  100% { transform: scale(9); opacity: 0; }
+}
+.gq-shockwave { animation: shockwave 0.65s cubic-bezier(0.15, 0.6, 0.3, 1) forwards; }
+
+/* Debris shards flung outward on burst. Each sets --tx/--ty. */
+@keyframes shard-fly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; }
+}
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   html {

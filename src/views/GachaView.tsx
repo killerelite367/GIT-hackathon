@@ -1,6 +1,13 @@
-import { useState } from "react";
-import { Gem, Sparkles, Info, Check, Zap } from "lucide-react";
+import { useState, useEffect, type CSSProperties } from "react";
+import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX } from "lucide-react";
 import { useStore } from "../store/StoreContext";
+import {
+  playCharge,
+  playBurst,
+  playReveal,
+  isMuted,
+  toggleMuted,
+} from "../lib/sound";
 import {
   SPIRITS,
   RARITY,
@@ -29,6 +36,8 @@ export default function GachaView() {
   const { data, pullGacha, equipSpirit } = useStore();
   const { game } = data;
   const [reveal, setReveal] = useState<PullOutcome[] | null>(null);
+
+  const [muted, setMuted] = useState(isMuted());
 
   const { owned, total } = collectionCount(game);
   const mult = equippedXpMultiplier(game);
@@ -60,6 +69,15 @@ export default function GachaView() {
               </span>
             ))}
           </div>
+
+          {/* Sound toggle */}
+          <button
+            onClick={() => setMuted(toggleMuted())}
+            aria-label={muted ? "Unmute summon sound" : "Mute summon sound"}
+            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/60 transition hover:text-white"
+          >
+            {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </button>
 
           <div className="relative flex flex-col items-center text-center">
             <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-neon-yellow">
@@ -281,7 +299,14 @@ function RarityRow({
   );
 }
 
-/** Full-screen summon reveal with beams, flash, and a rarity flare per card. */
+type Phase = "charge" | "burst" | "cards";
+
+// Timing of the summon cinematic (ms).
+const CHARGE_MS = 1500;
+const BURST_MS = 480;
+
+/** Cinematic summon: the orb charges, shakes, then EXPLODES into the reveal —
+ *  with synchronised sound. Tap to skip ahead. */
 function RevealOverlay({
   outcomes,
   onClose,
@@ -297,113 +322,228 @@ function RevealOverlay({
   const bestMeta = RARITY[best.spirit.rarity];
   const legendary = best.spirit.rarity === "legendary";
 
+  const reduced =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "charge");
+
+  useEffect(() => {
+    if (reduced) {
+      playReveal(best.spirit.rarity);
+      return;
+    }
+    playCharge(1500);
+    const t1 = setTimeout(() => {
+      setPhase("burst");
+      playBurst();
+    }, CHARGE_MS);
+    const t2 = setTimeout(() => {
+      setPhase("cards");
+      playReveal(best.spirit.rarity);
+    }, CHARGE_MS + BURST_MS);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Tap skips the cinematic; once the cards are shown, tap dismisses.
+  const handleBackdrop = () => {
+    if (phase === "cards") onClose();
+    else {
+      setPhase("cards");
+      playReveal(best.spirit.rarity);
+    }
+  };
+
   return (
     <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/85 p-6 backdrop-blur-md"
+      onClick={handleBackdrop}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/90 p-6 backdrop-blur-md"
       style={{ animation: "gacha-fade 0.25s ease-out" }}
     >
-      {/* rotating beams tinted by the best rarity */}
+      {/* rotating beams tinted by the incoming rarity */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div
-          className="gq-beams h-[180vh] w-[180vh] opacity-25"
+          className="gq-beams h-[200vh] w-[200vh] opacity-25"
           style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}
         />
       </div>
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: `radial-gradient(circle at 50% 42%, ${bestMeta.glow}, transparent 58%)` }}
-      />
-      {/* opening flash */}
-      <div
-        className="gq-flash pointer-events-none absolute inset-0"
-        style={{ background: bestMeta.glow }}
+        style={{ background: `radial-gradient(circle at 50% 45%, ${bestMeta.glow}, transparent 60%)` }}
       />
 
-      {/* legendary confetti */}
-      {legendary &&
-        CONFETTI.map((c, i) => (
-          <span
-            key={i}
-            className="pointer-events-none absolute top-0 text-lg"
-            style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
-          >
-            {c.e}
-          </span>
-        ))}
-
-      <p
-        className={`relative font-mono text-xs uppercase tracking-[0.4em] ${bestMeta.text}`}
-        style={{ animation: "gacha-rise 0.4s ease-out both" }}
-      >
-        ✦ ✦ ✦ Summoning ✦ ✦ ✦
-      </p>
-
-      <div className="relative flex max-w-2xl flex-wrap items-stretch justify-center gap-3">
-        {outcomes.map((o, i) => {
-          const meta = RARITY[o.spirit.rarity];
-          return (
-            <div
+      {/* ── CHARGE ── energy gathers into a shaking, growing orb ── */}
+      {phase === "charge" && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          {/* converging energy motes */}
+          {MOTES.map((m, i) => (
+            <span
               key={i}
-              className="relative flex w-32 flex-col items-center rounded-2xl border-2 p-4"
+              className="absolute h-2 w-2 rounded-full"
+              style={
+                {
+                  background: bestMeta.glow,
+                  boxShadow: `0 0 10px 2px ${bestMeta.glow}`,
+                  "--x": `${m.x}px`,
+                  "--y": `${m.y}px`,
+                  animation: `converge 1.5s ease-in ${m.delay}s infinite`,
+                } as CSSProperties
+              }
+            />
+          ))}
+          {/* the charging orb */}
+          <div className="gq-charge-grow relative flex items-center justify-center">
+            <div
+              className="gq-shake h-28 w-28 rounded-full"
               style={{
-                background: RARITY_GRAD[o.spirit.rarity],
-                borderColor: meta.glow,
-                boxShadow: `0 0 36px -4px ${meta.glow}`,
-                animation: `gacha-pop 0.5s cubic-bezier(0.22,1,0.36,1) both`,
-                animationDelay: `${i * 90}ms`,
+                background: `radial-gradient(circle, #fff, ${bestMeta.glow} 45%, transparent 72%)`,
+                boxShadow: `0 0 60px 12px ${bestMeta.glow}`,
               }}
-            >
-              {o.isNew && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink shadow-[0_0_10px_rgba(124,255,107,0.8)]">
-                  New!
-                </span>
-              )}
-              <div className="gq-bob text-5xl drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]">
-                {o.spirit.emoji}
-              </div>
-              <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
-              <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
-                {meta.label}
-              </p>
-              <p className={`mt-1 text-[11px] font-semibold ${meta.text}`}>{o.spirit.buff}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="relative flex flex-col items-center gap-3">
-        {legendary && (
-          <p
-            className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-yellow bg-clip-text font-display text-xl font-extrabold text-transparent"
-            style={{ animation: "gacha-rise 0.5s ease-out 0.3s both" }}
-          >
-            🌟 A LEGENDARY spirit answered your call! 🌟
-          </p>
-        )}
-        <div className="flex gap-3">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEquip(best.spirit.id);
-              onClose();
-            }}
-            className="rounded-xl border border-neon-green/60 bg-neon-green/15 px-5 py-2.5 text-sm font-bold text-neon-green transition hover:scale-105 hover:bg-neon-green/25"
-          >
-            Equip {best.spirit.name}
-          </button>
-          <button
-            onClick={onClose}
-            className="rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:text-white"
-          >
-            Continue
-          </button>
+            />
+          </div>
         </div>
-        <p className="text-[11px] text-white/40">tap anywhere to dismiss</p>
-      </div>
+      )}
+
+      {/* ── BURST ── shockwave, flash, flying shards ── */}
+      {phase === "burst" && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="gq-flash absolute inset-0" style={{ background: bestMeta.glow }} />
+          <div
+            className="gq-shockwave absolute h-40 w-40 rounded-full border-4"
+            style={{ borderColor: bestMeta.glow }}
+          />
+          <div
+            className="gq-shockwave absolute h-24 w-24 rounded-full"
+            style={{ background: "#fff", animationDelay: "0.04s" }}
+          />
+          {SHARDS.map((s, i) => (
+            <span
+              key={i}
+              className="absolute h-2.5 w-2.5 rounded-full"
+              style={
+                {
+                  background: bestMeta.glow,
+                  boxShadow: `0 0 12px 2px ${bestMeta.glow}`,
+                  "--tx": `${s.tx}px`,
+                  "--ty": `${s.ty}px`,
+                  animation: "shard-fly 0.6s ease-out forwards",
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── CARDS ── the reveal ── */}
+      {phase === "cards" && (
+        <>
+          {legendary &&
+            CONFETTI.map((c, i) => (
+              <span
+                key={i}
+                className="pointer-events-none absolute top-0 text-lg"
+                style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
+              >
+                {c.e}
+              </span>
+            ))}
+
+          <p
+            className={`relative font-mono text-xs uppercase tracking-[0.4em] ${bestMeta.text}`}
+            style={{ animation: "gacha-rise 0.4s ease-out both" }}
+          >
+            ✦ ✦ ✦ Summoned ✦ ✦ ✦
+          </p>
+
+          <div className="relative flex max-w-2xl flex-wrap items-stretch justify-center gap-3">
+            {outcomes.map((o, i) => {
+              const meta = RARITY[o.spirit.rarity];
+              return (
+                <div
+                  key={i}
+                  className="relative flex w-32 flex-col items-center rounded-2xl border-2 p-4"
+                  style={{
+                    background: RARITY_GRAD[o.spirit.rarity],
+                    borderColor: meta.glow,
+                    boxShadow: `0 0 36px -4px ${meta.glow}`,
+                    animation: `gacha-pop 0.5s cubic-bezier(0.22,1,0.36,1) both`,
+                    animationDelay: `${i * 80}ms`,
+                  }}
+                >
+                  {o.isNew && (
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-neon-green px-2 py-0.5 text-[9px] font-bold uppercase text-ink shadow-[0_0_10px_rgba(124,255,107,0.8)]">
+                      New!
+                    </span>
+                  )}
+                  <div className="gq-bob text-5xl drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]">
+                    {o.spirit.emoji}
+                  </div>
+                  <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
+                  <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
+                    {meta.label}
+                  </p>
+                  <p className={`mt-1 text-[11px] font-semibold ${meta.text}`}>{o.spirit.buff}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="relative flex flex-col items-center gap-3">
+            {legendary && (
+              <p
+                className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-yellow bg-clip-text font-display text-xl font-extrabold text-transparent"
+                style={{ animation: "gacha-rise 0.5s ease-out 0.3s both" }}
+              >
+                🌟 A LEGENDARY spirit answered your call! 🌟
+              </p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEquip(best.spirit.id);
+                  onClose();
+                }}
+                className="rounded-xl border border-neon-green/60 bg-neon-green/15 px-5 py-2.5 text-sm font-bold text-neon-green transition hover:scale-105 hover:bg-neon-green/25"
+              >
+                Equip {best.spirit.name}
+              </button>
+              <button
+                onClick={onClose}
+                className="rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:text-white"
+              >
+                Continue
+              </button>
+            </div>
+            <p className="text-[11px] text-white/40">tap anywhere to dismiss</p>
+          </div>
+        </>
+      )}
+
+      {phase !== "cards" && (
+        <p className="absolute bottom-8 text-[11px] text-white/30">tap to skip</p>
+      )}
     </div>
   );
 }
+
+/** Energy motes that fly inward during the charge phase. */
+const MOTES = Array.from({ length: 16 }, (_, i) => {
+  const a = (i / 16) * Math.PI * 2;
+  const r = 190 + (i % 3) * 45;
+  return { x: Math.cos(a) * r, y: Math.sin(a) * r, delay: (i % 5) * 0.14 };
+});
+
+/** Debris shards flung outward on the burst. */
+const SHARDS = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2;
+  const r = 150 + (i % 4) * 40;
+  return { tx: Math.cos(a) * r, ty: Math.sin(a) * r };
+});
 
 /** Legendary confetti spec. */
 const CONFETTI = [
