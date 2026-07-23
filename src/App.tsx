@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Sidebar, { BottomNav } from "./components/Sidebar";
 import Toasts from "./components/Toasts";
 import AssignmentModal from "./components/AssignmentModal";
@@ -13,7 +13,7 @@ import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { isSupabaseConfigured } from "./lib/supabase";
 import { levelFromXp } from "./lib/gamification";
-import { Sparkles, RotateCcw } from "lucide-react";
+import { Sparkles, RotateCcw, Download, Upload } from "lucide-react";
 
 const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
   dashboard: {
@@ -44,11 +44,18 @@ const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
 };
 
 export default function App() {
-  const { data, resetAll } = useStore();
+  const { data, resetAll, exportData, importData } = useStore();
   const [view, setView] = useState<View>("dashboard");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file next time
+    if (file) await importData(file);
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -62,14 +69,14 @@ export default function App() {
   const t = TITLES[view];
 
   return (
-    <div className="app-shell grid-bg flex min-h-screen">
+    <div className="app-shell flex min-h-screen">
       <Sidebar view={view} setView={setView} />
 
       <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
         <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
           {/* Mobile brand */}
           <div className="mb-4 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-green to-neon-cyan text-ink">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neon-green text-ink">
               <Sparkles size={16} />
             </div>
             <span className="font-display text-base font-bold text-white">StudyQuest</span>
@@ -78,10 +85,10 @@ export default function App() {
           {/* Header */}
           <header className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-neon-green">
+              <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-white/40">
                 {t.kicker}
-                <span className="text-white/25">/</span>
-                <span className="text-white/45">level {levelFromXp(data.game.xp)}</span>
+                <span className="text-white/20">·</span>
+                <span>level {levelFromXp(data.game.xp)}</span>
               </p>
               <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-white sm:text-[2.6rem]">
                 {t.heading}
@@ -89,6 +96,27 @@ export default function App() {
               <p className="mt-2 max-w-md text-[15px] text-white/55">{t.sub}</p>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={exportData}
+                title="Download a backup of all your data"
+                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
+              >
+                <Download size={12} /> Export
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title="Restore from a backup file"
+                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
+              >
+                <Upload size={12} /> Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json"
+                onChange={handleImportFile}
+                className="hidden"
+              />
               <button
                 onClick={resetAll}
                 title="Reset to demo data"

@@ -12,27 +12,38 @@ export default {
         tighter2: "-0.03em",
       },
       colors: {
-        ink: "#07070d",
-        panel: "#101019",
-        panel2: "#16161f",
-        panel3: "#1d1d29",
-        edge: "#25252f",
-        edge2: "#33333f",
+        // Warm-neutral dark base (one consistent hue family, not cool blue-black).
+        ink: "#0c0b09",
+        panel: "#17150f",
+        panel2: "#1c1a13",
+        panel3: "#232019",
+        edge: "#2c2820",
+        edge2: "#3a352a",
+        /*
+         * A single refined accent (warm amber/gold) carries every primary
+         * action, focus ring, and "brand" moment across the main app chrome.
+         * The remaining hues are desaturated and used ONLY for semantic
+         * meaning (status/priority), never as decoration. `neon.purple` is
+         * reserved for the Study Spirits gacha sub-brand and should not leak
+         * into the main app.
+         */
         neon: {
-          green: "#7cff6b",
-          cyan: "#5fd0ff",
-          pink: "#ff5fa2",
-          yellow: "#ffe14d",
-          purple: "#a98bff",
+          green: "#e0a84d", // primary accent
+          cyan: "#8fb0c9", // muted steel-blue — info / low priority
+          pink: "#d97b6c", // muted coral — danger / high priority / overdue
+          yellow: "#c99a5a", // muted bronze — warning / medium priority (gacha epic)
+          purple: "#a794d1", // muted violet — gacha sub-brand only
         },
       },
       boxShadow: {
         // Layered elevation — a defined near-shadow, never a soft ghost halo.
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7)",
         lift: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 16px 40px -16px rgba(0,0,0,0.85)",
-        glow: "0 0 0 1px rgba(124,255,107,0.25), 0 0 28px -6px rgba(124,255,107,0.35)",
-        "glow-cyan": "0 0 0 1px rgba(95,208,255,0.25), 0 0 28px -6px rgba(95,208,255,0.4)",
-        "glow-purple": "0 0 0 1px rgba(169,139,255,0.25), 0 0 28px -6px rgba(169,139,255,0.4)",
+        // Reserved for genuinely earned moments (level-up, legendary summon),
+        // not default hover states — kept subtle even there.
+        glow: "0 0 0 1px rgba(224,168,77,0.2), 0 0 14px -6px rgba(224,168,77,0.3)",
+        "glow-cyan": "0 0 0 1px rgba(143,176,201,0.18), 0 0 14px -6px rgba(143,176,201,0.28)",
+        "glow-purple": "0 0 0 1px rgba(167,148,209,0.2), 0 0 14px -6px rgba(167,148,209,0.32)",
       },
       keyframes: {
         floaty: {

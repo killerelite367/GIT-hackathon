@@ -2,11 +2,11 @@ import { useStore } from "../store/StoreContext";
 import { X } from "lucide-react";
 
 const styles: Record<string, string> = {
-  xp: "border-neon-green/40 bg-neon-green/10 text-neon-green",
-  level: "border-neon-yellow/40 bg-neon-yellow/10 text-neon-yellow",
-  achievement: "border-neon-purple/40 bg-neon-purple/10 text-neon-purple",
-  crystal: "border-neon-pink/40 bg-neon-pink/10 text-neon-pink",
-  info: "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan",
+  xp: "border-neon-green/30 bg-panel2 text-neon-green",
+  level: "border-neon-green/40 bg-panel2 text-neon-green",
+  achievement: "border-neon-purple/30 bg-panel2 text-neon-purple",
+  crystal: "border-neon-purple/25 bg-panel2 text-white/80",
+  info: "border-edge2 bg-panel2 text-white/80",
 };
 
 export default function Toasts() {
@@ -17,7 +17,7 @@ export default function Toasts() {
         <div
           key={t.id}
           role="status"
-          className={`pointer-events-auto flex w-full max-w-sm items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-medium shadow-glow backdrop-blur ${
+          className={`pointer-events-auto flex w-full max-w-sm items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-medium shadow-lift backdrop-blur ${
             styles[t.kind] ?? styles.info
           } animate-slideup`}
         >

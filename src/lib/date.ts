@@ -85,3 +85,8 @@ export function weekStart(iso: string): string {
   d.setDate(d.getDate() - dayNr);
   return toISODate(d);
 }
+
+/** Day of week for `iso`, Monday-first (Mon=0 .. Sun=6). */
+export function dayOfWeekMon0(iso: string): number {
+  return (fromISODate(iso).getDay() + 6) % 7;
+}

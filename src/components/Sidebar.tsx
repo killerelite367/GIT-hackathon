@@ -31,7 +31,7 @@ export default function Sidebar({
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-edge bg-panel/40 p-4 lg:flex">
       <div className="flex items-center gap-2.5 px-2 py-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-neon-green to-neon-cyan text-ink shadow-[0_0_18px_-4px_rgba(124,255,107,0.6)]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neon-green text-ink">
           <Sparkles size={18} />
         </div>
         <span className="font-display text-lg font-bold tracking-tightish text-white">
@@ -49,7 +49,7 @@ export default function Sidebar({
               aria-current={active ? "page" : undefined}
               className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition duration-150 ${
                 active
-                  ? "bg-neon-green/[0.12] text-neon-green shadow-[inset_0_0_0_1px_rgba(124,255,107,0.2)]"
+                  ? "bg-neon-green/10 text-neon-green"
                   : "text-white/55 hover:bg-white/[0.04] hover:text-white"
               }`}
             >
@@ -58,9 +58,7 @@ export default function Sidebar({
                 className={active ? "" : "text-white/40 group-hover:text-white/80"}
               />
               {label}
-              {active && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-neon-green shadow-[0_0_8px_0_rgba(124,255,107,0.8)]" />
-              )}
+              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-neon-green" />}
             </button>
           );
         })}
@@ -74,7 +72,7 @@ export default function Sidebar({
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-neon-yellow to-neon-pink transition-all"
+            className="h-full rounded-full bg-neon-green transition-all"
             style={{ width: `${lp.pct}%` }}
           />
         </div>

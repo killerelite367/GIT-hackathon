@@ -71,15 +71,15 @@ export const RARITY: Record<Rarity, RarityMeta> = {
   },
   rare: {
     label: "Rare", tier: 1, weight: 28,
-    text: "text-neon-cyan", border: "border-neon-cyan/50", glow: "rgba(95,208,255,0.55)",
+    text: "text-[#5fd0ff]", border: "border-[#5fd0ff]/50", glow: "rgba(95,208,255,0.55)",
   },
   epic: {
     label: "Epic", tier: 2, weight: 9,
-    text: "text-neon-purple", border: "border-neon-purple/60", glow: "rgba(169,139,255,0.6)",
+    text: "text-[#a98bff]", border: "border-[#a98bff]/60", glow: "rgba(169,139,255,0.6)",
   },
   legendary: {
     label: "Legendary", tier: 3, weight: 3,
-    text: "text-neon-yellow", border: "border-neon-yellow/70", glow: "rgba(255,225,77,0.7)",
+    text: "text-[#ffe14d]", border: "border-[#ffe14d]/70", glow: "rgba(255,225,77,0.7)",
   },
   mythic: {
     label: "Mythic", tier: 4, weight: 1.4,

@@ -4,6 +4,8 @@ import StatCard from "../components/StatCard";
 import GpaRing from "../components/GpaRing";
 import AssignmentCard from "../components/AssignmentCard";
 import BurnoutRadar from "../components/BurnoutRadar";
+import DailyBriefing from "../components/DailyBriefing";
+import FocusTimer from "../components/FocusTimer";
 import { useStore } from "../store/StoreContext";
 import { byPriority } from "../lib/priority";
 import { computeGpa } from "../lib/gpa";
@@ -42,6 +44,10 @@ export default function DashboardView({
 
   return (
     <>
+      <div className="mb-6">
+        <DailyBriefing />
+      </div>
+
       {/* Stat row */}
       <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard
@@ -50,9 +56,9 @@ export default function DashboardView({
           value={`${streakCU} ${streakCU === 1 ? "day" : "days"}`}
           sub={`Personal best: ${game.bestStreak}`}
           icon={<Flame size={18} />}
-          accent="text-neon-pink"
+          accent="text-neon-green"
           progress={game.bestStreak ? (game.streakDays / game.bestStreak) * 100 : 0}
-          barClass="bg-neon-pink"
+          barClass="bg-neon-green"
         />
         <StatCard
           index={1}
@@ -60,9 +66,9 @@ export default function DashboardView({
           value={`${xpCU.toLocaleString()} XP`}
           sub={`Level ${lp.level} · ${lp.toNext} to next`}
           icon={<Zap size={18} />}
-          accent="text-neon-yellow"
+          accent="text-neon-green"
           progress={lp.pct}
-          barClass="bg-neon-yellow"
+          barClass="bg-neon-green"
         />
         <StatCard
           index={2}
@@ -70,9 +76,9 @@ export default function DashboardView({
           value={`${weekCU}%`}
           sub={`${weekDone} of ${assignments.length} quests done`}
           icon={<Target size={18} />}
-          accent="text-neon-cyan"
+          accent="text-neon-green"
           progress={weekPct}
-          barClass="bg-neon-cyan"
+          barClass="bg-neon-green"
         />
         <StatCard
           index={3}
@@ -90,24 +96,19 @@ export default function DashboardView({
         {/* Upcoming quests */}
         <section className="lg:col-span-2">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-display text-lg font-semibold tracking-tightish text-white">
-                Upcoming quests
-              </h2>
-              <span className="rounded-full border border-neon-cyan/25 bg-neon-cyan/[0.08] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-neon-cyan/90">
-                smart-ranked
-              </span>
-            </div>
+            <h2 className="font-display text-lg font-semibold tracking-tightish text-white">
+              Upcoming quests
+            </h2>
             <div className="flex gap-2">
               <button
                 onClick={onImport}
-                className="flex items-center gap-1.5 rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-3 py-1.5 text-xs font-medium text-neon-purple transition hover:bg-neon-purple/20 active:scale-95"
+                className="flex items-center gap-1.5 rounded-lg border border-edge px-3 py-1.5 text-xs text-white/70 transition hover:border-edge2 hover:text-white active:scale-95"
               >
                 <Wand2 size={14} /> Import syllabus
               </button>
               <button
                 onClick={onAdd}
-                className="flex items-center gap-1.5 rounded-lg border border-edge px-3 py-1.5 text-xs text-white/70 transition hover:border-neon-green/40 hover:text-neon-green active:scale-95"
+                className="flex items-center gap-1.5 rounded-lg border border-neon-green/40 bg-neon-green/10 px-3 py-1.5 text-xs font-medium text-neon-green transition hover:bg-neon-green/20 active:scale-95"
               >
                 <Plus size={14} /> Add
               </button>
@@ -116,10 +117,10 @@ export default function DashboardView({
 
           {open.length === 0 ? (
             <div className="rounded-xl border border-dashed border-edge bg-panel2/30 p-8 text-center">
-              <p className="text-white/60">🎉 No open quests. You're all caught up!</p>
+              <p className="text-white/60">No open quests. You're all caught up.</p>
               <button
                 onClick={onImport}
-                className="mt-3 rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-3 py-1.5 text-xs text-neon-purple"
+                className="mt-3 rounded-lg border border-edge px-3 py-1.5 text-xs text-white/70 hover:text-white"
               >
                 Import a syllabus to plan ahead
               </button>
@@ -172,6 +173,8 @@ export default function DashboardView({
               ))}
             </div>
           </div>
+
+          <FocusTimer assignments={open} />
 
           <BurnoutRadar assignments={assignments} />
         </section>

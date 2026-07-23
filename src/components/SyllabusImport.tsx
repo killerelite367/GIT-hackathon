@@ -44,7 +44,7 @@ export default function SyllabusImport({ onClose }: { onClose: () => void }) {
       >
         <div className="mb-1 flex items-center justify-between">
           <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-            <Wand2 size={18} className="text-neon-purple" /> Import from syllabus
+            <Wand2 size={18} className="text-neon-green" /> Import from syllabus
           </h3>
           <button
             onClick={onClose}
@@ -67,13 +67,13 @@ export default function SyllabusImport({ onClose }: { onClose: () => void }) {
               onChange={(e) => setText(e.target.value)}
               rows={9}
               placeholder="Paste your syllabus text here…"
-              className="w-full resize-none rounded-xl border border-edge bg-panel2 p-3 font-mono text-xs text-white outline-none placeholder:text-white/30 focus:border-neon-purple/50"
+              className="w-full resize-none rounded-xl border border-edge bg-panel2 p-3 font-mono text-xs text-white outline-none placeholder:text-white/30 focus:border-neon-green/50"
             />
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 onClick={run}
                 disabled={!text.trim()}
-                className="flex items-center gap-2 rounded-lg border border-neon-purple/50 bg-neon-purple/15 px-4 py-2 text-sm font-medium text-neon-purple transition hover:bg-neon-purple/25 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center gap-2 rounded-lg border border-neon-green/50 bg-neon-green/15 px-4 py-2 text-sm font-medium text-neon-green transition hover:bg-neon-green/25 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Wand2 size={15} /> Extract assignments
               </button>

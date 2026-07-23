@@ -23,28 +23,19 @@ export default function GpaRing({ gpa, max = 4 }: Props) {
   return (
     <div className="relative h-44 w-44">
       <svg className="h-44 w-44 -rotate-90" viewBox="0 0 128 128">
-        <circle cx="64" cy="64" r={r} fill="none" stroke="#20202c" strokeWidth="9" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="#2c2820" strokeWidth="9" />
         <circle
           cx="64"
           cy="64"
           r={r}
           fill="none"
-          stroke="url(#gpaGrad)"
+          stroke="#e0a84d"
           strokeWidth="9"
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={offset}
-          style={{
-            transition: "stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)",
-            filter: "drop-shadow(0 0 6px rgba(124,255,107,0.35))",
-          }}
+          style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)" }}
         />
-        <defs>
-          <linearGradient id="gpaGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7cff6b" />
-            <stop offset="100%" stopColor="#5fd0ff" />
-          </linearGradient>
-        </defs>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-mono text-[2rem] font-bold tabular leading-none text-white">

@@ -4,8 +4,7 @@
 
 :root {
   color-scheme: dark;
-  --bg: #07070d;
-  --grid-line: rgba(124, 255, 107, 0.05);
+  --bg: #0c0b09;
 }
 
 * {
@@ -28,7 +27,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Ambient depth: soft auroras layered over near-black. Sits behind everything. */
+/*
+ * Ambient depth: a single, quiet warm glow low in the frame. Deliberately
+ * restrained — no rainbow radials, no decorative grid overlay. The surface
+ * should read as considered, not generated.
+ */
 .app-shell {
   position: relative;
   isolation: isolate;
@@ -39,32 +42,12 @@ body {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(900px 620px at 8% -8%, rgba(124, 255, 107, 0.1), transparent 55%),
-    radial-gradient(820px 560px at 102% 2%, rgba(95, 208, 255, 0.09), transparent 52%),
-    radial-gradient(760px 640px at 50% 118%, rgba(169, 139, 255, 0.08), transparent 55%),
+    radial-gradient(1100px 560px at 50% -12%, rgba(224, 168, 77, 0.05), transparent 60%),
     var(--bg);
 }
 
-/*
- * A faint terminal grid that fades into darkness at the edges — a nod to the
- * "quest brief" blueprint look without the flat full-strength overlay.
- */
-.grid-bg::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 46px 46px;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 12%, transparent 78%);
-  mask-image: radial-gradient(120% 90% at 50% 0%, #000 12%, transparent 78%);
-}
-
 ::selection {
-  background: rgba(124, 255, 107, 0.28);
+  background: rgba(224, 168, 77, 0.28);
   color: #fff;
 }
 
@@ -92,9 +75,9 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* Accessible keyboard focus ring, consistent across the neon theme */
+/* Accessible keyboard focus ring, consistent across the theme */
 :focus-visible {
-  outline: 2px solid #7cff6b;
+  outline: 2px solid #e0a84d;
   outline-offset: 2px;
   border-radius: 8px;
 }
@@ -118,16 +101,16 @@ body {
   50% { transform: translateY(-6px); }
 }
 
-/* A slow shifting aurora for the summon hero background. */
+/* A slow shifting glow behind the summon hero — quiet, not a rainbow. */
 @keyframes aurora-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 .gq-aurora {
-  background: linear-gradient(120deg, #a98bff, #ff5fa2, #5fd0ff, #7cff6b, #a98bff);
-  background-size: 300% 300%;
-  animation: aurora-shift 12s ease infinite;
+  background: linear-gradient(120deg, #a794d1, #e0a84d);
+  background-size: 220% 220%;
+  animation: aurora-shift 16s ease infinite;
 }
 
 /* Rotating light beams behind the summon orb / reveal. */
