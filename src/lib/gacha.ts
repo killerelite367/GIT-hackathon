@@ -12,7 +12,16 @@ import type { Assignment, GameState } from "../types";
  * collecting also compounds motivation instead of being pure cosmetics.
  */
 
-export type Rarity = "common" | "rare" | "epic" | "legendary";
+export type Rarity =
+  | "common"
+  | "rare"
+  | "epic"
+  | "legendary"
+  | "mythic"
+  | "ultramythic"
+  | "chromatic"
+  | "demon"
+  | "secret";
 
 /** Drawing recipe for a spirit's cute textbook-buddy character. */
 export interface SpiritArt {
@@ -20,6 +29,8 @@ export interface SpiritArt {
   trim: string; // darker outline / limbs
   belly: string; // page / label colour
   accessory: "none" | "cat-ears" | "glasses" | "sparkle" | "star" | "horns" | "crown";
+  rainbow?: boolean; // cycle hue (chromatic tier)
+  angry?: boolean; // angled brows (demon tier)
 }
 
 export interface Spirit {
@@ -35,10 +46,14 @@ export interface Spirit {
   blurb: string;
   /** How to draw the character. */
   art: SpiritArt;
+  /** What the character says out loud when summoned. */
+  voice?: string;
 }
 
 export interface RarityMeta {
   label: string;
+  /** Rank, 0 = common. Higher = rarer = grander reveal. */
+  tier: number;
   /** Draw weight (relative probability). */
   weight: number;
   /** Tailwind text colour class. */
@@ -51,36 +66,50 @@ export interface RarityMeta {
 
 export const RARITY: Record<Rarity, RarityMeta> = {
   common: {
-    label: "Common",
-    weight: 60,
-    text: "text-white/70",
-    border: "border-white/20",
-    glow: "rgba(255,255,255,0.35)",
+    label: "Common", tier: 0, weight: 60,
+    text: "text-white/70", border: "border-white/20", glow: "rgba(255,255,255,0.35)",
   },
   rare: {
-    label: "Rare",
-    weight: 28,
-    text: "text-neon-cyan",
-    border: "border-neon-cyan/50",
-    glow: "rgba(95,208,255,0.55)",
+    label: "Rare", tier: 1, weight: 28,
+    text: "text-neon-cyan", border: "border-neon-cyan/50", glow: "rgba(95,208,255,0.55)",
   },
   epic: {
-    label: "Epic",
-    weight: 9,
-    text: "text-neon-purple",
-    border: "border-neon-purple/60",
-    glow: "rgba(169,139,255,0.6)",
+    label: "Epic", tier: 2, weight: 9,
+    text: "text-neon-purple", border: "border-neon-purple/60", glow: "rgba(169,139,255,0.6)",
   },
   legendary: {
-    label: "Legendary",
-    weight: 3,
-    text: "text-neon-yellow",
-    border: "border-neon-yellow/70",
-    glow: "rgba(255,225,77,0.7)",
+    label: "Legendary", tier: 3, weight: 3,
+    text: "text-neon-yellow", border: "border-neon-yellow/70", glow: "rgba(255,225,77,0.7)",
+  },
+  mythic: {
+    label: "Mythic", tier: 4, weight: 1.4,
+    text: "text-[#ff6fd6]", border: "border-[#ff6fd6]/70", glow: "rgba(255,111,214,0.75)",
+  },
+  ultramythic: {
+    label: "Ultra Mythic", tier: 5, weight: 0.55,
+    text: "text-[#ff9a3d]", border: "border-[#ff9a3d]/70", glow: "rgba(255,154,61,0.8)",
+  },
+  chromatic: {
+    label: "Chromatic", tier: 6, weight: 0.22,
+    text: "text-[#7dffd0]", border: "border-[#7dffd0]/70", glow: "rgba(125,255,208,0.85)",
+  },
+  demon: {
+    label: "Demon", tier: 7, weight: 0.09,
+    text: "text-[#ff3b5c]", border: "border-[#ff3b5c]/80", glow: "rgba(255,59,92,0.9)",
+  },
+  secret: {
+    label: "???", tier: 8, weight: 0.03,
+    text: "text-white", border: "border-white/80", glow: "rgba(200,255,255,0.95)",
   },
 };
 
-export const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary"];
+export const RARITY_ORDER: Rarity[] = [
+  "common", "rare", "epic", "legendary",
+  "mythic", "ultramythic", "chromatic", "demon", "secret",
+];
+
+/** The tier at and above which a spirit gets the grand "awakening" reveal. */
+export const AWAKEN_TIER = 3; // legendary+
 
 /** The full roster — a family of cute flavoured "snack-book" buddies. */
 export const SPIRITS: Spirit[] = [
@@ -145,13 +174,60 @@ export const SPIRITS: Spirit[] = [
     id: "sage", name: "Sage the Dragonbook", emoji: "🐉", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
     blurb: "The Dean's dragon in book form. Hoards knowledge instead of gold.",
     art: { body: "#ffd76a", trim: "#cf9a24", belly: "#fff2c8", accessory: "horns" },
+    voice: "Rooar! Your knowledge... grows stronger!",
   },
   {
     id: "athena", name: "Queen Athena", emoji: "👑", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP",
     blurb: "Crowned scholar-sovereign. Wisdom incarnate, GPA immaculate.",
     art: { body: "#ffe7a1", trim: "#d9b64a", belly: "#fff6d6", accessory: "crown" },
+    voice: "By my crown, we shall ace this semester!",
+  },
+
+  // ── Mythic ──────────────────────────────────────────────
+  {
+    id: "prisma", name: "Prisma", emoji: "🔮", rarity: "mythic", xpBonus: 0.5, buff: "+50% XP",
+    blurb: "A mythic tome humming with pink energy. Bends focus to its will.",
+    art: { body: "#ff6fd6", trim: "#d63fb0", belly: "#ffd6f2", accessory: "sparkle" },
+    voice: "Mythic power... awakened! Let's go!",
+  },
+
+  // ── Ultra Mythic ────────────────────────────────────────
+  {
+    id: "solaris", name: "Solaris", emoji: "☀️", rarity: "ultramythic", xpBonus: 0.75, buff: "+75% XP",
+    blurb: "A blazing sun-book. Feel the burn... of pure productivity.",
+    art: { body: "#ff9a3d", trim: "#e0670f", belly: "#ffe0b0", accessory: "star" },
+    voice: "Feel the burning power of study!",
+  },
+
+  // ── Chromatic ───────────────────────────────────────────
+  {
+    id: "chroma", name: "Chroma", emoji: "🌈", rarity: "chromatic", xpBonus: 1.0, buff: "+100% XP",
+    blurb: "A shifting rainbow textbook. Every colour, every subject, mastered.",
+    art: { body: "#ff5fa2", trim: "#ffffff", belly: "#ffffff", accessory: "sparkle", rainbow: true },
+    voice: "Taste the rainbow of knowledge!",
+  },
+
+  // ── Demon ───────────────────────────────────────────────
+  {
+    id: "malachor", name: "Malachor", emoji: "😈", rarity: "demon", xpBonus: 1.5, buff: "+150% XP",
+    blurb: "A textbook forged in the fires of finals week. Deadlines fear it.",
+    art: { body: "#3a0e18", trim: "#ff3b5c", belly: "#ff3b5c", accessory: "horns", angry: true },
+    voice: "Your deadlines... shall PERISH.",
+  },
+
+  // ── ??? (Secret) ────────────────────────────────────────
+  {
+    id: "secret", name: "???", emoji: "❓", rarity: "secret", xpBonus: 2.0, buff: "+200% XP",
+    blurb: "It should not exist. Yet here it is, watching you study.",
+    art: { body: "#0d0d16", trim: "#b8ffff", belly: "#6fffff", accessory: "sparkle" },
+    voice: "You were not... supposed to find me.",
   },
 ];
+
+/** The line a spirit speaks on reveal (falls back to a cheerful default). */
+export function voiceLine(s: Spirit): string {
+  return s.voice ?? "Let's study together!";
+}
 
 export const SPIRIT_BY_ID: Record<string, Spirit> = Object.fromEntries(
   SPIRITS.map((s) => [s.id, s])
@@ -204,14 +280,19 @@ function rollRarity(): Rarity {
   return "common";
 }
 
-/** Roll restricted to Epic or Legendary (used by the pity guarantee). */
+/** Roll restricted to Epic or better (used by the pity guarantee). */
 function rollEpicPlus(): Rarity {
-  const epic = RARITY.epic.weight;
-  const legendary = RARITY.legendary.weight;
-  return Math.random() * (epic + legendary) < legendary ? "legendary" : "epic";
+  const pool = RARITY_ORDER.filter((r) => RARITY[r].tier >= RARITY.epic.tier);
+  const total = pool.reduce((n, r) => n + RARITY[r].weight, 0);
+  let roll = Math.random() * total;
+  for (const r of pool) {
+    roll -= RARITY[r].weight;
+    if (roll < 0) return r;
+  }
+  return "epic";
 }
 
-const isEpicPlus = (r: Rarity) => r === "epic" || r === "legendary";
+const isEpicPlus = (r: Rarity) => RARITY[r].tier >= RARITY.epic.tier;
 
 /**
  * Perform `count` pulls. Pure over Math.random: reads crystals + pity from the

@@ -9,12 +9,14 @@ export default function SpiritArt({
   spirit,
   size = 72,
   walking = true,
+  talking = false,
 }: {
   spirit: Spirit;
   size?: number;
   walking?: boolean;
+  talking?: boolean;
 }) {
-  const { body, trim, belly, accessory } = spirit.art;
+  const { body, trim, belly, accessory, rainbow, angry } = spirit.art;
 
   return (
     <svg
@@ -23,6 +25,7 @@ export default function SpiritArt({
       viewBox="0 0 120 132"
       role="img"
       aria-label={spirit.name}
+      className={rainbow ? "sp-rainbow" : undefined}
       style={{ overflow: "visible" }}
     >
       {/* ground shadow */}
@@ -72,12 +75,24 @@ export default function SpiritArt({
           <circle cx="75.5" cy="56.5" r="1.8" fill="#fff" />
         </g>
 
+        {/* angry brows (demon) */}
+        {angry && (
+          <g stroke="#2a2540" strokeWidth="3" strokeLinecap="round">
+            <line x1="41" y1="46" x2="55" y2="51" />
+            <line x1="79" y1="46" x2="65" y2="51" />
+          </g>
+        )}
+
         {/* blush */}
         <ellipse cx="39" cy="70" rx="5.5" ry="3.2" fill="#ff8fb8" opacity="0.75" />
         <ellipse cx="81" cy="70" rx="5.5" ry="3.2" fill="#ff8fb8" opacity="0.75" />
 
-        {/* smile */}
-        <path d="M53 69 Q60 76 67 69" stroke="#2a2540" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+        {/* mouth — talks (animated open mouth) or smiles */}
+        {talking ? (
+          <ellipse className="sp-talk" cx="60" cy="71" rx="6" ry="5" fill="#2a2540" />
+        ) : (
+          <path d="M53 69 Q60 76 67 69" stroke="#2a2540" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+        )}
 
         {/* accessory that sits ON TOP (glasses / star / crown / sparkle) */}
         {accessory === "glasses" && (

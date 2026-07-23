@@ -284,6 +284,50 @@ body {
 }
 .sp-hover { animation: sp-hover 2.6s ease-in-out infinite; }
 
+/* Mouth flapping while the character speaks. */
+@keyframes sp-talk {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1); }
+}
+.sp-talk { transform-box: fill-box; transform-origin: center; animation: sp-talk 0.22s ease-in-out infinite; }
+
+/* Chromatic tier: cycle the whole character through the spectrum. */
+@keyframes sp-hue { to { filter: hue-rotate(360deg); } }
+.sp-rainbow { animation: sp-hue 4s linear infinite; }
+
+/* Character strolls back and forth (and turns around) — Genshin-style parade. */
+@keyframes sp-stroll {
+  0%   { transform: translateX(0) scaleX(1); }
+  38%  { transform: translateX(78px) scaleX(1); }
+  44%  { transform: translateX(78px) scaleX(-1); }
+  82%  { transform: translateX(-78px) scaleX(-1); }
+  88%  { transform: translateX(-78px) scaleX(1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+.sp-stroll { animation: sp-stroll 5s ease-in-out 0.95s infinite; }
+
+/* A little celebratory hop mixed into the walk. */
+@keyframes sp-hop {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+.sp-hop { animation: sp-hop 0.6s ease-in-out infinite; }
+
+/* Speech bubble pop-in. */
+@keyframes bubble-pop {
+  0%   { transform: scale(0.4) translateY(10px); opacity: 0; }
+  60%  { transform: scale(1.06) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.bubble-pop { animation: bubble-pop 0.4s cubic-bezier(0.34, 1.56, 0.5, 1) both; }
+
+/* Chromatic rainbow aura sweep for the awaken backdrop. */
+@keyframes chroma-spin { to { transform: rotate(360deg); } }
+.chroma-bg {
+  background: conic-gradient(#ff5fa2, #ffe14d, #7cff6b, #5fd0ff, #a98bff, #ff5fa2);
+  animation: chroma-spin 6s linear infinite;
+}
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   html {

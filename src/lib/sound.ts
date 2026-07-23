@@ -105,29 +105,110 @@ export function playBurst() {
   o.stop(t + 0.55);
 }
 
-/** Triumphant chime on reveal — grander for higher rarities. */
-export function playReveal(rarity: "common" | "rare" | "epic" | "legendary") {
+/** Triumphant chime on reveal — grander (and darker) for higher rarities. */
+export function playReveal(rarity: string) {
   const c = ac();
   if (!c) return;
-  const chords: Record<string, number[]> = {
+  // Note motifs per rarity. Higher tiers = longer / grander; demon = ominous.
+  const motifs: Record<string, number[]> = {
     common: [523.25, 659.25],
     rare: [523.25, 659.25, 783.99],
     epic: [523.25, 659.25, 783.99, 1046.5],
     legendary: [523.25, 659.25, 783.99, 1046.5, 1318.51],
+    mythic: [587.33, 739.99, 880, 1174.66, 1479.98],
+    ultramythic: [523.25, 698.46, 880, 1046.5, 1396.91, 1760],
+    chromatic: [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1318.51],
+    demon: [98, 130.81, 155.56, 207.65, 103.83], // low, dissonant
+    secret: [1318.51, 1244.51, 1396.91, 1046.5, 1567.98], // eerie
   };
-  const notes = chords[rarity] ?? chords.common;
+  const notes = motifs[rarity] ?? motifs.common;
+  const dark = rarity === "demon";
   const t0 = c.currentTime;
+
+  // Grand bass swell for legendary+.
+  if (["legendary", "mythic", "ultramythic", "chromatic", "demon", "secret"].includes(rarity)) {
+    const b = c.createOscillator();
+    const bg = c.createGain();
+    b.type = "sine";
+    b.frequency.value = dark ? 55 : 130.81;
+    bg.gain.setValueAtTime(0.0001, t0);
+    bg.gain.exponentialRampToValueAtTime(0.28, t0 + 0.06);
+    bg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.4);
+    b.connect(bg).connect(c.destination);
+    b.start(t0);
+    b.stop(t0 + 1.5);
+  }
+
   notes.forEach((f, i) => {
     const o = c.createOscillator();
     const g = c.createGain();
-    o.type = "triangle";
+    o.type = dark ? "sawtooth" : "triangle";
     o.frequency.value = f;
-    const t = t0 + i * 0.08;
+    const t = t0 + i * (dark ? 0.14 : 0.09);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+    g.gain.exponentialRampToValueAtTime(dark ? 0.16 : 0.2, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.85);
     o.connect(g).connect(c.destination);
     o.start(t);
-    o.stop(t + 0.75);
+    o.stop(t + 0.9);
+    // Shimmer octave for the fancy tiers.
+    if (["chromatic", "secret", "ultramythic"].includes(rarity)) {
+      const s = c.createOscillator();
+      const sg = c.createGain();
+      s.type = "sine";
+      s.frequency.value = f * 2;
+      sg.gain.setValueAtTime(0.0001, t);
+      sg.gain.exponentialRampToValueAtTime(0.06, t + 0.02);
+      sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      s.connect(sg).connect(c.destination);
+      s.start(t);
+      s.stop(t + 0.65);
+    }
   });
+}
+
+/** Blippy "animal-crossing" talk sound — one blip per few characters. */
+export function playTalk(text: string, rarity = "common") {
+  const c = ac();
+  if (!c) return;
+  const dark = rarity === "demon" || rarity === "secret";
+  const base = dark ? 150 : 620;
+  const blips = Math.max(3, Math.min(14, Math.round(text.length / 3)));
+  const t0 = c.currentTime;
+  for (let i = 0; i < blips; i++) {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = dark ? "square" : "triangle";
+    o.frequency.value = base + Math.random() * (dark ? 60 : 260);
+    const t = t0 + i * 0.085;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.08);
+  }
+}
+
+/** Actually speak the catchphrase aloud via the browser's speech engine. */
+export function speak(text: string, rarity = "common") {
+  if (muted) return;
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    // Cute + high for books; deep + slow growl for demon/secret.
+    if (rarity === "demon" || rarity === "secret") {
+      u.pitch = 0.2;
+      u.rate = 0.8;
+    } else {
+      u.pitch = 1.6;
+      u.rate = 1.05;
+    }
+    u.volume = 0.9;
+    synth.speak(u);
+  } catch {
+    // speech not available — the on-screen bubble still shows the words
+  }
 }

@@ -6,6 +6,8 @@ import {
   playCharge,
   playBurst,
   playReveal,
+  playTalk,
+  speak,
   isMuted,
   toggleMuted,
 } from "../lib/sound";
@@ -21,6 +23,8 @@ import {
   canAfford,
   collectionCount,
   equippedXpMultiplier,
+  voiceLine,
+  AWAKEN_TIER,
   type PullOutcome,
   type Rarity,
 } from "../lib/gacha";
@@ -31,6 +35,11 @@ const RARITY_GRAD: Record<Rarity, string> = {
   rare: "linear-gradient(155deg, rgba(95,208,255,0.30), rgba(95,208,255,0.04))",
   epic: "linear-gradient(155deg, rgba(169,139,255,0.34), rgba(169,139,255,0.05))",
   legendary: "linear-gradient(155deg, rgba(255,225,77,0.40), rgba(255,95,162,0.12))",
+  mythic: "linear-gradient(155deg, rgba(255,111,214,0.42), rgba(169,139,255,0.12))",
+  ultramythic: "linear-gradient(155deg, rgba(255,154,61,0.45), rgba(255,59,92,0.14))",
+  chromatic: "linear-gradient(155deg, rgba(125,255,208,0.4), rgba(95,208,255,0.16))",
+  demon: "linear-gradient(155deg, rgba(255,59,92,0.45), rgba(20,0,6,0.5))",
+  secret: "linear-gradient(155deg, rgba(200,255,255,0.5), rgba(20,20,30,0.4))",
 };
 
 export default function GachaView() {
@@ -304,11 +313,12 @@ function RarityRow({
   );
 }
 
-type Phase = "charge" | "burst" | "cards";
+type Phase = "charge" | "burst" | "awaken" | "cards";
 
 // Timing of the summon cinematic (ms).
 const CHARGE_MS = 1500;
 const BURST_MS = 480;
+const AWAKEN_MS = 5000;
 
 /** Cinematic summon: the orb charges, shakes, then EXPLODES into the reveal —
  *  with synchronised sound. Tap to skip ahead. */
@@ -325,7 +335,7 @@ function RevealOverlay({
     RARITY_ORDER.indexOf(o.spirit.rarity) > RARITY_ORDER.indexOf(b.spirit.rarity) ? o : b
   );
   const bestMeta = RARITY[best.spirit.rarity];
-  const legendary = best.spirit.rarity === "legendary";
+  const grand = bestMeta.tier >= AWAKEN_TIER; // legendary+ gets the awakening
 
   const reduced =
     typeof window !== "undefined" &&
@@ -333,31 +343,57 @@ function RevealOverlay({
 
   const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "charge");
 
+  // Fire the reveal sound + (for grand pulls) the spoken catchphrase.
+  const speakBest = () => {
+    const line = voiceLine(best.spirit);
+    playReveal(best.spirit.rarity);
+    speak(line, best.spirit.rarity);
+    playTalk(line, best.spirit.rarity);
+  };
+
   useEffect(() => {
     if (reduced) {
       playReveal(best.spirit.rarity);
       return;
     }
-    playCharge(1500);
-    const t1 = setTimeout(() => {
-      setPhase("burst");
-      playBurst();
-    }, CHARGE_MS);
-    const t2 = setTimeout(() => {
-      setPhase("cards");
-      playReveal(best.spirit.rarity);
-    }, CHARGE_MS + BURST_MS);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    // Higher rarity = longer, more dramatic charge.
+    const chargeMs = CHARGE_MS + bestMeta.tier * 220;
+    playCharge(chargeMs);
+    const timers: number[] = [];
+    timers.push(
+      window.setTimeout(() => {
+        setPhase("burst");
+        playBurst();
+      }, chargeMs)
+    );
+    timers.push(
+      window.setTimeout(() => {
+        if (grand) {
+          setPhase("awaken");
+          speakBest();
+        } else {
+          setPhase("cards");
+          playReveal(best.spirit.rarity);
+        }
+      }, chargeMs + BURST_MS)
+    );
+    if (grand) {
+      timers.push(
+        window.setTimeout(() => setPhase("cards"), chargeMs + BURST_MS + AWAKEN_MS)
+      );
+    }
+    return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Tap skips the cinematic; once the cards are shown, tap dismisses.
+  // Tap advances: charge/burst → reveal, awaken → cards, cards → dismiss.
   const handleBackdrop = () => {
     if (phase === "cards") onClose();
-    else {
+    else if (phase === "awaken") setPhase("cards");
+    else if (grand) {
+      setPhase("awaken");
+      speakBest();
+    } else {
       setPhase("cards");
       playReveal(best.spirit.rarity);
     }
@@ -443,10 +479,78 @@ function RevealOverlay({
         </div>
       )}
 
+      {/* ── AWAKEN ── the star flies out, wakes up, and SPEAKS (legendary+) ── */}
+      {phase === "awaken" && (
+        <div className="relative flex flex-col items-center gap-5">
+          {/* rarity backdrop */}
+          {best.spirit.art.rainbow ? (
+            <div className="chroma-bg pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[150vh] w-[150vh] -translate-x-1/2 -translate-y-1/2 opacity-20" />
+          ) : (
+            <div
+              className="pointer-events-none absolute inset-0 -z-10 opacity-30"
+              style={{ background: `radial-gradient(circle at 50% 42%, ${bestMeta.glow}, transparent 42%)` }}
+            />
+          )}
+          {CONFETTI.map((c, i) => (
+            <span
+              key={i}
+              className="pointer-events-none absolute top-0 text-xl"
+              style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
+            >
+              {c.e}
+            </span>
+          ))}
+
+          <p
+            className={`font-mono text-sm font-bold uppercase tracking-[0.35em] ${bestMeta.text}`}
+            style={{ animation: "gacha-rise 0.5s ease-out both", textShadow: `0 0 18px ${bestMeta.glow}` }}
+          >
+            {bestMeta.label}
+          </p>
+
+          {/* the character flies in, then walks (paces) around, feet moving */}
+          <div className="sp-stroll">
+            <div className="sp-flyin" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
+              <div className="sp-hop">
+                <SpiritArt spirit={best.spirit} size={190} talking />
+              </div>
+            </div>
+          </div>
+
+          {/* speech bubble */}
+          <div
+            className="bubble-pop relative max-w-xs rounded-2xl border-2 bg-panel/95 px-5 py-3 text-center"
+            style={{ borderColor: bestMeta.glow, boxShadow: `0 0 30px -8px ${bestMeta.glow}` }}
+          >
+            <p className="font-display text-base font-bold text-white">
+              “{voiceLine(best.spirit)}”
+            </p>
+            <span
+              className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l-2 border-t-2 bg-panel"
+              style={{ borderColor: bestMeta.glow }}
+            />
+          </div>
+
+          <p className="font-display text-2xl font-extrabold text-white" style={{ animation: "gacha-rise 0.6s ease-out 0.2s both" }}>
+            {best.spirit.name}
+          </p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setPhase("cards");
+            }}
+            className="rounded-xl border border-white/25 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white transition hover:scale-105"
+          >
+            Continue
+          </button>
+          <p className="text-[11px] text-white/40">tap anywhere to continue</p>
+        </div>
+      )}
+
       {/* ── CARDS ── the reveal ── */}
       {phase === "cards" && (
         <>
-          {legendary &&
+          {grand &&
             CONFETTI.map((c, i) => (
               <span
                 key={i}
@@ -501,12 +605,12 @@ function RevealOverlay({
           </div>
 
           <div className="relative flex flex-col items-center gap-3">
-            {legendary && (
+            {grand && (
               <p
                 className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-yellow bg-clip-text font-display text-xl font-extrabold text-transparent"
                 style={{ animation: "gacha-rise 0.5s ease-out 0.3s both" }}
               >
-                🌟 A LEGENDARY spirit answered your call! 🌟
+                🌟 A {bestMeta.label.toUpperCase()} spirit answered your call! 🌟
               </p>
             )}
             <div className="flex gap-3">
