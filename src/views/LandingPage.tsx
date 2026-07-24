@@ -10,6 +10,12 @@ import {
   Check,
   Clock,
 } from "lucide-react";
+import {
+  useSmoothScroll,
+  useScrollReveals,
+  useMaskedHeading,
+  useMagnetic,
+} from "../lib/motion";
 
 /**
  * The landing page — a brand surface, not app chrome. Committed violet hero,
@@ -18,8 +24,13 @@ import {
  * page is genuinely what the app looks like.
  */
 export default function LandingPage({ onEnter }: { onEnter: () => void }) {
+  useSmoothScroll();
+  const scope = useScrollReveals<HTMLDivElement>();
+  const headingRef = useMaskedHeading<HTMLHeadingElement>(0.15);
+  const ctaRef = useMagnetic<HTMLButtonElement>();
+
   return (
-    <div className="min-h-screen bg-canvas">
+    <div ref={scope} className="min-h-screen bg-canvas">
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-brand text-white">
         <div
@@ -63,8 +74,19 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
               <Wand2 size={13} /> Built for Republic Polytechnic
             </p>
-            <h1 className="mt-5 text-balance font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-tighter2 sm:text-[3.6rem] lg:text-[4rem]">
-              Paste your syllabus. Get your semester planned.
+            <h1
+              ref={headingRef}
+              className="mt-5 font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-tighter2 sm:text-[3.6rem] lg:text-[4rem]"
+            >
+              <span className="line">
+                <span className="line-inner">Paste your syllabus.</span>
+              </span>
+              <span className="line">
+                <span className="line-inner">Get your semester</span>
+              </span>
+              <span className="line">
+                <span className="line-inner">planned.</span>
+              </span>
             </h1>
             <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-white/85">
               StudyQuest reads your module guides, pulls out every deadline and weightage, then
@@ -90,8 +112,8 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             </p>
           </div>
 
-          {/* Product preview */}
-          <div className="relative">
+          {/* Product preview — drifts gently against the scroll */}
+          <div className="relative" data-parallax="0.08">
             <div className="rounded-2xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur">
               <UpNextPreview />
             </div>
@@ -104,24 +126,27 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 
       {/* ── The problem ──────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center" data-reveal-group>
           <div>
-            <h2 className="text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.6rem]">
+            <h2
+              data-reveal
+              className="text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.6rem]"
+            >
               Four modules. Eleven deadlines. One week where they all land.
             </h2>
-            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-dusk">
+            <p data-reveal className="mt-4 max-w-md text-[16px] leading-relaxed text-dusk">
               CAs, group projects, reflections, quizzes — every module hands you a different
               schedule, in a different format, at a different time. Most planners make you retype
               all of it by hand, so most students stop after week three.
             </p>
-            <p className="mt-4 max-w-md text-[16px] font-semibold text-night">
+            <p data-reveal className="mt-4 max-w-md text-[16px] font-semibold text-night">
               StudyQuest does the typing for you.
             </p>
           </div>
 
           {/* A real module-guide fragment → what gets extracted */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
+            <div data-reveal className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-haze">
                 Your module guide
               </p>
@@ -133,7 +158,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 - Sprint 3 Demo 29/07, 30%`}
               </pre>
             </div>
-            <div className="rounded-2xl border border-brand/25 bg-brand-soft/50 p-4">
+            <div data-reveal className="rounded-2xl border border-brand/25 bg-brand-soft/50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
                 What StudyQuest pulls out
               </p>
@@ -162,7 +187,10 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
       {/* ── How it works ─────────────────────────────────── */}
       <section id="how" className="border-y border-line bg-surface/60 py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <h2 className="max-w-xl text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.4rem]">
+          <h2
+            data-reveal
+            className="max-w-xl text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.4rem]"
+          >
             Three steps, then it runs itself.
           </h2>
 
@@ -195,13 +223,19 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 
       {/* ── Features bento ───────────────────────────────── */}
       <section id="features" className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
-        <h2 className="max-w-xl text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.4rem]">
+        <h2
+          data-reveal
+          className="max-w-xl text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-night sm:text-[2.4rem]"
+        >
           Everything a semester throws at you, in one place.
         </h2>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-10 grid gap-4 md:grid-cols-3" data-reveal-group>
           {/* Wide feature */}
-          <div className="rounded-2xl border border-line bg-surface p-6 shadow-soft md:col-span-2">
+          <div
+            data-reveal
+            className="rounded-2xl border border-line bg-surface p-6 shadow-soft md:col-span-2"
+          >
             <div className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-berry-soft text-berry-deep">
                 <AlertTriangle size={18} />
@@ -216,7 +250,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
 
           {/* Tall-ish feature */}
-          <div className="rounded-2xl border border-line bg-surface p-6 shadow-soft">
+          <div data-reveal className="rounded-2xl border border-line bg-surface p-6 shadow-soft">
             <div className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-soft text-sky-deep">
                 <GraduationCap size={18} />
@@ -227,7 +261,12 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
               Credit-weighted on the poly 0–4 scale. Edit a score and watch it move.
             </p>
             <div className="mt-5 flex items-baseline gap-2">
-              <span className="font-display text-4xl font-extrabold tabular text-night">3.60</span>
+              <span
+                data-count="3.60"
+                className="font-display text-4xl font-extrabold tabular text-night"
+              >
+                3.60
+              </span>
               <span className="text-sm font-medium text-dusk">/ 4.00</span>
             </div>
             <p className="mt-3 rounded-lg bg-surface2 px-3 py-2 text-xs font-medium text-dusk">
@@ -259,20 +298,30 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 
       {/* ── Spirits (dark band) ──────────────────────────── */}
       <section id="spirits" className="summon-stage border-y border-brand/20 py-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-2">
+        <div
+          className="mx-auto grid max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-2"
+          data-reveal-group
+        >
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/80">
+            <p
+              data-reveal
+              className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/80"
+            >
               <Gem size={13} /> The reward layer
             </p>
-            <h2 className="mt-5 text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-white sm:text-[2.4rem]">
+            <h2
+              data-reveal
+              className="mt-5 text-balance font-display text-[2rem] font-bold leading-[1.1] tracking-tighter2 text-white sm:text-[2.4rem]"
+            >
               The only way to earn a summon is to study.
             </h2>
-            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-white/70">
+            <p data-reveal className="mt-4 max-w-md text-[16px] leading-relaxed text-white/70">
               Finishing real coursework earns Focus Crystals — the single currency in the game. Spend
               them to summon Study Spirits, collectible companions that give you a small XP bonus
               while equipped. No payments, ever. The grind is your actual degree.
             </p>
             <button
+              data-reveal
               onClick={onEnter}
               className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-[15px] font-bold text-brand-deep transition hover:bg-white/90 active:scale-95"
             >
@@ -289,7 +338,8 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             ].map((s) => (
               <div
                 key={s.n}
-                className={`rounded-2xl border bg-white/[0.04] p-4 text-center ${s.c}`}
+                data-reveal
+                className={`rounded-2xl border bg-white/[0.04] p-4 text-center transition duration-300 hover:-translate-y-1.5 ${s.c}`}
               >
                 <div className="text-4xl">{s.e}</div>
                 <p className="mt-2 text-sm font-bold text-white">{s.n}</p>
@@ -303,21 +353,27 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────── */}
-      <section className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8">
-        <h2 className="text-balance font-display text-[2.2rem] font-extrabold leading-[1.05] tracking-tighter2 text-night sm:text-[2.9rem]">
+      <section className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8" data-reveal-group>
+        <h2
+          data-reveal
+          className="text-balance font-display text-[2.2rem] font-extrabold leading-[1.05] tracking-tighter2 text-night sm:text-[2.9rem]"
+        >
           Set your semester up in about two minutes.
         </h2>
-        <p className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-dusk">
+        <p data-reveal className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-dusk">
           Paste one module guide and you'll have a plan for the next three months. Everything saves
           to your browser — no sign-up, nothing to cancel.
         </p>
-        <button
-          onClick={onEnter}
-          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-brand px-7 py-4 text-base font-bold text-white shadow-brand transition hover:bg-brand-deep active:scale-95"
-        >
-          Open StudyQuest
-          <ArrowRight size={18} />
-        </button>
+        <div data-reveal className="mt-8">
+          <button
+            ref={ctaRef}
+            onClick={onEnter}
+            className="inline-flex items-center gap-2 rounded-xl bg-brand px-7 py-4 text-base font-bold text-white shadow-brand transition-colors hover:bg-brand-deep"
+          >
+            Open StudyQuest
+            <ArrowRight size={18} />
+          </button>
+        </div>
       </section>
 
       <footer className="border-t border-line py-8">
@@ -351,17 +407,21 @@ function Step({
   flip?: boolean;
 }) {
   return (
-    <div className="grid items-center gap-8 lg:grid-cols-2">
+    <div className="grid items-center gap-8 lg:grid-cols-2" data-reveal-group>
       <div className={flip ? "lg:order-2" : ""}>
-        <div className="flex items-baseline gap-3">
+        <div data-reveal className="flex items-baseline gap-3">
           <span className="font-mono text-sm font-bold text-brand">{n}</span>
           <h3 className="font-display text-2xl font-bold leading-tight tracking-tightish text-night">
             {title}
           </h3>
         </div>
-        <p className="mt-3 max-w-md text-[16px] leading-relaxed text-dusk">{body}</p>
+        <p data-reveal className="mt-3 max-w-md text-[16px] leading-relaxed text-dusk">
+          {body}
+        </p>
       </div>
-      <div className={flip ? "lg:order-1" : ""}>{children}</div>
+      <div data-reveal className={flip ? "lg:order-1" : ""}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -378,7 +438,7 @@ function FeatureSmall({
   body: string;
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-6 shadow-soft">
+    <div data-reveal className="rounded-2xl border border-line bg-surface p-6 shadow-soft">
       <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${tone}`}>{icon}</span>
       <h3 className="mt-3 font-display text-lg font-bold text-night">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-dusk">{body}</p>

@@ -33,6 +33,22 @@ body {
 }
 
 /*
+ * Line-mask reveal: each line sits in a clipped wrapper so the inner span can
+ * rise out from behind it. Text is fully visible by default — the animation
+ * only ever moves an already-rendered line, so nothing can ship blank.
+ */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.line-inner {
+  display: block;
+  will-change: transform;
+}
+
+/*
  * Ambient warmth: two soft, wide colour washes high in the frame — a violet
  * and a honey glow — so the bright canvas feels alive rather than flat white.
  * Deliberately faint; the cards do the talking.
