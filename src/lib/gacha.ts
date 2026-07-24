@@ -33,6 +33,22 @@ export interface SpiritArt {
   angry?: boolean; // angled brows (demon tier)
 }
 
+/**
+ * The eight premium elemental themes from the VFX Bible. When a spirit has an
+ * `element`, it uses the cinematic 4-phase summon (Environmental Overwrite →
+ * Breach → Climax → Idle) and the detailed PremiumArt character instead of the
+ * cute snack-book flow.
+ */
+export type Element =
+  | "fire"
+  | "light"
+  | "glitch"
+  | "water"
+  | "time"
+  | "void"
+  | "earth"
+  | "crystal";
+
 export interface Spirit {
   id: string;
   name: string;
@@ -48,6 +64,10 @@ export interface Spirit {
   art: SpiritArt;
   /** What the character says out loud when summoned. */
   voice?: string;
+  /** Epithet subtitle, e.g. "Demon of the Burning Midnight Oil". */
+  title?: string;
+  /** Premium cinematic element theme (VFX Bible characters only). */
+  element?: Element;
 }
 
 export interface RarityMeta {
@@ -174,44 +194,72 @@ export const SPIRITS: Spirit[] = [
     art: { body: "#6f8bff", trim: "#4a5bd0", belly: "#d6dcff", accessory: "star" },
   },
 
-  // ── Legendary ───────────────────────────────────────────
+  // ── Legendary — premium cinematic characters (VFX Bible) ─
   {
-    id: "sage", name: "Sage the Dragonbook", emoji: "🐉", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
-    blurb: "The Dean's dragon in book form. Hoards knowledge instead of gold.",
-    art: { body: "#ffd76a", trim: "#cf9a24", belly: "#fff2c8", accessory: "horns" },
-    voice: "Rooar! Your knowledge... grows stronger!",
+    id: "nullref", name: "Null_Ref, the Glitch Hacker", emoji: "👾", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
+    title: "Anomaly in the System",
+    blurb: "A corrupted process given form. Datamoshes into existence to delete your deadlines.",
+    voice: "Deadline dot e-x-e has been corrupted. You're welcome.",
+    element: "glitch",
+    art: { body: "#0c1a0c", trim: "#39ff14", belly: "#123312", accessory: "glasses" },
   },
   {
-    id: "athena", name: "Queen Athena", emoji: "👑", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP",
-    blurb: "Crowned scholar-sovereign. Wisdom incarnate, GPA immaculate.",
-    art: { body: "#ffe7a1", trim: "#d9b64a", belly: "#fff6d6", accessory: "crown" },
-    voice: "By my crown, we shall ace this semester!",
+    id: "leviathan", name: "Leviathan, the Deep Oracle", emoji: "🌊", rarity: "legendary", xpBonus: 0.34, buff: "+34% XP",
+    title: "Warden of the Drowned Archives",
+    blurb: "Warden of the drowned archives, wielding a trident of coral. The depths of knowledge are bottomless.",
+    voice: "The depths of knowledge are bottomless. Do not drown in your studies.",
+    element: "water",
+    art: { body: "#14405f", trim: "#5fd0ff", belly: "#1f5f80", accessory: "horns" },
   },
   {
-    id: "titanus", name: "Titanus", emoji: "🛡️", rarity: "legendary", xpBonus: 0.34, buff: "+34% XP",
-    blurb: "A steel-bound tome that guards your focus like a fortress.",
-    art: { body: "#cfd6e0", trim: "#8a93a3", belly: "#eef2f7", accessory: "crown" },
-    voice: "None shall pass... without studying!",
+    id: "terra", name: "Terra, the Overgrowth Colossus", emoji: "🌳", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP",
+    title: "Roots of the Ancient Academy",
+    blurb: "A colossus of stone and ancient oak. Slow, steady, and inevitable.",
+    voice: "Slow, steady, and inevitable. Knowledge takes time to blossom.",
+    element: "earth",
+    art: { body: "#3a5a2a", trim: "#6a4a2a", belly: "#5a7a3a", accessory: "horns" },
+  },
+  {
+    id: "lumina", name: "Lumina, the Prismatic Muse", emoji: "🦋", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
+    title: "Weaver of Daydreams",
+    blurb: "A whimsical muse trailing iridescent glitter, painting your schedule with stars.",
+    voice: "A little magic goes a long way. Let's paint your schedule with stars!",
+    element: "crystal",
+    art: { body: "#ff9ec4", trim: "#a98bff", belly: "#ffd6f2", accessory: "star", rainbow: true },
   },
 
-  // ── Mythic ──────────────────────────────────────────────
+  // ── Mythic — premium cinematic characters (VFX Bible) ────
   {
-    id: "prisma", name: "Prisma", emoji: "🔮", rarity: "mythic", xpBonus: 0.5, buff: "+50% XP",
-    blurb: "A mythic tome humming with pink energy. Bends focus to its will.",
-    art: { body: "#ff6fd6", trim: "#d63fb0", belly: "#ffd6f2", accessory: "sparkle" },
-    voice: "Mythic power... awakened! Let's go!",
+    id: "ignis", name: "Ignis, the Inferno Scholar", emoji: "🔥", rarity: "mythic", xpBonus: 0.5, buff: "+50% XP",
+    title: "Demon of the Burning Midnight Oil",
+    blurb: "Born from the fires of ambition, wielding a burning staff of melted fountain pens.",
+    voice: "I am born from the fires of your ambition. Let the syllabus burn!",
+    element: "fire",
+    art: { body: "#3a0e08", trim: "#ff5a2c", belly: "#ff8a2c", accessory: "horns", angry: true },
   },
   {
-    id: "aurora", name: "Aurora", emoji: "🌌", rarity: "mythic", xpBonus: 0.52, buff: "+52% XP",
-    blurb: "Glows with northern lights. Makes even 3am revision feel magical.",
-    art: { body: "#6fe0ff", trim: "#3aa8d0", belly: "#d6f6ff", accessory: "sparkle" },
-    voice: "Shining bright, just like you!",
+    id: "aura", name: "Aura, the Celestial Dean", emoji: "😇", rarity: "mythic", xpBonus: 0.52, buff: "+52% XP",
+    title: "Seraph of Infinite Knowledge",
+    blurb: "A seraph descending in lotus pose, ringed by halos of runic mathematics.",
+    voice: "Bathe in the light of endless understanding. There are no wrong answers here.",
+    element: "light",
+    art: { body: "#fff2c0", trim: "#e0c060", belly: "#fffbe0", accessory: "crown" },
   },
   {
-    id: "seraph", name: "Seraph", emoji: "😇", rarity: "mythic", xpBonus: 0.55, buff: "+55% XP",
-    blurb: "A radiant tome of blessings. Answers your prayers before finals.",
-    art: { body: "#fff0b0", trim: "#e0c34a", belly: "#fffbe0", accessory: "star" },
-    voice: "Blessings upon your grades!",
+    id: "chronos", name: "Chronos, the Clockwork Maestro", emoji: "⏳", rarity: "mythic", xpBonus: 0.55, buff: "+55% XP",
+    title: "Weaver of Stolen Time",
+    blurb: "A brass maestro of gears and pocket watches who turns back the deadline clock.",
+    voice: "Time waits for no student. But for you... I can turn back the hands.",
+    element: "time",
+    art: { body: "#c9a24a", trim: "#6a4a1a", belly: "#e6c878", accessory: "crown" },
+  },
+  {
+    id: "aether", name: "Aether, the Void Entity", emoji: "🌌", rarity: "mythic", xpBonus: 0.58, buff: "+58% XP",
+    title: "The Formless Concept",
+    blurb: "A formless being cloaked in living constellations, staring into the abyss of your curriculum.",
+    voice: "I stare into the abyss of your curriculum... and it is empty.",
+    element: "void",
+    art: { body: "#1a0a2a", trim: "#a98bff", belly: "#3a1a5a", accessory: "sparkle" },
   },
 
   // ── Ultra Mythic ────────────────────────────────────────

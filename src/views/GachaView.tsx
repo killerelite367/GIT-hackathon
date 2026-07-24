@@ -2,6 +2,7 @@ import { useState, useEffect, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
+import CharacterArt from "../components/CharacterArt";
 import CrystalGem from "../components/CrystalGem";
 import {
   playCharge,
@@ -241,7 +242,7 @@ export default function GachaView() {
               borderColor: equipped ? RARITY[equipped.rarity].glow : "#25252f",
             }}
           >
-            {equipped ? <SpiritArt spirit={equipped} size={48} /> : <span className="text-3xl text-white/30">—</span>}
+            {equipped ? <CharacterArt spirit={equipped} size={equipped.element ? 44 : 48} /> : <span className="text-3xl text-white/30">—</span>}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-white/40">Equipped spirit</p>
@@ -357,10 +358,10 @@ function RarityRow({
                   style={{ background: meta.glow, opacity: 0.5 }}
                 />
                 <div className="relative transition-transform duration-300 group-hover:scale-110">
-                  <SpiritArt spirit={s} size={62} />
+                  <CharacterArt spirit={s} size={s.element ? 52 : 62} />
                 </div>
               </div>
-              <p className="mt-1 font-display text-sm font-bold text-white">{s.name}</p>
+              <p className="mt-1 font-display text-xs font-bold leading-tight text-white">{s.name}</p>
               <span
                 className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.text}`}
                 style={{ background: "rgba(0,0,0,0.3)" }}
@@ -392,7 +393,7 @@ type Phase = "charge" | "burst" | "awaken" | "cards";
 // Timing of the summon cinematic (ms).
 const CHARGE_MS = 1500;
 const BURST_MS = 480;
-const AWAKEN_MS = 6800;
+const AWAKEN_MS = 7000;
 
 /** Small icon shown next to the rarity label so tiers read at a glance. */
 const RARITY_ICON: Record<Rarity, string> = {
@@ -493,7 +494,9 @@ function RevealOverlay({
   return (
     <div
       onClick={handleBackdrop}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/90 p-6 backdrop-blur-md"
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 overflow-hidden p-6 backdrop-blur-md ${
+        best.spirit.element && phase !== "cards" ? `env-${best.spirit.element}` : "bg-black/90"
+      } ${phase === "burst" ? "vfx-screen-shake-heavy" : ""}`}
       style={{ animation: "gacha-fade 0.25s ease-out" }}
     >
       {/* rotating beams tinted by the incoming rarity */}
@@ -657,7 +660,7 @@ function RevealOverlay({
             <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
               <div className="sp-impact">
                 <div className="sp-hop">
-                  <SpiritArt spirit={best.spirit} size={190} talking />
+                  <CharacterArt spirit={best.spirit} size={best.spirit.element ? 210 : 190} talking />
                 </div>
               </div>
             </div>
@@ -681,12 +684,19 @@ function RevealOverlay({
             />
           </div>
 
-          <p
-            className="font-display text-2xl font-extrabold text-white opacity-0"
+          <div
+            className="flex flex-col items-center opacity-0"
             style={{ animation: "gacha-rise 0.6s ease-out 2.3s both" }}
           >
-            {best.spirit.name}
-          </p>
+            <p className="text-center font-display text-2xl font-extrabold text-white">
+              {best.spirit.name}
+            </p>
+            {best.spirit.title && (
+              <p className={`mt-0.5 font-mono text-[11px] uppercase tracking-widest ${bestMeta.text}`}>
+                “{best.spirit.title}”
+              </p>
+            )}
+          </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -742,12 +752,12 @@ function RevealOverlay({
                     </span>
                   )}
                   <div
-                    className="sp-flyin drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]"
+                    className="sp-flyin flex h-20 items-center justify-center drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]"
                     style={{ animationDelay: `${i * 80 + 120}ms` }}
                   >
-                    <SpiritArt spirit={o.spirit} size={76} />
+                    <CharacterArt spirit={o.spirit} size={o.spirit.element ? 66 : 76} />
                   </div>
-                  <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
+                  <p className="mt-2 font-display text-xs font-bold leading-tight text-white">{o.spirit.name}</p>
                   <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
                     {meta.label}
                   </p>
