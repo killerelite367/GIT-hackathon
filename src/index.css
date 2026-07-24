@@ -603,6 +603,22 @@ body {
     #0c1706;
 }
 
+/* Cloud: soft twilight fog (Cloud tier — gravity reverses, volumetric fog). */
+.env-cloud {
+  background:
+    radial-gradient(90% 70% at 50% 30%, rgba(191,227,255,0.55), transparent 60%),
+    linear-gradient(180deg, #2a3550, #10141f);
+}
+.env-cloud::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(40% 30% at 20% 60%, rgba(255,255,255,0.5), transparent 70%),
+    radial-gradient(45% 32% at 75% 70%, rgba(255,255,255,0.45), transparent 70%),
+    radial-gradient(35% 26% at 55% 40%, rgba(255,255,255,0.4), transparent 70%);
+  filter: blur(6px);
+  animation: magma-pulse 3s ease-in-out infinite;
+}
+
 /* Crystal: pastel kaleidoscope. */
 .env-crystal {
   background:

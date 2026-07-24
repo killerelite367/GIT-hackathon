@@ -15,13 +15,28 @@ import type { Assignment, GameState } from "../types";
 export type Rarity =
   | "common"
   | "rare"
+  | "ultrarare"
   | "epic"
   | "legendary"
   | "mythic"
   | "ultramythic"
   | "chromatic"
   | "demon"
+  | "cloud"
   | "secret";
+
+/**
+ * The gacha-machine "destruction" cinematic escalates by tier group, per the
+ * Master GDD §6/§7. Higher groups = more of the machine/UI is destroyed.
+ */
+export type DestructionGroup =
+  | "conveyor" // common/rare — normal clunk, hatch, conveyor slide-out
+  | "overheat" // ultrarare/epic — glass cracks, flavour burst shatters panel
+  | "meltdown" // legendary/mythic — machine melts to liquid, hero rises from abyss
+  | "reality" // ultramythic/chromatic — glitches out of reality, space-time tear
+  | "fire" // demon — UI catches fire, burns to ash, bites through the screen
+  | "cloud" // cloud — gravity reverses, machine floats up, hero descends from fog
+  | "freeze"; // secret — fake fatal error, glass shatter, emerges from the void
 
 /** Drawing recipe for a spirit's cute textbook-buddy character. */
 export interface SpiritArt {
@@ -68,6 +83,32 @@ export interface Spirit {
   title?: string;
   /** Premium cinematic element theme (VFX Bible characters only). */
   element?: Element;
+  /** The real-world food this textbook is fused with (GDD "Base Form"). */
+  food?: string;
+}
+
+/** Which gacha-machine destruction cinematic a rarity triggers (GDD §6/§7). */
+export function destructionGroup(r: Rarity): DestructionGroup {
+  switch (r) {
+    case "common":
+    case "rare":
+      return "conveyor";
+    case "ultrarare":
+    case "epic":
+      return "overheat";
+    case "legendary":
+    case "mythic":
+      return "meltdown";
+    case "ultramythic":
+    case "chromatic":
+      return "reality";
+    case "demon":
+      return "fire";
+    case "cloud":
+      return "cloud";
+    case "secret":
+      return "freeze";
+  }
 }
 
 export interface RarityMeta {
@@ -86,242 +127,291 @@ export interface RarityMeta {
 
 export const RARITY: Record<Rarity, RarityMeta> = {
   common: {
-    label: "Common", tier: 0, weight: 60,
+    label: "Common", tier: 0, weight: 55,
     text: "text-white/70", border: "border-white/20", glow: "rgba(255,255,255,0.35)",
   },
   rare: {
-    label: "Rare", tier: 1, weight: 28,
+    label: "Rare", tier: 1, weight: 25,
     text: "text-[#5fd0ff]", border: "border-[#5fd0ff]/50", glow: "rgba(95,208,255,0.55)",
   },
+  ultrarare: {
+    label: "Ultra Rare", tier: 2, weight: 11,
+    text: "text-[#5fffb0]", border: "border-[#5fffb0]/60", glow: "rgba(95,255,176,0.6)",
+  },
   epic: {
-    label: "Epic", tier: 2, weight: 9,
+    label: "Epic", tier: 3, weight: 5,
     text: "text-[#a98bff]", border: "border-[#a98bff]/60", glow: "rgba(169,139,255,0.6)",
   },
   legendary: {
-    label: "Legendary", tier: 3, weight: 3,
+    label: "Legendary", tier: 4, weight: 2.4,
     text: "text-[#ffe14d]", border: "border-[#ffe14d]/70", glow: "rgba(255,225,77,0.7)",
   },
   mythic: {
-    label: "Mythic", tier: 4, weight: 1.4,
+    label: "Mythic", tier: 5, weight: 1.2,
     text: "text-[#ff6fd6]", border: "border-[#ff6fd6]/70", glow: "rgba(255,111,214,0.75)",
   },
   ultramythic: {
-    label: "Ultra Mythic", tier: 5, weight: 0.55,
+    label: "Ultra Mythic", tier: 6, weight: 0.5,
     text: "text-[#ff9a3d]", border: "border-[#ff9a3d]/70", glow: "rgba(255,154,61,0.8)",
   },
   chromatic: {
-    label: "Chromatic", tier: 6, weight: 0.22,
+    label: "Chromatic", tier: 7, weight: 0.25,
     text: "text-[#7dffd0]", border: "border-[#7dffd0]/70", glow: "rgba(125,255,208,0.85)",
   },
   demon: {
-    label: "Demon", tier: 7, weight: 0.09,
+    label: "Demon", tier: 8, weight: 0.1,
     text: "text-[#ff3b5c]", border: "border-[#ff3b5c]/80", glow: "rgba(255,59,92,0.9)",
   },
+  cloud: {
+    label: "Cloud", tier: 9, weight: 0.04,
+    text: "text-[#bfe3ff]", border: "border-[#bfe3ff]/80", glow: "rgba(191,227,255,0.9)",
+  },
   secret: {
-    label: "???", tier: 8, weight: 0.03,
+    label: "???", tier: 10, weight: 0.02,
     text: "text-white", border: "border-white/80", glow: "rgba(200,255,255,0.95)",
   },
 };
 
 export const RARITY_ORDER: Rarity[] = [
-  "common", "rare", "epic", "legendary",
-  "mythic", "ultramythic", "chromatic", "demon", "secret",
+  "common", "rare", "ultrarare", "epic", "legendary", "mythic",
+  "ultramythic", "chromatic", "demon", "cloud", "secret",
 ];
 
 /** The tier at and above which a spirit gets the grand "awakening" reveal. */
-export const AWAKEN_TIER = 3; // legendary+
+export const AWAKEN_TIER = 4; // legendary+ (meltdown and grander) get the hero idle + speech
 
 /** The full roster — a family of cute flavoured "snack-book" buddies. */
 export const SPIRITS: Spirit[] = [
-  // ── Common — flavoured textbooks ────────────────────────
+  // ── common ──
   {
-    id: "pomo", name: "Butterbook", emoji: "🧈", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
-    blurb: "A warm slab of butter-yellow textbook. Melts study stress away.",
-    art: { body: "#ffdd7a", trim: "#e0af3c", belly: "#fff3cf", accessory: "none" },
+    id: "apple", name: "Apple Math Primer", emoji: "🍎", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    food: "Red Apple",
+    blurb: "A fusion of Red Apple and a Math Textbook.",
+    art: { body: "#e23b3b", trim: "#9c1f1f", belly: "#ffd9d9", accessory: "none" },
   },
   {
-    id: "inky", name: "Chocobook", emoji: "🍫", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
-    blurb: "Rich cocoa covers. Sweetens even the driest chapter.",
-    art: { body: "#8a5233", trim: "#5f3620", belly: "#cf9264", accessory: "none" },
+    id: "grape", name: "Grape History Log", emoji: "🍇", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    food: "Concord Grapes",
+    blurb: "A fusion of Concord Grapes and a Spiral Notebook.",
+    art: { body: "#7a4bbf", trim: "#4f2f80", belly: "#e2d6f5", accessory: "none" },
   },
   {
-    id: "flashy", name: "Matchabook", emoji: "🍵", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
-    blurb: "Grassy-green and quietly focused. Sips knowledge slowly.",
-    art: { body: "#9fd47c", trim: "#68a544", belly: "#e6f6d4", accessory: "none" },
+    id: "bread", name: "Bread Physics Notes", emoji: "🍞", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    food: "Sliced Loaf",
+    blurb: "A fusion of Sliced Loaf and a Notepad.",
+    art: { body: "#e0b878", trim: "#b0863f", belly: "#fff0d6", accessory: "none" },
   },
   {
-    id: "mocha", name: "Berrybook", emoji: "🍓", rarity: "common", xpBonus: 0.03, buff: "+3% XP",
-    blurb: "Strawberry-pink and endlessly encouraging. Never gives up on you.",
-    art: { body: "#ff9ec4", trim: "#e56fa0", belly: "#ffdcea", accessory: "none" },
+    id: "carrot", name: "Carrot Biology Binder", emoji: "🥕", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    food: "Root Carrot",
+    blurb: "A fusion of Root Carrot and a Ring Binder.",
+    art: { body: "#ef8a3a", trim: "#c05f1a", belly: "#ffe0c0", accessory: "none" },
   },
   {
-    id: "clip", name: "Blueberrybook", emoji: "🫐", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
-    blurb: "Cool blueberry cover. Keeps a clear head under deadlines.",
-    art: { body: "#7aa7ff", trim: "#5178dd", belly: "#d9e6ff", accessory: "none" },
+    id: "milk", name: "Milk Carton Diary", emoji: "🥛", rarity: "common", xpBonus: 0.02, buff: "+2% XP",
+    food: "Carton of Milk",
+    blurb: "A fusion of Carton of Milk and a Pocket Diary.",
+    art: { body: "#eef2f7", trim: "#b8c2cf", belly: "#ffffff", accessory: "none" },
   },
-
-  // ── Rare ────────────────────────────────────────────────
+  // ── rare ──
   {
-    id: "foxfocus", name: "Caramel Cub", emoji: "🦊", rarity: "rare", xpBonus: 0.08, buff: "+8% XP",
-    blurb: "A caramel textbook with little fox ears. Sniffs out distractions.",
-    art: { body: "#eaa24d", trim: "#c47a28", belly: "#ffe1b8", accessory: "cat-ears" },
-  },
-  {
-    id: "owlbiblio", name: "Professor Grape", emoji: "🍇", rarity: "rare", xpBonus: 0.08, buff: "+8% XP",
-    blurb: "A grape-purple tome in tiny spectacles. Has read everything, twice.",
-    art: { body: "#b07adf", trim: "#8b53c0", belly: "#e7d4f7", accessory: "glasses" },
+    id: "strawberry", name: "Strawberry Jam Essay", emoji: "🍓", rarity: "rare", xpBonus: 0.05, buff: "+5% XP",
+    food: "Strawberry Jam",
+    blurb: "A fusion of Strawberry Jam and a Essay Draft.",
+    art: { body: "#ff5f7a", trim: "#d63f5a", belly: "#ffd6de", accessory: "none" },
   },
   {
-    id: "serpentstreak", name: "Minty", emoji: "🌿", rarity: "rare", xpBonus: 0.1, buff: "+10% XP",
-    blurb: "Fresh mint cover that coils around your streak and guards it.",
-    art: { body: "#66e0c0", trim: "#37b697", belly: "#d3f7ec", accessory: "sparkle" },
-  },
-
-  // ── Epic ────────────────────────────────────────────────
-  {
-    id: "chrono", name: "Honey Chrono", emoji: "⏳", rarity: "epic", xpBonus: 0.18, buff: "+18% XP",
-    blurb: "Golden honey pages that bend time so your plan always fits.",
-    art: { body: "#ffc531", trim: "#e0a013", belly: "#fff0c2", accessory: "star" },
+    id: "watermelon", name: "Watermelon Geometry Atlas", emoji: "🍉", rarity: "rare", xpBonus: 0.05, buff: "+5% XP",
+    food: "Sliced Watermelon",
+    blurb: "A fusion of Sliced Watermelon and a Atlas.",
+    art: { body: "#ff6b8a", trim: "#3a9b4a", belly: "#ffd6de", accessory: "none" },
   },
   {
-    id: "nova", name: "Cosmic Nova", emoji: "🌟", rarity: "epic", xpBonus: 0.2, buff: "+20% XP",
-    blurb: "A starlit textbook — pure motivation. Burns brightest at 2am.",
-    art: { body: "#8a6bff", trim: "#6247e0", belly: "#ded6ff", accessory: "sparkle" },
+    id: "bento", name: "Bento Box Syllabus", emoji: "🍱", rarity: "rare", xpBonus: 0.05, buff: "+5% XP",
+    food: "Japanese Bento",
+    blurb: "A fusion of Japanese Bento and a Syllabus.",
+    art: { body: "#e8623a", trim: "#7a3a20", belly: "#ffd8c8", accessory: "none" },
   },
   {
-    id: "volt", name: "Voltbook", emoji: "⚡", rarity: "epic", xpBonus: 0.22, buff: "+22% XP",
-    blurb: "Crackling with energy. Zaps you awake for that 8am class.",
-    art: { body: "#6f8bff", trim: "#4a5bd0", belly: "#d6dcff", accessory: "star" },
-  },
-
-  // ── Legendary — premium cinematic characters (VFX Bible) ─
-  {
-    id: "nullref", name: "Null_Ref, the Glitch Hacker", emoji: "👾", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
-    title: "Anomaly in the System",
-    blurb: "A corrupted process given form. Datamoshes into existence to delete your deadlines.",
-    voice: "Deadline dot e-x-e has been corrupted. You're welcome.",
-    element: "glitch",
-    art: { body: "#0c1a0c", trim: "#39ff14", belly: "#123312", accessory: "glasses" },
+    id: "cheese", name: "Cheese Wheel Dictionary", emoji: "🧀", rarity: "rare", xpBonus: 0.05, buff: "+5% XP",
+    food: "Swiss Cheese",
+    blurb: "A fusion of Swiss Cheese and a Hardcover Dictionary.",
+    art: { body: "#ffcf4d", trim: "#d9a52a", belly: "#fff2c8", accessory: "none" },
   },
   {
-    id: "leviathan", name: "Leviathan, the Deep Oracle", emoji: "🌊", rarity: "legendary", xpBonus: 0.34, buff: "+34% XP",
-    title: "Warden of the Drowned Archives",
-    blurb: "Warden of the drowned archives, wielding a trident of coral. The depths of knowledge are bottomless.",
-    voice: "The depths of knowledge are bottomless. Do not drown in your studies.",
-    element: "water",
-    art: { body: "#14405f", trim: "#5fd0ff", belly: "#1f5f80", accessory: "horns" },
+    id: "pancake", name: "Pancake Sketchbook", emoji: "🥞", rarity: "rare", xpBonus: 0.05, buff: "+5% XP",
+    food: "Flapjacks & Syrup",
+    blurb: "A fusion of Flapjacks & Syrup and a Leather Sketchbook.",
+    art: { body: "#e0a860", trim: "#b07a30", belly: "#ffe6bf", accessory: "none" },
+  },
+  // ── ultrarare ──
+  {
+    id: "taco", name: "Spicy Taco Flashcards", emoji: "🌮", rarity: "ultrarare", xpBonus: 0.08, buff: "+8% XP",
+    food: "Hard Shell Taco",
+    blurb: "A fusion of Hard Shell Taco and a Flashcard Ring.",
+    art: { body: "#e8a23a", trim: "#b06a1a", belly: "#ffe0b0", accessory: "none" },
   },
   {
-    id: "terra", name: "Terra, the Overgrowth Colossus", emoji: "🌳", rarity: "legendary", xpBonus: 0.35, buff: "+35% XP",
-    title: "Roots of the Ancient Academy",
-    blurb: "A colossus of stone and ancient oak. Slow, steady, and inevitable.",
-    voice: "Slow, steady, and inevitable. Knowledge takes time to blossom.",
-    element: "earth",
-    art: { body: "#3a5a2a", trim: "#6a4a2a", belly: "#5a7a3a", accessory: "horns" },
+    id: "sushi", name: "Sushi Roll Scroll", emoji: "🍣", rarity: "ultrarare", xpBonus: 0.08, buff: "+8% XP",
+    food: "Maki Sushi",
+    blurb: "A fusion of Maki Sushi and a Ancient Scroll.",
+    art: { body: "#ff8a7a", trim: "#2a2a2a", belly: "#ffd8cf", accessory: "none" },
   },
   {
-    id: "lumina", name: "Lumina, the Prismatic Muse", emoji: "🦋", rarity: "legendary", xpBonus: 0.33, buff: "+33% XP",
-    title: "Weaver of Daydreams",
-    blurb: "A whimsical muse trailing iridescent glitter, painting your schedule with stars.",
-    voice: "A little magic goes a long way. Let's paint your schedule with stars!",
-    element: "crystal",
-    art: { body: "#ff9ec4", trim: "#a98bff", belly: "#ffd6f2", accessory: "star", rainbow: true },
-  },
-
-  // ── Mythic — premium cinematic characters (VFX Bible) ────
-  {
-    id: "ignis", name: "Ignis, the Inferno Scholar", emoji: "🔥", rarity: "mythic", xpBonus: 0.5, buff: "+50% XP",
-    title: "Demon of the Burning Midnight Oil",
-    blurb: "Born from the fires of ambition, wielding a burning staff of melted fountain pens.",
-    voice: "I am born from the fires of your ambition. Let the syllabus burn!",
-    element: "fire",
-    art: { body: "#3a0e08", trim: "#ff5a2c", belly: "#ff8a2c", accessory: "horns", angry: true },
+    id: "lemonade", name: "Lemonade Calculus", emoji: "🍋", rarity: "ultrarare", xpBonus: 0.08, buff: "+8% XP",
+    food: "Iced Lemonade",
+    blurb: "A fusion of Iced Lemonade and a Calculus Tome.",
+    art: { body: "#ffe14d", trim: "#d9b52a", belly: "#fff6c0", accessory: "none" },
   },
   {
-    id: "aura", name: "Aura, the Celestial Dean", emoji: "😇", rarity: "mythic", xpBonus: 0.52, buff: "+52% XP",
-    title: "Seraph of Infinite Knowledge",
-    blurb: "A seraph descending in lotus pose, ringed by halos of runic mathematics.",
-    voice: "Bathe in the light of endless understanding. There are no wrong answers here.",
-    element: "light",
-    art: { body: "#fff2c0", trim: "#e0c060", belly: "#fffbe0", accessory: "crown" },
+    id: "coffee", name: "Coffee Bean Thesis", emoji: "☕", rarity: "ultrarare", xpBonus: 0.09, buff: "+9% XP",
+    food: "Espresso Beans",
+    blurb: "A fusion of Espresso Beans and a Bound Thesis.",
+    art: { body: "#6a4326", trim: "#2f1a0e", belly: "#b58a5c", accessory: "none" },
   },
   {
-    id: "chronos", name: "Chronos, the Clockwork Maestro", emoji: "⏳", rarity: "mythic", xpBonus: 0.55, buff: "+55% XP",
-    title: "Weaver of Stolen Time",
-    blurb: "A brass maestro of gears and pocket watches who turns back the deadline clock.",
-    voice: "Time waits for no student. But for you... I can turn back the hands.",
-    element: "time",
-    art: { body: "#c9a24a", trim: "#6a4a1a", belly: "#e6c878", accessory: "crown" },
+    id: "ramen", name: "Ramen Bowl Encyclopedia", emoji: "🍜", rarity: "ultrarare", xpBonus: 0.08, buff: "+8% XP",
+    food: "Tonkotsu Ramen",
+    blurb: "A fusion of Tonkotsu Ramen and a Encyclopedia.",
+    art: { body: "#e8b84d", trim: "#b0863f", belly: "#ffe6b0", accessory: "none" },
+  },
+  // ── epic ──
+  {
+    id: "durian", name: "Durian Advanced Calc", emoji: "🍈", rarity: "epic", xpBonus: 0.12, buff: "+12% XP",
+    food: "King of Fruits",
+    blurb: "A fusion of King of Fruits and a Advanced Textbook.",
+    art: { body: "#cfd44a", trim: "#7a8a2a", belly: "#eef0c0", accessory: "star" },
   },
   {
-    id: "aether", name: "Aether, the Void Entity", emoji: "🌌", rarity: "mythic", xpBonus: 0.58, buff: "+58% XP",
-    title: "The Formless Concept",
-    blurb: "A formless being cloaked in living constellations, staring into the abyss of your curriculum.",
-    voice: "I stare into the abyss of your curriculum... and it is empty.",
-    element: "void",
-    art: { body: "#1a0a2a", trim: "#a98bff", belly: "#3a1a5a", accessory: "sparkle" },
-  },
-
-  // ── Ultra Mythic ────────────────────────────────────────
-  {
-    id: "solaris", name: "Solaris", emoji: "☀️", rarity: "ultramythic", xpBonus: 0.75, buff: "+75% XP",
-    blurb: "A blazing sun-book. Feel the burn... of pure productivity.",
-    art: { body: "#ff9a3d", trim: "#e0670f", belly: "#ffe0b0", accessory: "star" },
-    voice: "Feel the burning power of study!",
+    id: "muffin", name: "Blueberry Muffin Lit", emoji: "🧁", rarity: "epic", xpBonus: 0.13, buff: "+13% XP",
+    food: "Baked Muffin",
+    blurb: "A fusion of Baked Muffin and a Literature Anthology.",
+    art: { body: "#6a7bff", trim: "#3f4fd0", belly: "#d6dcff", accessory: "star" },
   },
   {
-    id: "vortex", name: "Vortex", emoji: "🌀", rarity: "ultramythic", xpBonus: 0.78, buff: "+78% XP",
-    blurb: "A spiralling tome that pulls every distraction into oblivion.",
-    art: { body: "#b06bff", trim: "#7a3fd0", belly: "#e6d6ff", accessory: "sparkle" },
-    voice: "Round and round... into focus!",
+    id: "coconut", name: "Coconut Shell Geography", emoji: "🥥", rarity: "epic", xpBonus: 0.14, buff: "+14% XP",
+    food: "Cracked Coconut",
+    blurb: "A fusion of Cracked Coconut and a Globe & Map Book.",
+    art: { body: "#8a6a4a", trim: "#5a3f2a", belly: "#e6d2bc", accessory: "star" },
+  },
+  // ── legendary ──
+  {
+    id: "matcha", name: "Matcha Layer Cake Thesis", emoji: "🍵", rarity: "legendary", xpBonus: 0.2, buff: "+20% XP",
+    food: "Matcha Crepe Cake",
+    blurb: "A fusion of Matcha Crepe Cake and a Doctoral Thesis.",
+    art: { body: "#9fd67a", trim: "#5a9b3a", belly: "#e6f6d4", accessory: "crown" },
+    voice: "The garden grows where I walk. Bow to the thesis.",
   },
   {
-    id: "genesis", name: "Genesis", emoji: "✨", rarity: "ultramythic", xpBonus: 0.8, buff: "+80% XP",
-    blurb: "The first textbook. Every subject was born from its pages.",
-    art: { body: "#ff6f8f", trim: "#d63f6a", belly: "#ffd6df", accessory: "star" },
-    voice: "A new beginning... let's ace it!",
+    id: "pomegranate", name: "Pomegranate Art History", emoji: "💎", rarity: "legendary", xpBonus: 0.21, buff: "+21% XP",
+    food: "Jeweled Pomegranate",
+    blurb: "A fusion of Jeweled Pomegranate and a Art Portfolio.",
+    art: { body: "#d6395a", trim: "#8a1f3a", belly: "#ffd0da", accessory: "crown" },
+    voice: "Every jewel is another chapter of history.",
   },
-
-  // ── Chromatic ───────────────────────────────────────────
   {
-    id: "chroma", name: "Chroma", emoji: "🌈", rarity: "chromatic", xpBonus: 1.0, buff: "+100% XP",
-    blurb: "A shifting rainbow textbook. Every colour, every subject, mastered.",
+    id: "honeycomb", name: "Honeycomb Music Theory", emoji: "🍯", rarity: "legendary", xpBonus: 0.22, buff: "+22% XP",
+    food: "Raw Honeycomb",
+    blurb: "A fusion of Raw Honeycomb and a Sheet Music Binder.",
+    art: { body: "#ffb84d", trim: "#d98a2a", belly: "#ffe6b0", accessory: "crown" },
+    voice: "Listen... the sweetest symphony of knowledge.",
+  },
+  // ── mythic ──
+  {
+    id: "dragonfruit", name: "Dragonfruit Cosmos Journal", emoji: "🐉", rarity: "mythic", xpBonus: 0.3, buff: "+30% XP",
+    food: "Neon Dragonfruit",
+    blurb: "A fusion of Neon Dragonfruit and a Astrophysics Journal.",
+    art: { body: "#ff4fd0", trim: "#a02f9b", belly: "#ffd0f2", accessory: "sparkle" },
+    voice: "I have charted every star in your curriculum.",
+  },
+  {
+    id: "caviar", name: "Caviar Economics", emoji: "⚫", rarity: "mythic", xpBonus: 0.32, buff: "+32% XP",
+    food: "Black Caviar",
+    blurb: "A fusion of Black Caviar and a Grand Ledger.",
+    art: { body: "#1a1a2a", trim: "#0a0a12", belly: "#4a4a6a", accessory: "crown" },
+    voice: "Knowledge is the only currency that compounds.",
+  },
+  {
+    id: "saffron", name: "Saffron Poetry", emoji: "🌾", rarity: "mythic", xpBonus: 0.34, buff: "+34% XP",
+    food: "Saffron Threads",
+    blurb: "A fusion of Saffron Threads and a Velvet Poetry Book.",
+    art: { body: "#e8a23a", trim: "#b06a1a", belly: "#ffe0b0", accessory: "sparkle" },
+    voice: "Rare as saffron, my verses will move you.",
+  },
+  // ── ultramythic ──
+  {
+    id: "truffle", name: "Golden Truffle Ledger", emoji: "🍄", rarity: "ultramythic", xpBonus: 0.5, buff: "+50% XP",
+    food: "Gold Flake Truffle",
+    blurb: "A fusion of Gold Flake Truffle and a Accounting Ledger.",
+    art: { body: "#ffd76a", trim: "#cf9a24", belly: "#fff2c8", accessory: "star" },
+    voice: "I do not walk. I simply arrive.",
+  },
+  {
+    id: "peach", name: "White Peach Quantum Mech", emoji: "🍑", rarity: "ultramythic", xpBonus: 0.55, buff: "+55% XP",
+    food: "Pristine White Peach",
+    blurb: "A fusion of Pristine White Peach and a Quantum Physics Tome.",
+    art: { body: "#ffd9cf", trim: "#ef9ea0", belly: "#fff0ec", accessory: "star" },
+    voice: "I exist in every possible answer at once.",
+  },
+  // ── chromatic ──
+  {
+    id: "sherbet", name: "Rainbow Sherbet Anthology", emoji: "🌈", rarity: "chromatic", xpBonus: 0.75, buff: "+75% XP",
+    food: "Melting Sherbet",
+    blurb: "A fusion of Melting Sherbet and a Color Theory Book.",
     art: { body: "#ff5fa2", trim: "#ffffff", belly: "#ffffff", accessory: "sparkle", rainbow: true },
-    voice: "Taste the rainbow of knowledge!",
+    voice: "Taste every colour of the spectrum!",
   },
   {
-    id: "spectra", name: "Spectra", emoji: "💠", rarity: "chromatic", xpBonus: 1.05, buff: "+105% XP",
-    blurb: "Refracts pure knowledge into a spectrum of straight-A grades.",
-    art: { body: "#5fd0ff", trim: "#ffffff", belly: "#ffffff", accessory: "star", rainbow: true },
-    voice: "Every colour, every subject, mastered!",
+    id: "macaron", name: "Macaron Tower Linguistics", emoji: "🍬", rarity: "chromatic", xpBonus: 0.8, buff: "+80% XP",
+    food: "Pastel Macarons",
+    blurb: "A fusion of Pastel Macarons and a Language Dictionary.",
+    art: { body: "#ffc0e0", trim: "#ffffff", belly: "#ffffff", accessory: "star", rainbow: true },
+    voice: "A thousand tongues, all sweetly spoken.",
   },
-
-  // ── Demon ───────────────────────────────────────────────
+  // ── demon ──
   {
-    id: "malachor", name: "Malachor", emoji: "😈", rarity: "demon", xpBonus: 1.5, buff: "+150% XP",
-    blurb: "A textbook forged in the fires of finals week. Deadlines fear it.",
-    art: { body: "#3a0e18", trim: "#ff3b5c", belly: "#ff3b5c", accessory: "horns", angry: true },
-    voice: "Your deadlines... shall PERISH.",
-  },
-  {
-    id: "diabolus", name: "Diabolus", emoji: "👹", rarity: "demon", xpBonus: 1.55, buff: "+155% XP",
-    blurb: "Lord of the all-nighter. It does not sleep, and neither will you.",
-    art: { body: "#2a0810", trim: "#ff5a2c", belly: "#ff7a2c", accessory: "horns", angry: true },
-    voice: "Burn the midnight oil... FOREVER.",
-  },
-
-  // ── ??? (Secret) ────────────────────────────────────────
-  {
-    id: "secret", name: "???", emoji: "❓", rarity: "secret", xpBonus: 2.0, buff: "+200% XP",
-    blurb: "It should not exist. Yet here it is, watching you study.",
-    art: { body: "#0d0d16", trim: "#b8ffff", belly: "#6fffff", accessory: "sparkle" },
-    voice: "You were not... supposed to find me.",
+    id: "ghostpepper", name: "Ghost Pepper Forbidden Grimoire", emoji: "🌶️", rarity: "demon", xpBonus: 1.0, buff: "+100% XP",
+    food: "Ghost Pepper",
+    blurb: "A fusion of Ghost Pepper and a Cursed Grimoire.",
+    art: { body: "#3a0e08", trim: "#ff3b1a", belly: "#ff6a2c", accessory: "horns", angry: true },
+    voice: "BURN, weeds of procrastination! BURN!",
   },
   {
-    id: "secret2", name: "???", emoji: "⬛", rarity: "secret", xpBonus: 2.1, buff: "+210% XP",
-    blurb: "The other one. There were never supposed to be two.",
-    art: { body: "#0a0a12", trim: "#ff6fff", belly: "#b8ffff", accessory: "sparkle" },
-    voice: "Two of us now... impossible.",
+    id: "blackgarlic", name: "Black Garlic Occult", emoji: "🧄", rarity: "demon", xpBonus: 1.1, buff: "+110% XP",
+    food: "Fermented Black Garlic",
+    blurb: "A fusion of Fermented Black Garlic and a Occult Manuscript.",
+    art: { body: "#1a1420", trim: "#6a4a7a", belly: "#3a2a4a", accessory: "horns", angry: true },
+    voice: "From the fermented dark... forbidden knowledge.",
+  },
+  // ── cloud ──
+  {
+    id: "cottoncandy", name: "Cotton Candy Philosophy", emoji: "☁️", rarity: "cloud", xpBonus: 1.3, buff: "+130% XP",
+    food: "Spun Sugar",
+    blurb: "A fusion of Spun Sugar and a Scroll of Ethics.",
+    art: { body: "#ffc8ee", trim: "#bf9ad0", belly: "#ffe6f8", accessory: "sparkle" },
+    voice: "Float with me, above every deadline.",
+  },
+  {
+    id: "marshmallow", name: "Marshmallow Cloud Computing", emoji: "☁️", rarity: "cloud", xpBonus: 1.4, buff: "+140% XP",
+    food: "Toasted Marshmallow",
+    blurb: "A fusion of Toasted Marshmallow and a Tech Manual.",
+    art: { body: "#fff0e0", trim: "#d9b89a", belly: "#fff8ee", accessory: "sparkle" },
+    voice: "Soft, warm, and endlessly scalable.",
+  },
+  // ── secret ──
+  {
+    id: "almanac", name: "The Absolute Zero-Calorie Almanac", emoji: "❄️", rarity: "secret", xpBonus: 2.0, buff: "+200% XP",
+    food: "Anti-Matter Ice",
+    blurb: "A fusion of Anti-Matter Ice and a Forbidden Almanac.",
+    art: { body: "#dfefff", trim: "#9fc0e0", belly: "#f0f8ff", accessory: "sparkle" },
+    voice: "You were never meant to compute me.",
+  },
+  {
+    id: "noodle", name: "The Infinite Noodle Paradox", emoji: "🍜", rarity: "secret", xpBonus: 2.1, buff: "+210% XP",
+    food: "Endless Noodle Strand",
+    blurb: "A fusion of Endless Noodle Strand and a Theoretical Physics Paper.",
+    art: { body: "#f0e0b0", trim: "#c0a860", belly: "#fff6d6", accessory: "sparkle" },
+    voice: "There is no end. Only more noodle.",
   },
 ];
 
