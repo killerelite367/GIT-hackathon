@@ -93,6 +93,8 @@ export function seedData(): AppData {
       remindersEnabled: false,
       lastReminderDate: null,
       activityLog: {},
+      garden: {},
+      bindingGlue: 0,
     },
   };
 }
