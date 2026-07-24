@@ -6,6 +6,7 @@ import {
   Sparkles,
   Gem,
   Sprout,
+  Hammer,
 } from "lucide-react";
 import type { View } from "../nav";
 import { levelProgress } from "../lib/gamification";
@@ -17,6 +18,7 @@ export const NAV: { view: View; icon: typeof LayoutDashboard; label: string }[] 
   { view: "modules", icon: BookOpen, label: "Modules" },
   { view: "gacha", icon: Gem, label: "Summon" },
   { view: "garden", icon: Sprout, label: "Garden" },
+  { view: "workshop", icon: Hammer, label: "Workshop" },
   { view: "achievements", icon: Trophy, label: "Achievements" },
 ];
 

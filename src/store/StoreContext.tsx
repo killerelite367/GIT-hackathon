@@ -61,6 +61,9 @@ interface StoreValue {
   /** Book Binding: fuse 3 copies of a spirit into one random spirit of the
    *  next rarity up. Returns the crafted spirit id, or null if not possible. */
   bindSpirits: (spiritId: string) => string | null;
+  /** Altar of Sacrifice: consume two owned ??? (secret) pets. Returns a
+   *  DEMO voucher code (no real redemption), or null if not enough. */
+  exchangeSecrets: (ids: [string, string]) => string | null;
   /** Log a completed focus session against an assignment: awards XP + Focus
    *  Crystals for the actual minutes spent and nudges progress forward. */
   logFocusMinutes: (assignmentId: string, minutes: number) => void;
@@ -344,6 +347,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [data.game.spirits, pushToast, withAchievements]
   );
 
+  const exchangeSecrets = useCallback(
+    (ids: [string, string]): string | null => {
+      const counts = { ...data.game.spirits };
+      // Verify both are owned secret-tier pets (handles same id used twice).
+      const need: Record<string, number> = {};
+      for (const id of ids) {
+        const s = SPIRIT_BY_ID[id];
+        if (!s || s.rarity !== "secret") {
+          pushToast("Both offerings must be ??? (Secret) pets.", "info");
+          return null;
+        }
+        need[id] = (need[id] ?? 0) + 1;
+      }
+      for (const [id, n] of Object.entries(need)) {
+        if ((counts[id] ?? 0) < n) {
+          pushToast("You don't own enough ??? pets to sacrifice.", "info");
+          return null;
+        }
+      }
+      // Generate a clearly-labelled DEMO voucher code (no real redemption).
+      const code =
+        "SQ-DEMO-" +
+        Math.random().toString(36).slice(2, 6).toUpperCase() +
+        "-" +
+        Math.random().toString(36).slice(2, 6).toUpperCase();
+      setData((d) => {
+        const spirits = { ...d.game.spirits };
+        for (const id of ids) {
+          spirits[id] = (spirits[id] ?? 0) - 1;
+          if (spirits[id] <= 0) delete spirits[id];
+        }
+        // Clear those pets from the garden too, if planted.
+        const garden: Record<string, string> = {};
+        let removed = { ...need };
+        for (const [tile, sid] of Object.entries(d.game.garden)) {
+          if (removed[sid] > 0 && !spirits[sid]) {
+            removed[sid]--;
+            continue;
+          }
+          garden[tile] = sid;
+        }
+        return { ...d, game: { ...d.game, spirits, garden } };
+      });
+      pushToast("🔥 Sacrifice complete — DEMO voucher generated.", "level");
+      return code;
+    },
+    [data.game.spirits, pushToast]
+  );
+
   const logFocusMinutes = useCallback(
     (assignmentId: string, minutes: number) => {
       if (minutes <= 0) return;
@@ -463,6 +515,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       placeInGarden,
       removeFromGarden,
       bindSpirits,
+      exchangeSecrets,
       logFocusMinutes,
       setReminders,
       exportData,
@@ -487,6 +540,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       placeInGarden,
       removeFromGarden,
       bindSpirits,
+      exchangeSecrets,
       logFocusMinutes,
       setReminders,
       exportData,

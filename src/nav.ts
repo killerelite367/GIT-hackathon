@@ -1,1 +1,8 @@
-export type View = "dashboard" | "schedule" | "modules" | "gacha" | "garden" | "achievements";
+export type View =
+  | "dashboard"
+  | "schedule"
+  | "modules"
+  | "gacha"
+  | "garden"
+  | "workshop"
+  | "achievements";

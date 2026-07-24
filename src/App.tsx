@@ -8,6 +8,7 @@ import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
 import GachaView from "./views/GachaView";
 import GardenView from "./views/GardenView";
+import WorkshopView from "./views/WorkshopView";
 import AchievementsView from "./views/AchievementsView";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
@@ -41,6 +42,11 @@ const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     kicker: "▸ gpa garden",
     heading: "Your Garden",
     sub: "A living plot that grows with your grades. Plant pets for luck.",
+  },
+  workshop: {
+    kicker: "▸ workshop",
+    heading: "The Workshop",
+    sub: "Bind duplicates into rarer pets, or sacrifice at the Altar.",
   },
   achievements: {
     kicker: "▸ rewards",
@@ -159,6 +165,7 @@ export default function App() {
             {view === "modules" && <ModulesView />}
             {view === "gacha" && <GachaView />}
             {view === "garden" && <GardenView />}
+            {view === "workshop" && <WorkshopView />}
             {view === "achievements" && <AchievementsView />}
           </div>
 
