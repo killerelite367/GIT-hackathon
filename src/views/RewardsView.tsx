@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Trophy, Gem, Flame, Zap, Sparkles, Lock } from "lucide-react";
+import { Trophy, Gem, Flame, Zap, Sparkles, Lock, Sprout, Hammer } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { levelProgress } from "../lib/gamification";
 import { ACHIEVEMENTS } from "../lib/achievements";
 import { collectionCount } from "../lib/gacha";
 import StudyHeatmap from "../components/StudyHeatmap";
 import GachaView from "./GachaView";
+import GardenView from "./GardenView";
+import WorkshopView from "./WorkshopView";
 
-type Tab = "progress" | "summon";
+type Tab = "progress" | "summon" | "garden" | "workshop";
 
 export default function RewardsView() {
   const { data } = useStore();
@@ -22,12 +24,18 @@ export default function RewardsView() {
   return (
     <div className="space-y-6">
       {/* Sub-tab toggle */}
-      <div className="inline-flex rounded-full border border-line bg-surface p-1 shadow-soft">
+      <div className="inline-flex flex-wrap rounded-full border border-line bg-surface p-1 shadow-soft">
         <TabButton active={tab === "progress"} onClick={() => setTab("progress")} icon={<Trophy size={15} />}>
           Progress
         </TabButton>
         <TabButton active={tab === "summon"} onClick={() => setTab("summon")} icon={<Gem size={15} />}>
           Summon
+        </TabButton>
+        <TabButton active={tab === "garden"} onClick={() => setTab("garden")} icon={<Sprout size={15} />}>
+          Garden
+        </TabButton>
+        <TabButton active={tab === "workshop"} onClick={() => setTab("workshop")} icon={<Hammer size={15} />}>
+          Workshop
         </TabButton>
       </div>
 
@@ -84,9 +92,11 @@ export default function RewardsView() {
           </section>
         </div>
       ) : (
-        /* The Summon spectacle lives in its own dark chamber. */
+        /* The game surfaces share one dark chamber inside the bright app. */
         <div className="summon-stage overflow-hidden rounded-[1.75rem] p-4 shadow-pop ring-1 ring-brand/20 sm:p-6">
-          <GachaView />
+          {tab === "summon" && <GachaView />}
+          {tab === "garden" && <GardenView />}
+          {tab === "workshop" && <WorkshopView />}
         </div>
       )}
     </div>

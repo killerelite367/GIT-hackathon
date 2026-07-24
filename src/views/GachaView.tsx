@@ -2,6 +2,7 @@ import { useState, useEffect, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
+import CharacterArt from "../components/CharacterArt";
 import CrystalGem from "../components/CrystalGem";
 import {
   playCharge,
@@ -28,20 +29,35 @@ import {
   setLucky,
   isLucky,
   AWAKEN_TIER,
+  destructionGroup,
   type PullOutcome,
   type Rarity,
+  type DestructionGroup,
 } from "../lib/gacha";
+
+/** The full-screen environment class + behaviour for each destruction group. */
+const GROUP_ENV: Record<DestructionGroup, string> = {
+  conveyor: "bg-black/90",
+  overheat: "env-fire", // overheating machine, cracking glass
+  meltdown: "env-void", // machine melts, hero rises from the abyss
+  reality: "env-glitch", // glitches out of reality, space-time tear
+  fire: "env-fire", // UI catches fire
+  cloud: "env-cloud", // gravity reverses, volumetric fog
+  freeze: "env-void", // system freeze, emerges from the void
+};
 
 /** Rarity → gradient used for owned cards & reveal auras. */
 const RARITY_GRAD: Record<Rarity, string> = {
   common: "linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))",
   rare: "linear-gradient(155deg, rgba(95,208,255,0.30), rgba(95,208,255,0.04))",
+  ultrarare: "linear-gradient(155deg, rgba(95,255,176,0.34), rgba(95,255,176,0.05))",
   epic: "linear-gradient(155deg, rgba(169,139,255,0.34), rgba(169,139,255,0.05))",
   legendary: "linear-gradient(155deg, rgba(255,225,77,0.40), rgba(255,95,162,0.12))",
   mythic: "linear-gradient(155deg, rgba(255,111,214,0.42), rgba(169,139,255,0.12))",
   ultramythic: "linear-gradient(155deg, rgba(255,154,61,0.45), rgba(255,59,92,0.14))",
   chromatic: "linear-gradient(155deg, rgba(125,255,208,0.4), rgba(95,208,255,0.16))",
   demon: "linear-gradient(155deg, rgba(255,59,92,0.45), rgba(20,0,6,0.5))",
+  cloud: "linear-gradient(155deg, rgba(191,227,255,0.42), rgba(191,227,255,0.08))",
   secret: "linear-gradient(155deg, rgba(200,255,255,0.5), rgba(20,20,30,0.4))",
 };
 
@@ -202,7 +218,7 @@ export default function GachaView() {
                 />
               </div>
               <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-white/40">
-                <Info size={12} /> Legendary 3% · Epic 9% · Rare 28% · Common 60%
+                <Info size={12} /> 11 tiers · Common 55% · Rare 25% · Ultra Rare 11% · Epic 5% · Legendary 2.4% · Mythic 1.2% · ??? 0.02%
               </p>
             </div>
           </div>
@@ -241,7 +257,7 @@ export default function GachaView() {
               borderColor: equipped ? RARITY[equipped.rarity].glow : "#25252f",
             }}
           >
-            {equipped ? <SpiritArt spirit={equipped} size={48} /> : <span className="text-3xl text-white/30">—</span>}
+            {equipped ? <CharacterArt spirit={equipped} size={equipped.element ? 44 : 48} /> : <span className="text-3xl text-white/30">—</span>}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-white/40">Equipped spirit</p>
@@ -357,10 +373,16 @@ function RarityRow({
                   style={{ background: meta.glow, opacity: 0.5 }}
                 />
                 <div className="relative transition-transform duration-300 group-hover:scale-110">
-                  <SpiritArt spirit={s} size={62} />
+                  <CharacterArt spirit={s} size={s.element ? 52 : 62} />
                 </div>
               </div>
-              <p className="mt-1 font-display text-sm font-bold text-white">{s.name}</p>
+              <p className="mt-1 font-display text-xs font-bold leading-tight text-white">
+                <span className="mr-0.5">{s.emoji}</span>
+                {s.name}
+              </p>
+              {s.food && (
+                <p className="text-[9px] italic text-white/40">{s.food}</p>
+              )}
               <span
                 className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.text}`}
                 style={{ background: "rgba(0,0,0,0.3)" }}
@@ -392,18 +414,20 @@ type Phase = "charge" | "burst" | "awaken" | "cards";
 // Timing of the summon cinematic (ms).
 const CHARGE_MS = 1500;
 const BURST_MS = 480;
-const AWAKEN_MS = 6800;
+const AWAKEN_MS = 7000;
 
 /** Small icon shown next to the rarity label so tiers read at a glance. */
 const RARITY_ICON: Record<Rarity, string> = {
   common: "◇",
   rare: "◆",
+  ultrarare: "✦",
   epic: "🔷",
   legendary: "🌟",
   mythic: "🔮",
   ultramythic: "☀️",
   chromatic: "🌈",
   demon: "🔥",
+  cloud: "☁️",
   secret: "👁️",
 };
 
@@ -423,6 +447,7 @@ function RevealOverlay({
   );
   const bestMeta = RARITY[best.spirit.rarity];
   const grand = bestMeta.tier >= AWAKEN_TIER; // legendary+ gets the awakening
+  const group = destructionGroup(best.spirit.rarity); // GDD machine-destruction cinematic
 
   const reduced =
     typeof window !== "undefined" &&
@@ -493,7 +518,9 @@ function RevealOverlay({
   return (
     <div
       onClick={handleBackdrop}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 overflow-hidden bg-black/90 p-6 backdrop-blur-md"
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 overflow-hidden p-6 backdrop-blur-md ${
+        phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
+      } ${phase === "burst" && group !== "conveyor" ? "vfx-screen-shake-heavy" : ""}`}
       style={{ animation: "gacha-fade 0.25s ease-out" }}
     >
       {/* rotating beams tinted by the incoming rarity */}
@@ -657,7 +684,7 @@ function RevealOverlay({
             <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
               <div className="sp-impact">
                 <div className="sp-hop">
-                  <SpiritArt spirit={best.spirit} size={190} talking />
+                  <CharacterArt spirit={best.spirit} size={best.spirit.element ? 210 : 190} talking />
                 </div>
               </div>
             </div>
@@ -681,12 +708,19 @@ function RevealOverlay({
             />
           </div>
 
-          <p
-            className="font-display text-2xl font-extrabold text-white opacity-0"
+          <div
+            className="flex flex-col items-center opacity-0"
             style={{ animation: "gacha-rise 0.6s ease-out 2.3s both" }}
           >
-            {best.spirit.name}
-          </p>
+            <p className="text-center font-display text-2xl font-extrabold text-white">
+              {best.spirit.name}
+            </p>
+            {best.spirit.title && (
+              <p className={`mt-0.5 font-mono text-[11px] uppercase tracking-widest ${bestMeta.text}`}>
+                “{best.spirit.title}”
+              </p>
+            )}
+          </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -742,12 +776,12 @@ function RevealOverlay({
                     </span>
                   )}
                   <div
-                    className="sp-flyin drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]"
+                    className="sp-flyin flex h-20 items-center justify-center drop-shadow-[0_0_16px_rgba(255,255,255,0.4)]"
                     style={{ animationDelay: `${i * 80 + 120}ms` }}
                   >
-                    <SpiritArt spirit={o.spirit} size={76} />
+                    <CharacterArt spirit={o.spirit} size={o.spirit.element ? 66 : 76} />
                   </div>
-                  <p className="mt-2 font-display text-sm font-bold text-white">{o.spirit.name}</p>
+                  <p className="mt-2 font-display text-xs font-bold leading-tight text-white">{o.spirit.name}</p>
                   <p className={`font-mono text-[10px] font-bold uppercase tracking-wider ${meta.text}`}>
                     {meta.label}
                   </p>

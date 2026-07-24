@@ -55,6 +55,13 @@ export interface GameState {
 
   // ── Activity log ──────────────────────────────────────────
   activityLog: Record<string, number>; // ISO date -> XP earned that day (drives the study heatmap)
+
+  // ── GPA Garden ────────────────────────────────────────────
+  garden: Record<string, string>; // tile "row,col" -> placed spirit id
+  bindingGlue: number; // crafting material earned alongside crystals
+
+  // ── Book Binding ──────────────────────────────────────────
+  // (uses `spirits` counts + bindingGlue; no extra state needed)
 }
 
 /** Everything we persist for a user, in one blob. */

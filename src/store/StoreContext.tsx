@@ -21,6 +21,8 @@ import {
   crystalsForCompletion,
   equippedXpMultiplier,
   SPIRIT_BY_ID,
+  SPIRITS,
+  RARITY_ORDER,
   type PullOutcome,
 } from "../lib/gacha";
 import { xpForSession, crystalsForSession, progressDelta } from "../lib/focus";
@@ -52,6 +54,16 @@ interface StoreValue {
   /** Demo-only: grant crystals directly so high rarities can be chased without
    *  waiting on real study progress. */
   giftCrystals: (amount: number) => void;
+  /** Place an owned spirit onto a GPA Garden tile ("row,col"). */
+  placeInGarden: (spiritId: string, tile: string) => void;
+  /** Clear a GPA Garden tile. */
+  removeFromGarden: (tile: string) => void;
+  /** Book Binding: fuse 3 copies of a spirit into one random spirit of the
+   *  next rarity up. Returns the crafted spirit id, or null if not possible. */
+  bindSpirits: (spiritId: string) => string | null;
+  /** Altar of Sacrifice: consume two owned ??? (secret) pets. Returns a
+   *  DEMO voucher code (no real redemption), or null if not enough. */
+  exchangeSecrets: (ids: [string, string]) => string | null;
   /** Log a completed focus session against an assignment: awards XP + Focus
    *  Crystals for the actual minutes spent and nudges progress forward. */
   logFocusMinutes: (assignmentId: string, minutes: number) => void;
@@ -165,11 +177,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const completion = applyCompletion(d.game, target, mult);
         const { gainedXp, leveledUp, streakUp } = completion;
 
-        // Completing real work is the ONLY way to earn Focus Crystals.
+        // Completing real work is the ONLY way to earn Focus Crystals + Glue.
         const earnedCrystals = crystalsForCompletion(target);
+        const earnedGlue = 5 + Math.round(target.weight / 5);
         const game = {
           ...completion.game,
           crystals: completion.game.crystals + earnedCrystals,
+          bindingGlue: (completion.game.bindingGlue ?? 0) + earnedGlue,
           activityLog: bumpActivity(completion.game.activityLog, todayISO(), gainedXp),
         };
 
@@ -280,6 +294,106 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pushToast(`💎 +${amount.toLocaleString()} Focus Crystals gifted`, "crystal");
     },
     [pushToast]
+  );
+
+  const placeInGarden = useCallback((spiritId: string, tile: string) => {
+    setData((d) => {
+      // A spirit can only occupy one tile — clear any previous tile it held.
+      const garden: Record<string, string> = {};
+      for (const [t, id] of Object.entries(d.game.garden)) {
+        if (id !== spiritId) garden[t] = id;
+      }
+      garden[tile] = spiritId;
+      return { ...d, game: { ...d.game, garden } };
+    });
+  }, []);
+
+  const removeFromGarden = useCallback((tile: string) => {
+    setData((d) => {
+      const garden = { ...d.game.garden };
+      delete garden[tile];
+      return { ...d, game: { ...d.game, garden } };
+    });
+  }, []);
+
+  const bindSpirits = useCallback(
+    (spiritId: string): string | null => {
+      const base = SPIRIT_BY_ID[spiritId];
+      if (!base) return null;
+      const owned = data.game.spirits[spiritId] ?? 0;
+      if (owned < 3) {
+        pushToast("Need 3 copies to bind.", "info");
+        return null;
+      }
+      // Craft a random spirit one rarity tier up.
+      const nextIdx = RARITY_ORDER.indexOf(base.rarity) + 1;
+      const nextRarity = RARITY_ORDER[nextIdx];
+      if (!nextRarity) {
+        pushToast("Already the top rarity — can't bind higher.", "info");
+        return null;
+      }
+      const pool = SPIRITS.filter((s) => s.rarity === nextRarity);
+      const crafted = pool[Math.floor(Math.random() * pool.length)];
+      setData((d) => {
+        const spirits = { ...d.game.spirits };
+        spirits[spiritId] = (spirits[spiritId] ?? 0) - 3;
+        if (spirits[spiritId] <= 0) delete spirits[spiritId];
+        spirits[crafted.id] = (spirits[crafted.id] ?? 0) + 1;
+        return { ...d, game: withAchievements({ ...d, game: { ...d.game, spirits } }).game };
+      });
+      pushToast(`📖 Bound ×3 ${base.name} → ${crafted.emoji} ${crafted.name}!`, "level");
+      return crafted.id;
+    },
+    [data.game.spirits, pushToast, withAchievements]
+  );
+
+  const exchangeSecrets = useCallback(
+    (ids: [string, string]): string | null => {
+      const counts = { ...data.game.spirits };
+      // Verify both are owned secret-tier pets (handles same id used twice).
+      const need: Record<string, number> = {};
+      for (const id of ids) {
+        const s = SPIRIT_BY_ID[id];
+        if (!s || s.rarity !== "secret") {
+          pushToast("Both offerings must be ??? (Secret) pets.", "info");
+          return null;
+        }
+        need[id] = (need[id] ?? 0) + 1;
+      }
+      for (const [id, n] of Object.entries(need)) {
+        if ((counts[id] ?? 0) < n) {
+          pushToast("You don't own enough ??? pets to sacrifice.", "info");
+          return null;
+        }
+      }
+      // Generate a clearly-labelled DEMO voucher code (no real redemption).
+      const code =
+        "SQ-DEMO-" +
+        Math.random().toString(36).slice(2, 6).toUpperCase() +
+        "-" +
+        Math.random().toString(36).slice(2, 6).toUpperCase();
+      setData((d) => {
+        const spirits = { ...d.game.spirits };
+        for (const id of ids) {
+          spirits[id] = (spirits[id] ?? 0) - 1;
+          if (spirits[id] <= 0) delete spirits[id];
+        }
+        // Clear those pets from the garden too, if planted.
+        const garden: Record<string, string> = {};
+        let removed = { ...need };
+        for (const [tile, sid] of Object.entries(d.game.garden)) {
+          if (removed[sid] > 0 && !spirits[sid]) {
+            removed[sid]--;
+            continue;
+          }
+          garden[tile] = sid;
+        }
+        return { ...d, game: { ...d.game, spirits, garden } };
+      });
+      pushToast("🔥 Sacrifice complete — DEMO voucher generated.", "level");
+      return code;
+    },
+    [data.game.spirits, pushToast]
   );
 
   const logFocusMinutes = useCallback(
@@ -398,6 +512,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pullGacha,
       equipSpirit,
       giftCrystals,
+      placeInGarden,
+      removeFromGarden,
+      bindSpirits,
+      exchangeSecrets,
       logFocusMinutes,
       setReminders,
       exportData,
@@ -419,6 +537,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pullGacha,
       equipSpirit,
       giftCrystals,
+      placeInGarden,
+      removeFromGarden,
+      bindSpirits,
+      exchangeSecrets,
       logFocusMinutes,
       setReminders,
       exportData,
