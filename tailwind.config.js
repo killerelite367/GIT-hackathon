@@ -4,7 +4,15 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        /*
+         * Display: Bricolage Grotesque — a characterful variable grotesque
+         * that gives headings a real voice instead of the default-sans look.
+         * Body: Figtree — warm, highly legible, friendly for students.
+         * Mono: JetBrains Mono — reserved for actual data (module codes,
+         * dates, counters), never as decoration.
+         */
+        display: ['"Bricolage Grotesque"', "Figtree", "system-ui", "sans-serif"],
+        sans: ["Figtree", "system-ui", "sans-serif"],
         mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
       },
       letterSpacing: {

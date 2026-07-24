@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Download, Upload, RotateCcw, Bell, BellOff, Wand2, Database } from "lucide-react";
+import { Download, Upload, RotateCcw, Bell, BellOff, Wand2, Database, Home } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import Button from "../components/Button";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -38,7 +38,13 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-export default function SettingsView({ onImportSyllabus }: { onImportSyllabus: () => void }) {
+export default function SettingsView({
+  onImportSyllabus,
+  onShowLanding,
+}: {
+  onImportSyllabus: () => void;
+  onShowLanding: () => void;
+}) {
   const { data, exportData, importData, resetAll, setReminders } = useStore();
   const { game } = data;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,6 +139,14 @@ export default function SettingsView({ onImportSyllabus }: { onImportSyllabus: (
             <Database size={13} />
             {isSupabaseConfigured ? "Supabase" : "Local"}
           </span>
+        </Row>
+        <Row
+          title="Landing page"
+          desc="Revisit the StudyQuest intro page — handy for demos."
+        >
+          <Button variant="secondary" size="sm" icon={<Home size={14} />} onClick={onShowLanding}>
+            View
+          </Button>
         </Row>
         <Row title="StudyQuest" desc="A gamified study diary built for RP students · Semester 2026-S2.">
           <span />

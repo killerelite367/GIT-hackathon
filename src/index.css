@@ -17,7 +17,7 @@ html {
 
 body {
   margin: 0;
-  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-family: "Figtree", system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.005em;
@@ -25,6 +25,11 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Display type gets optical sizing + slightly tighter fit at large sizes. */
+.font-display {
+  font-variation-settings: "opsz" 40;
 }
 
 /*

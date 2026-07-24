@@ -9,12 +9,15 @@ import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
 import RewardsView from "./views/RewardsView";
 import SettingsView from "./views/SettingsView";
+import LandingPage from "./views/LandingPage";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
 import { Sparkles, Settings, Flame } from "lucide-react";
+
+const ENTERED_KEY = "studyquest:entered";
 
 function greeting() {
   const h = new Date().getHours();
@@ -32,6 +35,32 @@ export default function App() {
   const [importOpen, setImportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
+  // Returning visitors go straight to the app; the landing stays reachable
+  // from Settings.
+  const [entered, setEntered] = useState(() => {
+    try {
+      return localStorage.getItem(ENTERED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const enterApp = () => {
+    try {
+      localStorage.setItem(ENTERED_KEY, "1");
+    } catch {
+      /* storage unavailable — still enter for this session */
+    }
+    setEntered(true);
+  };
+  const showLanding = () => {
+    try {
+      localStorage.removeItem(ENTERED_KEY);
+    } catch {
+      /* ignore */
+    }
+    setEntered(false);
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -45,6 +74,9 @@ export default function App() {
     setFocusId(id ?? null);
     setFocusOpen(true);
   };
+
+  // Every hook above runs unconditionally; the landing gate comes after.
+  if (!entered) return <LandingPage onEnter={enterApp} />;
 
   const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     today: {
@@ -136,7 +168,12 @@ export default function App() {
             {view === "planner" && <ScheduleView />}
             {view === "grades" && <ModulesView />}
             {view === "rewards" && <RewardsView />}
-            {view === "settings" && <SettingsView onImportSyllabus={() => setImportOpen(true)} />}
+            {view === "settings" && (
+              <SettingsView
+                onImportSyllabus={() => setImportOpen(true)}
+                onShowLanding={showLanding}
+              />
+            )}
           </div>
         </div>
       </main>
