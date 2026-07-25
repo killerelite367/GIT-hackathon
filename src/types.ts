@@ -62,6 +62,13 @@ export interface GameState {
 
   // ── Book Binding ──────────────────────────────────────────
   // (uses `spirits` counts + bindingGlue; no extra state needed)
+
+  // ── Shop (Accessories) ─────────────────────────────────────
+  accessories: Record<string, number>; // accessory id -> quantity owned
+  equippedAccessories: string[]; // currently equipped accessory ids
+
+  // ── Group Project ──────────────────────────────────────────
+  groupMembers: Array<{ email: string; contribution: number }>; // team emails + work %
 }
 
 /** Everything we persist for a user, in one blob. */

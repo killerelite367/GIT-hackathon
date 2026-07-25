@@ -95,6 +95,9 @@ export function seedData(): AppData {
       activityLog: {},
       garden: {},
       bindingGlue: 0,
+      accessories: {},
+      equippedAccessories: [],
+      groupMembers: [],
     },
   };
 }

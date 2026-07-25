@@ -1,0 +1,262 @@
+import { useState } from "react";
+import { useStore } from "../store/StoreContext";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+
+interface GroupMember {
+  email: string;
+  contribution: number;
+}
+
+const TURTLE_SHELLS = [
+  "bg-gradient-to-br from-green-400 to-green-600",
+  "bg-gradient-to-br from-blue-400 to-blue-600",
+  "bg-gradient-to-br from-purple-400 to-purple-600",
+  "bg-gradient-to-br from-yellow-400 to-yellow-600",
+  "bg-gradient-to-br from-pink-400 to-pink-600",
+  "bg-gradient-to-br from-cyan-400 to-cyan-600",
+];
+
+export default function GroupProjectView() {
+  const { data, updateData } = useStore();
+  const { game } = data;
+  const [newEmail, setNewEmail] = useState("");
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editingContribution, setEditingContribution] = useState("");
+
+  const addMember = () => {
+    if (!newEmail.trim()) return;
+    if (game.groupMembers.length >= 6) {
+      alert("Max 6 team members!");
+      return;
+    }
+
+    const members = [...game.groupMembers, { email: newEmail.trim(), contribution: 0 }];
+    updateData({
+      ...data,
+      game: { ...game, groupMembers: members },
+    });
+    setNewEmail("");
+  };
+
+  const updateContribution = (idx: number, value: number) => {
+    const members = [...game.groupMembers];
+    members[idx].contribution = Math.max(0, Math.min(100, value));
+
+    // Auto-normalize if total is over 100
+    const total = members.reduce((sum, m) => sum + m.contribution, 0);
+    if (total > 100) {
+      const scale = 100 / total;
+      members.forEach(m => m.contribution = Math.round(m.contribution * scale));
+    }
+
+    updateData({
+      ...data,
+      game: { ...game, groupMembers: members },
+    });
+  };
+
+  const deleteMember = (idx: number) => {
+    const members = game.groupMembers.filter((_, i) => i !== idx);
+    updateData({
+      ...data,
+      game: { ...game, groupMembers: members },
+    });
+  };
+
+  const totalContribution = game.groupMembers.reduce((sum, m) => sum + m.contribution, 0);
+
+  // Calculate turtle positions in a circle
+  const getTurtlePosition = (index: number, total: number) => {
+    const angleStep = (360 / Math.max(total, 1));
+    const angle = (index * angleStep - 90) * (Math.PI / 180);
+    const radius = Math.min(120, 60 + total * 8);
+    const x = 200 + radius * Math.cos(angle);
+    const y = 200 + radius * Math.sin(angle);
+    const rotation = index * angleStep;
+    return { x, y, rotation };
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add member form */}
+      <div className="rounded-lg border border-line bg-surface p-4 shadow-soft">
+        <h3 className="mb-3 text-sm font-bold text-haze">🐢 Add Team Member</h3>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            placeholder="teammate@email.com"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addMember()}
+            className="flex-1 rounded border border-line bg-background px-3 py-2 text-sm text-text placeholder-haze focus:border-neon-purple focus:outline-none"
+          />
+          <button
+            onClick={addMember}
+            disabled={game.groupMembers.length >= 6}
+            className="rounded bg-brand px-4 py-2 font-bold text-text disabled:opacity-50 hover:bg-brand/80 transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} /> Add
+          </button>
+        </div>
+      </div>
+
+      {game.groupMembers.length > 0 && (
+        <>
+          {/* Turtle circle visualization */}
+          <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
+            <h3 className="mb-4 text-center text-sm font-bold text-haze">👥 Team Turtles</h3>
+
+            <svg viewBox="0 0 400 400" className="w-full max-w-md mx-auto">
+              {/* Center circle */}
+              <circle cx="200" cy="200" r="30" className="fill-neon-purple/20 stroke-neon-purple" strokeWidth="2" />
+
+              {/* Turtles in circle */}
+              {game.groupMembers.map((member, idx) => {
+                const { x, y, rotation } = getTurtlePosition(idx, game.groupMembers.length);
+                const contribution = member.contribution;
+                const isWorking = contribution > 0;
+
+                return (
+                  <g key={idx} transform={`translate(${x} ${y}) rotate(${rotation})`}>
+                    {/* Connection line to center */}
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2={200 - x}
+                      y2={200 - y}
+                      className="stroke-line"
+                      strokeWidth="1"
+                      opacity="0.3"
+                    />
+
+                    {/* Turtle shell */}
+                    <ellipse
+                      cx="0"
+                      cy="0"
+                      rx="18"
+                      ry="22"
+                      className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]}
+                      opacity={isWorking ? 1 : 0.4}
+                    />
+
+                    {/* Turtle head */}
+                    <circle cx="0" cy="-28" r="10" className="fill-green-700" opacity={isWorking ? 1 : 0.4} />
+                    <circle cx="-3" cy="-32" r="3" className="fill-black" />
+
+                    {/* Contribution percentage label */}
+                    {contribution > 0 && (
+                      <text
+                        x="0"
+                        y="4"
+                        textAnchor="middle"
+                        className="font-bold text-white text-[10px]"
+                        dominantBaseline="middle"
+                      >
+                        {contribution}%
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Work breakdown */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-haze">Total Work Assigned: <span className="font-bold text-neon-cyan">{totalContribution}%</span></p>
+              {totalContribution < 100 && (
+                <p className="text-xs text-neon-purple mt-1">⚠️ {100 - totalContribution}% unassigned</p>
+              )}
+              {totalContribution > 100 && (
+                <p className="text-xs text-neon-cyan mt-1">💯 Over 100%! Auto-normalized.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Member list with contribution controls */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-haze">📊 Contributions</h3>
+            {game.groupMembers.map((member, idx) => (
+              <div
+                key={idx}
+                className="rounded-lg border border-line bg-surface p-3 shadow-soft"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-text truncate">{member.email}</p>
+                    {member.contribution === 0 && (
+                      <p className="text-xs text-neon-purple">🦗 Slacker turtle (no work assigned)</p>
+                    )}
+                  </div>
+
+                  {editingIdx === idx ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editingContribution}
+                        onChange={(e) => setEditingContribution(e.target.value)}
+                        className="w-16 rounded border border-neon-purple bg-background px-2 py-1 text-sm font-bold text-text"
+                      />
+                      <span className="text-xs font-bold text-haze">%</span>
+                      <button
+                        onClick={() => {
+                          updateContribution(idx, parseInt(editingContribution) || 0);
+                          setEditingIdx(null);
+                        }}
+                        className="rounded bg-neon-cyan px-2 py-1 text-xs font-bold text-text hover:bg-neon-cyan/80 transition-colors"
+                      >
+                        ✓
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-neon-cyan">{member.contribution}%</p>
+                        <div className="w-20 h-1 bg-line rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-neon-purple to-neon-cyan transition-all"
+                            style={{ width: `${member.contribution}%` }}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingIdx(idx);
+                          setEditingContribution(String(member.contribution));
+                        }}
+                        className="rounded bg-neon-purple/30 p-1.5 text-neon-purple hover:bg-neon-purple/50 transition-colors"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => deleteMember(idx)}
+                        className="rounded bg-red-500/30 p-1.5 text-red-500 hover:bg-red-500/50 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Work distribution tips */}
+          <div className="rounded-lg border border-neon-purple/30 bg-neon-purple/10 p-3">
+            <p className="text-xs text-haze">
+              💡 <strong>Turtle Tip:</strong> Each turtle's shell color represents a team member. Bright shells = doing work, faded = slacking! Edit each member's contribution % to split the work fairly.
+            </p>
+          </div>
+        </>
+      )}
+
+      {game.groupMembers.length === 0 && (
+        <div className="rounded-lg border-2 border-dashed border-line p-8 text-center">
+          <p className="text-lg font-bold text-haze mb-2">🐢 No team yet!</p>
+          <p className="text-sm text-haze">Add your teammates above to start tracking the group project.</p>
+        </div>
+      )}
+    </div>
+  );
+}

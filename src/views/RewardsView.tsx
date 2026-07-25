@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trophy, Gem, Flame, Zap, Sparkles, Lock, Sprout, Hammer } from "lucide-react";
+import { Trophy, Gem, Flame, Zap, Sparkles, Lock, Sprout, Hammer, Flower, Users } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { levelProgress } from "../lib/gamification";
 import { ACHIEVEMENTS } from "../lib/achievements";
@@ -8,8 +8,10 @@ import StudyHeatmap from "../components/StudyHeatmap";
 import GachaView from "./GachaView";
 import GardenView from "./GardenView";
 import WorkshopView from "./WorkshopView";
+import ShopView from "./ShopView";
+import GroupProjectView from "./GroupProjectView";
 
-type Tab = "progress" | "summon" | "garden" | "workshop";
+type Tab = "progress" | "summon" | "garden" | "workshop" | "shop" | "group";
 
 export default function RewardsView() {
   const { data } = useStore();
@@ -36,6 +38,12 @@ export default function RewardsView() {
         </TabButton>
         <TabButton active={tab === "workshop"} onClick={() => setTab("workshop")} icon={<Hammer size={15} />}>
           Workshop
+        </TabButton>
+        <TabButton active={tab === "shop"} onClick={() => setTab("shop")} icon={<Flower size={15} />}>
+          Shop
+        </TabButton>
+        <TabButton active={tab === "group"} onClick={() => setTab("group")} icon={<Users size={15} />}>
+          Group
         </TabButton>
       </div>
 
@@ -100,6 +108,8 @@ export default function RewardsView() {
           {tab === "summon" && <GachaView />}
           {tab === "garden" && <GardenView />}
           {tab === "workshop" && <WorkshopView />}
+          {tab === "shop" && <ShopView />}
+          {tab === "group" && <GroupProjectView />}
         </div>
       )}
     </div>

@@ -38,6 +38,7 @@ interface StoreValue {
   data: AppData;
   toasts: Toast[];
   dismissToast: (id: number) => void;
+  updateData: (data: AppData) => void;
   addAssignment: (a: Omit<Assignment, "id" | "createdAt">) => void;
   updateAssignment: (id: string, patch: Partial<Assignment>) => void;
   completeAssignment: (id: string) => void;
@@ -111,6 +112,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const dismissToast = useCallback((id: number) => {
     setToasts((t) => t.filter((x) => x.id !== id));
+  }, []);
+
+  const updateData = useCallback((newData: AppData) => {
+    setData(newData);
   }, []);
 
   /**
@@ -500,6 +505,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       data,
       toasts,
       dismissToast,
+      updateData,
       addAssignment,
       updateAssignment,
       completeAssignment,
@@ -525,6 +531,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       data,
       toasts,
       dismissToast,
+      updateData,
       addAssignment,
       updateAssignment,
       completeAssignment,
