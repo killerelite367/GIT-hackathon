@@ -262,10 +262,19 @@ function normalize(raw: unknown, source: "scan" | "paste"): StudySet {
     });
   }
 
+  /*
+   * The model sometimes answers "module" with a topic name ("Basic Chemistry
+   * Concepts") instead of a code. Uppercased and shown next to the card count
+   * that reads as a broken module code, so only keep it if it actually looks
+   * like one — RP codes are a letter plus three digits.
+   */
+  const moduleRaw = str(body.module).toUpperCase();
+  const module = /^[A-Z]\d{3}$/.test(moduleRaw) ? moduleRaw : "";
+
   return {
     id: uid("set"),
     title: str(body.title) || "Study set",
-    module: str(body.module).toUpperCase(),
+    module,
     createdAt: new Date().toISOString(),
     source,
     summary,

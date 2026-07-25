@@ -1,0 +1,652 @@
+/* ═══════════════════════════════════════════════════════════
+   LANDING PAGE
+   A brand surface with a fixed WebGL canvas behind it (see
+   lib/questScene.ts). Everything is scoped under .lp so none of
+   it can leak into the app. Colours come from the same themed
+   tokens as the app, so the landing follows light/dark too.
+   ═══════════════════════════════════════════════════════════ */
+
+.lp {
+  position: relative;
+  overflow-x: clip;
+}
+
+.lp-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+}
+
+/* Film grain over the render — stops large flat gradients banding. */
+.lp-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.5'/></svg>");
+}
+
+.lp-main {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+/* ── floating glass nav ── */
+.lp-nav {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 3vw, 34px);
+  padding: 9px 10px 9px 16px;
+  border-radius: 999px;
+  background: rgb(var(--c-surface) / 0.72);
+  border: 1px solid rgb(var(--c-line));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--sh-raised);
+}
+.lp-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: rgb(var(--c-night));
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+.lp-nav-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: rgb(var(--c-brand));
+  color: #fff;
+}
+.lp-nav-links {
+  display: flex;
+  gap: clamp(10px, 2.2vw, 24px);
+}
+.lp-nav-links a {
+  color: rgb(var(--c-dusk));
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+.lp-nav-links a:hover {
+  color: rgb(var(--c-brand-deep));
+}
+.lp-nav-cta {
+  white-space: nowrap;
+  border: 0;
+  cursor: pointer;
+  background: rgb(var(--c-brand));
+  color: #fff;
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-weight: 600;
+  font-size: 0.86rem;
+  padding: 9px 17px;
+  border-radius: 999px;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+.lp-nav-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+
+/* ── buttons ── */
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 15px 30px;
+  font-size: 1rem;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+.lp-btn-primary {
+  color: #fff;
+  background: rgb(var(--c-brand));
+  box-shadow: var(--sh-brand);
+}
+.lp-btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+.lp-arrow {
+  transition: transform 0.35s ease;
+}
+.lp-btn-primary:hover .lp-arrow {
+  transform: translateX(5px);
+}
+.lp-btn-ghost {
+  color: rgb(var(--c-night));
+  border: 1.5px solid rgb(var(--c-line2));
+  background: rgb(var(--c-surface) / 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.lp-btn-ghost:hover {
+  transform: translateY(-3px);
+  border-color: rgb(var(--c-brand));
+}
+.lp-btn-xl {
+  padding: 20px 42px;
+  font-size: 1.15rem;
+}
+
+/* ── hero ── */
+.lp-hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+  position: relative;
+}
+.lp-eyebrow {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--c-brand-deep));
+  margin-bottom: 24px;
+}
+.lp-title {
+  max-width: min(1100px, 94vw);
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: clamp(2.1rem, 6.4vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  color: rgb(var(--c-night));
+}
+.lp-title em {
+  font-style: normal;
+  color: rgb(var(--c-brand-deep));
+}
+.lp-sub {
+  max-width: 580px;
+  margin-top: 26px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgb(var(--c-dusk));
+}
+.lp-hero-ctas {
+  display: flex;
+  gap: 14px;
+  margin-top: 38px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.lp-scroll-hint {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgb(var(--c-haze));
+}
+.lp-hint-track {
+  width: 25px;
+  height: 40px;
+  border: 1.5px solid rgb(var(--c-line2));
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  padding-top: 7px;
+}
+.lp-hint-dot {
+  width: 5px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgb(var(--c-brand));
+  animation: lp-hintdrop 1.8s ease-in-out infinite;
+}
+@keyframes lp-hintdrop {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+.lp-hint-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── pinned board scene ──
+   The height controls how much scroll the 3D sequence is scrubbed across:
+   enough for all three captions to be read, without dead stretches at
+   either end where the screen would be empty geometry. */
+.board-scene {
+  height: 285vh;
+  position: relative;
+}
+.board-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.caption-stack {
+  position: relative;
+  width: min(680px, 90vw);
+  min-height: 200px;
+  margin-bottom: clamp(30px, 7vh, 70px);
+  text-align: center;
+}
+.scene-caption {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  padding: 24px 28px;
+  border-radius: 22px;
+  background: rgb(var(--c-surface) / 0.85);
+  border: 1px solid rgb(var(--c-line));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--sh-pop);
+}
+.scene-caption h2 {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  letter-spacing: -0.025em;
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: rgb(var(--c-night));
+}
+.scene-caption h2 em {
+  font-style: normal;
+  color: rgb(var(--c-brand-deep));
+}
+.scene-caption p {
+  color: rgb(var(--c-dusk));
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/*
+ * Everything after the pinned scene sits on a solid sheet, so the fixed canvas
+ * only shows behind the hero and the board. As Features scrolls up it covers
+ * the canvas like a curtain — the screen is never bare floating geometry.
+ */
+.lp-sheet {
+  position: relative;
+  z-index: 2;
+  background: rgb(var(--c-canvas));
+}
+.lp-features,
+.lp-steps {
+  padding: clamp(70px, 10vw, 130px) 24px;
+}
+/* Pull Features up so it rises into view exactly as the last caption leaves. */
+.lp-features {
+  margin-top: -24vh;
+  padding-top: clamp(30px, 4vw, 56px);
+}
+
+.lp-section-title {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: clamp(1.8rem, 4.2vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  font-weight: 800;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto clamp(44px, 6vw, 70px);
+  color: rgb(var(--c-night));
+}
+
+/* ── bento ── */
+.lp-bento {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.lp-card {
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line));
+  border-radius: 22px;
+  padding: 30px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  position: relative;
+  overflow: hidden;
+  grid-column: span 2;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s ease,
+    border-color 0.4s ease;
+}
+.lp-card-wide {
+  grid-column: span 4;
+}
+.lp-card:hover {
+  transform: translateY(-6px);
+  border-color: rgb(var(--c-line2));
+  box-shadow: var(--sh-pop);
+}
+/* cursor-follow glow, positioned by JS via --mx/--my */
+.lp-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 0%),
+    rgb(var(--c-brand) / 0.1),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.lp-card:hover::after {
+  opacity: 1;
+}
+.lp-card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: rgb(var(--c-brand));
+  color: #fff;
+  box-shadow: var(--sh-brand);
+}
+.lp-icon-sky { background: rgb(var(--c-sky)); }
+.lp-icon-grass { background: rgb(var(--c-grass)); }
+.lp-icon-warm { background: rgb(var(--c-warm)); }
+.lp-card h3 {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: rgb(var(--c-night));
+}
+.lp-card p {
+  color: rgb(var(--c-dusk));
+  line-height: 1.6;
+  font-size: 0.97rem;
+  max-width: 52ch;
+}
+.lp-card-tag {
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgb(var(--c-brand-deep));
+  background: rgb(var(--c-brand) / 0.1);
+  border: 1px solid rgb(var(--c-brand) / 0.25);
+  padding: 6px 13px;
+  border-radius: 999px;
+}
+
+/* ── word-scrub statement ── */
+.lp-statement {
+  padding: clamp(80px, 11vw, 150px) 24px;
+  display: flex;
+  justify-content: center;
+}
+.lp-statement-text {
+  max-width: 1000px;
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: clamp(1.5rem, 3.6vw, 2.7rem);
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-align: center;
+  color: rgb(var(--c-night));
+}
+.lp-statement-text .w {
+  display: inline-block;
+  opacity: 0.14;
+}
+.lp-statement-text b {
+  color: rgb(var(--c-brand-deep));
+  font-weight: 700;
+}
+
+/* ── stacking steps ── */
+.lp-step-stack {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.lp-step {
+  position: sticky;
+  top: calc(15vh + var(--i) * 58px);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line));
+  border-radius: 22px;
+  padding: 34px 36px;
+  box-shadow: var(--sh-raised);
+}
+.lp-step-num {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: rgb(var(--c-brand));
+  flex-shrink: 0;
+}
+.lp-step-body h3 {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: 1.35rem;
+  margin-bottom: 7px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: rgb(var(--c-night));
+}
+.lp-step-body p {
+  color: rgb(var(--c-dusk));
+  line-height: 1.6;
+  font-size: 1rem;
+  max-width: 48ch;
+}
+.lp-step-art {
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--c-brand-deep));
+  background: rgb(var(--c-brand) / 0.12);
+}
+.lp-art-plan {
+  color: rgb(var(--c-warm-deep));
+  background: rgb(var(--c-warm) / 0.14);
+}
+.lp-art-reward {
+  color: rgb(var(--c-grass-deep));
+  background: rgb(var(--c-grass) / 0.14);
+}
+
+/* ── marquee ── */
+.lp-marquee {
+  overflow: hidden;
+  padding: 22px 0;
+  border-top: 1px solid rgb(var(--c-line));
+  border-bottom: 1px solid rgb(var(--c-line));
+  background: rgb(var(--c-surface));
+  position: relative;
+  z-index: 2;
+}
+.lp-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: lp-marquee 28s linear infinite;
+}
+.lp-marquee-run {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding-right: 30px;
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: rgb(var(--c-dusk));
+  white-space: nowrap;
+}
+.lp-marquee-run i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(var(--c-brand));
+  flex-shrink: 0;
+}
+@keyframes lp-marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ── CTA + footer ── */
+.lp-cta {
+  padding: clamp(90px, 12vw, 170px) 24px clamp(80px, 10vw, 130px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lp-cta-title {
+  font-family: "Bricolage Grotesque", Figtree, sans-serif;
+  font-size: clamp(2.1rem, 5.4vw, 4.1rem);
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  font-weight: 800;
+  color: rgb(var(--c-night));
+}
+.lp-cta-sub {
+  margin: 22px 0 36px;
+  font-size: 1.08rem;
+  color: rgb(var(--c-dusk));
+}
+.lp-footer {
+  position: relative;
+  z-index: 3;
+  padding: 36px 24px 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid rgb(var(--c-line));
+  background: rgb(var(--c-surface));
+}
+.lp-footer p {
+  color: rgb(var(--c-haze));
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+/* ── responsive ── */
+@media (max-width: 860px) {
+  .lp-nav-links { display: none; }
+  .lp-card,
+  .lp-card-wide { grid-column: span 6; }
+  .lp-step {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 24px;
+    top: calc(11vh + var(--i) * 48px);
+  }
+  .lp-step-art { margin-left: 0; }
+}
+
+/* ── static fallback when WebGL never boots ── */
+.lp-no3d .lp-canvas,
+.lp-no3d .lp-grain,
+.lp-no3d .lp-scroll-hint {
+  display: none;
+}
+.lp-no3d .board-scene {
+  height: auto;
+  padding: 110px 24px;
+}
+.lp-no3d .board-pin {
+  position: static;
+  height: auto;
+  pointer-events: auto;
+  align-items: center;
+}
+.lp-no3d .caption-stack {
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lp-no3d .scene-caption {
+  position: relative;
+  opacity: 1;
+}
+.lp-no3d .lp-features { margin-top: 0; }
+.lp-no3d .lp-statement-text .w { opacity: 1; }
+
+/* ── reduced motion: no pinning, no scrub, everything legible ── */
+@media (prefers-reduced-motion: reduce) {
+  .lp-canvas,
+  .lp-grain {
+    position: absolute;
+    height: 100vh;
+    height: 100svh;
+  }
+  .lp-scroll-hint { display: none; }
+  .lp-marquee-track { animation: none; }
+  .board-scene {
+    height: auto;
+    padding: 100px 24px;
+  }
+  .board-pin {
+    position: static;
+    height: auto;
+    pointer-events: auto;
+  }
+  .caption-stack {
+    min-height: 0;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .scene-caption {
+    position: relative;
+    opacity: 1;
+  }
+  .lp-features { margin-top: 0; }
+  .lp-statement-text .w { opacity: 1; }
+  .lp-step { position: static; }
+}
