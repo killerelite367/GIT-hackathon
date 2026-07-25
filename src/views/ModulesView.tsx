@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calculator, Plus } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
+import { supabase } from "../lib/supabase";
+import { getOrCreateAnonymousUser } from "../lib/auth";
 
 export default function ModulesView() {
   const { data, updateModule } = useStore();
   const { modules } = data;
   const gpa = computeGpa(modules);
+
+  useEffect(() => {
+    getOrCreateAnonymousUser();
+  }, []);
 
   const [target, setTarget] = useState(3.7);
   const [focusModule, setFocusModule] = useState(modules[0]?.code ?? "");
@@ -18,20 +24,34 @@ export default function ModulesView() {
   const [newCredits, setNewCredits] = useState("4");
   const [newGrade, setNewGrade] = useState("");
 
-  const addModule = () => {
+  const addModule = async () => {
     if (!newCode.trim() || !newName.trim()) return;
+
     const newModule = {
       code: newCode.trim().toUpperCase(),
       name: newName.trim(),
       grade: newGrade ? Number(newGrade) : null,
       credits: Number(newCredits) || 4,
     };
-    // This would normally update through the store - for now just show a success message
-    alert(`✅ Added: ${newModule.code} - ${newModule.name}\n(Note: Manual module addition requires backend update)`);
-    setNewCode("");
-    setNewName("");
-    setNewCredits("4");
-    setNewGrade("");
+
+    if (!supabase) {
+      alert("❌ Supabase not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("modules")
+      .insert([newModule]);
+
+    if (error) {
+      alert(`❌ Error: ${error.message}`);
+    } else {
+      alert(`✅ Added: ${newModule.code} - ${newModule.name}`);
+      setNewCode("");
+      setNewName("");
+      setNewCredits("4");
+      setNewGrade("");
+    }
   };
 
   const getGradeBg = (letter?: string) => {
