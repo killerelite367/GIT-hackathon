@@ -2,7 +2,7 @@ import { useState } from "react";
 import Logo from "../components/Logo";
 import { signInWithEmail, signUpWithEmail, signInWithGoogle } from "../lib/auth";
 
-export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+export default function LoginPage({ onLogin }: { onLogin: (user: any) => void }) {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +19,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
 
     setIsLoading(true);
     setError("");
-    const { error: err } = await signInWithEmail(email, password);
+    const { data, error: err } = await signInWithEmail(email, password);
     setIsLoading(false);
 
     if (err) {
@@ -27,7 +27,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
       setError(errorMsg || "Sign in failed");
       console.error("Sign in failed:", err);
     } else {
-      onLogin();
+      onLogin(data?.user ?? { email });
     }
   };
 

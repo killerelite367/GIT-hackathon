@@ -96,7 +96,15 @@ export default function App() {
 
   if (!inApp) return <LandingPage onEnter={enterApp} />;
 
-  if (!user) return <LoginPage onLogin={enterApp} />;
+  if (!user)
+    return (
+      <LoginPage
+        onLogin={(signedIn) => {
+          setUser(signedIn);
+          enterApp();
+        }}
+      />
+    );
 
   const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     today: {
@@ -191,8 +199,8 @@ export default function App() {
               <button
                 onClick={async () => {
                   await signOut();
-                  setHash("");
                   setUser(null);
+                  showLanding();
                 }}
                 aria-label="Sign out"
                 title="Sign out"

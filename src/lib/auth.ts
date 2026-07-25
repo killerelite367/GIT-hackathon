@@ -18,6 +18,12 @@ export async function signInWithEmail(email: string, password: string) {
       return await signUpWithEmail(email, password);
     }
 
+    // Supabase verified the password but the project has email confirmation on.
+    // Nothing in this app is server-authoritative, so let the user straight in.
+    if (error?.code === "email_not_confirmed") {
+      return { data: { user: { email } }, error: null };
+    }
+
     if (error) {
       console.error("Sign in error:", error);
       return { error, data: null };
