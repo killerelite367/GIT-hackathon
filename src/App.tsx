@@ -1,72 +1,64 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar, { BottomNav } from "./components/Sidebar";
 import Toasts from "./components/Toasts";
 import AssignmentModal from "./components/AssignmentModal";
 import SyllabusImport from "./components/SyllabusImport";
-import DashboardView from "./views/DashboardView";
+import FocusModal from "./components/FocusModal";
+import TodayView from "./views/TodayView";
 import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
-import GachaView from "./views/GachaView";
-import GardenView from "./views/GardenView";
-import WorkshopView from "./views/WorkshopView";
-import AchievementsView from "./views/AchievementsView";
+import RewardsView from "./views/RewardsView";
+import SettingsView from "./views/SettingsView";
+import LandingPage from "./views/LandingPage";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
-import { isSupabaseConfigured } from "./lib/supabase";
 import { levelFromXp } from "./lib/gamification";
-import { Sparkles, RotateCcw, Download, Upload } from "lucide-react";
+import { useDailyReminder } from "./lib/useDailyReminder";
+import { Sparkles, Settings, Flame } from "lucide-react";
 
-const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
-  dashboard: {
-    kicker: "▸ mission briefing",
-    heading: "Welcome back, quester",
-    sub: "Your workload, auto-organised and prioritised.",
-  },
-  schedule: {
-    kicker: "▸ study plan",
-    heading: "Your schedule",
-    sub: "Every deadline, broken into daily study blocks.",
-  },
-  modules: {
-    kicker: "▸ academic progress",
-    heading: "Modules & GPA",
-    sub: "Live, credit-weighted GPA on the poly scale.",
-  },
-  gacha: {
-    kicker: "▸ summon circle",
-    heading: "Study Spirits",
-    sub: "Study to earn crystals, summon spirits, power up your XP.",
-  },
-  garden: {
-    kicker: "▸ gpa garden",
-    heading: "Your Garden",
-    sub: "A living plot that grows with your grades. Plant pets for luck.",
-  },
-  workshop: {
-    kicker: "▸ workshop",
-    heading: "The Workshop",
-    sub: "Bind duplicates into rarer pets, or sacrifice at the Altar.",
-  },
-  achievements: {
-    kicker: "▸ rewards",
-    heading: "Achievements",
-    sub: "Earn XP, keep the streak, level up.",
-  },
-};
+/**
+ * The landing page lives at the root URL and the app lives at #/app, the way
+ * a normal site works. No hidden "already visited" flag — where you are is
+ * always visible in the address bar, shareable, and the back button works.
+ */
+const APP_ROUTE = "#/app";
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function App() {
-  const { data, resetAll, exportData, importData } = useStore();
-  const [view, setView] = useState<View>("dashboard");
+  const { data } = useStore();
+  useDailyReminder();
+  const [view, setView] = useState<View>("today");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [focusOpen, setFocusOpen] = useState(false);
+  // Hash route: "" → landing, "#/app" → the app.
+  const [hash, setHash] = useState(() =>
+    typeof window === "undefined" ? "" : window.location.hash
+  );
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  const inApp = hash.startsWith(APP_ROUTE);
 
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-selecting the same file next time
-    if (file) await importData(file);
+  const enterApp = () => {
+    window.location.hash = APP_ROUTE.slice(1); // fires hashchange
+  };
+  const showLanding = () => {
+    // Drop the hash without leaving a bare "#" behind in the address bar.
+    window.history.pushState(null, "", window.location.pathname + window.location.search);
+    setHash("");
+    window.scrollTo(0, 0);
   };
 
   const openAdd = () => {
@@ -77,101 +69,112 @@ export default function App() {
     setEditing(a);
     setModalOpen(true);
   };
+  const openFocus = (id?: string) => {
+    setFocusId(id ?? null);
+    setFocusOpen(true);
+  };
 
+  // Every hook above runs unconditionally; the route branch comes after.
+  if (!inApp) return <LandingPage onEnter={enterApp} />;
+
+  const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
+    today: {
+      kicker: "Today",
+      heading: `${greeting()}, quester`,
+      sub: "Here's what matters most right now.",
+    },
+    planner: {
+      kicker: "Planner",
+      heading: "Your semester plan",
+      sub: "Every deadline, spread into daily study blocks.",
+    },
+    grades: {
+      kicker: "Grades",
+      heading: "Modules & GPA",
+      sub: "Live, credit-weighted GPA on the poly scale.",
+    },
+    rewards: {
+      kicker: "Rewards",
+      heading: "Your progress",
+      sub: "Earn XP by studying, then summon Study Spirits.",
+    },
+    settings: {
+      kicker: "Settings",
+      heading: "Settings & data",
+      sub: "Reminders, backups, and demo data.",
+    },
+  };
   const t = TITLES[view];
 
   return (
     <div className="app-shell flex min-h-screen">
       <Sidebar view={view} setView={setView} />
 
-      <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-        <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
+      <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-9">
           {/* Mobile brand */}
-          <div className="mb-4 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neon-green text-ink">
+          <div className="mb-5 flex items-center gap-2 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-white shadow-brand">
               <Sparkles size={16} />
             </div>
-            <span className="font-display text-base font-bold text-white">StudyQuest</span>
+            <span className="font-display text-base font-bold text-night">StudyQuest</span>
           </div>
 
-          {/* Header */}
-          <header className="flex flex-wrap items-end justify-between gap-4">
+          {/* Page header */}
+          <header className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-white/40">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
                 {t.kicker}
-                <span className="text-white/20">·</span>
-                <span>level {levelFromXp(data.game.xp)}</span>
               </p>
-              <h1 className="mt-2 text-balance font-display text-[2rem] font-bold leading-[1.05] tracking-tighter2 text-white sm:text-[2.6rem]">
+              <h1 className="mt-1.5 text-balance font-display text-[1.9rem] font-bold leading-[1.05] tracking-tighter2 text-night sm:text-[2.5rem]">
                 {t.heading}
               </h1>
-              <p className="mt-2 max-w-md text-[15px] text-white/55">{t.sub}</p>
+              <p className="mt-2 max-w-md text-[15px] text-dusk">{t.sub}</p>
             </div>
+
+            {/* Compact HUD: streak + level, and settings */}
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-night shadow-soft">
+                <Flame size={15} className="text-warm" />
+                {data.game.streakDays}
+                <span className="text-haze">·</span>
+                <span className="text-brand-deep">Lv {levelFromXp(data.game.xp)}</span>
+              </div>
               <button
-                onClick={exportData}
-                title="Download a backup of all your data"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
-              >
-                <Download size={12} /> Export
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                title="Restore from a backup file"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
-              >
-                <Upload size={12} /> Import
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json"
-                onChange={handleImportFile}
-                className="hidden"
-              />
-              <button
-                onClick={resetAll}
-                title="Reset to demo data"
-                className="flex items-center gap-1.5 rounded-full border border-edge px-3 py-1.5 text-xs text-white/50 transition hover:border-edge2 hover:text-white"
-              >
-                <RotateCcw size={12} /> Reset
-              </button>
-              <span
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${
-                  isSupabaseConfigured
-                    ? "border-neon-green/40 bg-neon-green/10 text-neon-green"
-                    : "border-neon-cyan/30 bg-neon-cyan/[0.07] text-neon-cyan/90"
+                onClick={() => setView("settings")}
+                aria-label="Settings"
+                aria-current={view === "settings" ? "page" : undefined}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border shadow-soft transition active:scale-95 ${
+                  view === "settings"
+                    ? "border-brand/40 bg-brand-soft text-brand-deep"
+                    : "border-line bg-surface text-dusk hover:text-night"
                 }`}
               >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    isSupabaseConfigured ? "bg-neon-green" : "bg-neon-cyan"
-                  } animate-glowpulse`}
-                />
-                {isSupabaseConfigured ? "Supabase connected" : "Local storage"}
-              </span>
+                <Settings size={16} />
+              </button>
             </div>
           </header>
 
-          <div className="mt-8">
-            {view === "dashboard" && (
-              <DashboardView
+          {/* key={view} re-mounts on navigation so each screen animates in */}
+          <div key={view} className="mt-8 animate-viewin">
+            {view === "today" && (
+              <TodayView
                 onAdd={openAdd}
                 onEdit={openEdit}
                 onImport={() => setImportOpen(true)}
+                onFocus={openFocus}
               />
             )}
-            {view === "schedule" && <ScheduleView />}
-            {view === "modules" && <ModulesView />}
-            {view === "gacha" && <GachaView />}
-            {view === "garden" && <GardenView />}
-            {view === "workshop" && <WorkshopView />}
-            {view === "achievements" && <AchievementsView />}
+            {view === "planner" && <ScheduleView />}
+            {view === "grades" && <ModulesView />}
+            {view === "rewards" && <RewardsView />}
+            {view === "settings" && (
+              <SettingsView
+                onImportSyllabus={() => setImportOpen(true)}
+                onShowLanding={showLanding}
+              />
+            )}
           </div>
-
-          <footer className="mt-10 border-t border-edge pt-4 font-mono text-xs text-white/30">
-            $ studyquest --semester 2026-S2 · {data.assignments.filter((a) => !a.completed).length} open quests · auto-organised
-          </footer>
         </div>
       </main>
 
@@ -184,6 +187,11 @@ export default function App() {
         onClose={() => setModalOpen(false)}
       />
       {importOpen && <SyllabusImport onClose={() => setImportOpen(false)} />}
+      <FocusModal
+        open={focusOpen}
+        initialAssignmentId={focusId}
+        onClose={() => setFocusOpen(false)}
+      />
       <Toasts />
     </div>
   );

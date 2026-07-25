@@ -23,6 +23,10 @@ const empty = (modules: Module[]) => ({
   estHours: 6,
 });
 
+const fieldLabel = "block text-xs font-semibold uppercase tracking-wide text-haze";
+const fieldInput =
+  "mt-1 w-full rounded-xl border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night outline-none placeholder:text-haze focus:border-brand/50";
+
 export default function AssignmentModal({ open, editing, modules, onClose }: Props) {
   const { addAssignment, updateAssignment } = useStore();
   const [form, setForm] = useState(empty(modules));
@@ -61,7 +65,7 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-40 flex items-end justify-center bg-night/30 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -70,41 +74,37 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={submit}
-        className="w-full max-w-lg animate-popin rounded-t-2xl border border-edge bg-panel p-6 sm:rounded-2xl"
+        className="w-full max-w-lg animate-popin rounded-t-3xl border border-line bg-surface p-6 shadow-pop sm:rounded-3xl"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-white">
-            {editing ? "Edit assignment" : "New assignment"}
+          <h3 className="font-display text-lg font-bold text-night">
+            {editing ? "Edit quest" : "New quest"}
           </h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-white/50 transition hover:text-white"
+            className="text-haze transition hover:text-night"
           >
             <X size={18} />
           </button>
         </div>
 
-        <label className="block text-xs uppercase tracking-wider text-white/40">
+        <label className={fieldLabel}>
           Title
           <input
             autoFocus
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="e.g. CA2: ETL Pipeline Report"
-            className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-neon-green/50"
+            className={fieldInput}
           />
         </label>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Module
-            <select
-              value={form.module}
-              onChange={(e) => set("module", e.target.value)}
-              className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
-            >
+            <select value={form.module} onChange={(e) => set("module", e.target.value)} className={fieldInput}>
               {modules.map((m) => (
                 <option key={m.code} value={m.code}>
                   {m.code} · {m.name}
@@ -112,12 +112,12 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
               ))}
             </select>
           </label>
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Type
             <select
               value={form.type}
               onChange={(e) => set("type", e.target.value as AssignmentType)}
-              className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
+              className={fieldInput}
             >
               {TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -129,16 +129,16 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Due date
             <input
               type="date"
               value={form.dueDate}
               onChange={(e) => set("dueDate", e.target.value)}
-              className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
+              className={fieldInput}
             />
           </label>
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Weight (%)
             <input
               type="number"
@@ -146,13 +146,13 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
               max={100}
               value={form.weight}
               onChange={(e) => set("weight", Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
+              className={fieldInput}
             />
           </label>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Est. effort (hours)
             <input
               type="number"
@@ -160,10 +160,10 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
               step={0.5}
               value={form.estHours}
               onChange={(e) => set("estHours", Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-edge bg-panel2 px-3 py-2 text-sm text-white outline-none focus:border-neon-green/50"
+              className={fieldInput}
             />
           </label>
-          <label className="block text-xs uppercase tracking-wider text-white/40">
+          <label className={fieldLabel}>
             Progress ({form.progress}%)
             <input
               type="range"
@@ -171,7 +171,7 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
               max={100}
               value={form.progress}
               onChange={(e) => set("progress", Number(e.target.value))}
-              className="mt-3 w-full accent-neon-green"
+              className="mt-3 w-full accent-brand"
             />
           </label>
         </div>
@@ -180,13 +180,13 @@ export default function AssignmentModal({ open, editing, modules, onClose }: Pro
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-edge px-4 py-2 text-sm text-white/60 transition hover:text-white"
+            className="rounded-xl border border-line px-4 py-2 text-sm font-medium text-dusk transition hover:text-night active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg border border-neon-green/50 bg-neon-green/15 px-4 py-2 text-sm font-medium text-neon-green transition hover:bg-neon-green/25"
+            className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white shadow-brand transition hover:bg-brand-deep active:scale-95"
           >
             {editing ? "Save changes" : "Add & schedule"}
           </button>

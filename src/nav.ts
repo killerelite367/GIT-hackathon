@@ -1,8 +1,1 @@
-export type View =
-  | "dashboard"
-  | "schedule"
-  | "modules"
-  | "gacha"
-  | "garden"
-  | "workshop"
-  | "achievements";
+export type View = "today" | "planner" | "grades" | "rewards" | "settings";

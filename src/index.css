@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: dark;
-  --bg: #0c0b09;
+  --bg: #131319;
 }
 
 * {
@@ -17,20 +17,41 @@ html {
 
 body {
   margin: 0;
-  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-family: "Figtree", system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.005em;
-  color: #e9e9f2;
+  color: #ecebf3;
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+/* Display type gets optical sizing + slightly tighter fit at large sizes. */
+.font-display {
+  font-variation-settings: "opsz" 40;
+}
+
 /*
- * Ambient depth: a single, quiet warm glow low in the frame. Deliberately
- * restrained — no rainbow radials, no decorative grid overlay. The surface
- * should read as considered, not generated.
+ * Line-mask reveal: each line sits in a clipped wrapper so the inner span can
+ * rise out from behind it. Text is fully visible by default — the animation
+ * only ever moves an already-rendered line, so nothing can ship blank.
+ */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.line-inner {
+  display: block;
+  will-change: transform;
+}
+
+/*
+ * Ambient depth: two slow-drifting colour washes over the deep base — a violet
+ * and a cool teal — so the surface feels alive and lit rather than flat black.
+ * Faint and always in motion; the cards do the talking.
  */
 .app-shell {
   position: relative;
@@ -39,15 +60,21 @@ body {
 .app-shell::before {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: -20% -10% -10% -10%;
   z-index: -2;
   background:
-    radial-gradient(1100px 560px at 50% -12%, rgba(224, 168, 77, 0.05), transparent 60%),
+    radial-gradient(900px 520px at 88% -6%, rgba(143, 116, 255, 0.16), transparent 60%),
+    radial-gradient(820px 500px at 4% 8%, rgba(90, 167, 239, 0.09), transparent 58%),
     var(--bg);
+  animation: ambient-drift 26s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-2.5%, 1.5%, 0) scale(1.06); }
 }
 
 ::selection {
-  background: rgba(224, 168, 77, 0.28);
+  background: rgba(143, 116, 255, 0.32);
   color: #fff;
 }
 
@@ -56,13 +83,13 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3a;
+  background: #33333f;
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a4e;
+  background: #45455a;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
@@ -77,9 +104,25 @@ body {
 
 /* Accessible keyboard focus ring, consistent across the theme */
 :focus-visible {
-  outline: 2px solid #e0a84d;
+  outline: 2px solid #8f74ff;
   outline-offset: 2px;
   border-radius: 8px;
+}
+
+/*
+ * The Summon view is a still-darker "chamber" nested inside the twilight app —
+ * a near-black stage so the gacha spectacle's colour and glow pop against it.
+ */
+.summon-stage {
+  color-scheme: dark;
+  color: #e9e9f2;
+  background:
+    radial-gradient(1100px 620px at 50% -10%, rgba(169, 139, 255, 0.16), transparent 60%),
+    #0a0a12;
+}
+.summon-stage ::selection {
+  background: rgba(169, 139, 255, 0.32);
+  color: #fff;
 }
 
 /* ── Gacha summon animations ─────────────────────────────── */
