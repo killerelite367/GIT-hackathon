@@ -1,19 +1,29 @@
 import { supabase } from "./supabase";
 
-export async function signInWithGoogle() {
-  if (!supabase) return null;
+export async function signInWithEmail(email: string, password: string) {
+  if (!supabase) return { error: "Supabase not configured" };
 
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin,
-    },
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
   });
 
-  if (error) {
-    console.error("Google sign-in error:", error);
-    alert(`Sign-in failed: ${error.message}`);
+  if (error?.code === "invalid_grant") {
+    return await signUpWithEmail(email, password);
   }
+
+  return { data, error };
+}
+
+export async function signUpWithEmail(email: string, password: string) {
+  if (!supabase) return { error: "Supabase not configured" };
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  return { data, error };
 }
 
 export async function getCurrentUser() {
