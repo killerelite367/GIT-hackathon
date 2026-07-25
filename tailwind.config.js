@@ -21,27 +21,53 @@ export default {
       },
       colors: {
         /*
-         * ── Main app: refined "twilight" dark theme ──────────────
-         * A deep slate base (not harsh black) with elevated surfaces, so the
-         * UI reads as a considered mix of tones rather than either glaring
-         * white or flat black. One confident violet accent carries actions.
-         * Semantic hues are dark-tuned; each has a `-deep` LIGHT variant for
-         * readable coloured text and a `-soft` DEEP variant for tinted chips.
-         * Same token NAMES as before, so components re-theme by value.
+         * ── Themed tokens ────────────────────────────────────────
+         * Every one of these resolves to a CSS variable, so the whole app
+         * re-themes by swapping values on <html> — no component knows which
+         * theme is active. Values live in index.css:
+         *   dark  → the original "twilight" violet-on-slate
+         *   light → a near-monochrome paper theme
+         *
+         * Channels are stored space-separated ("143 116 255") rather than as
+         * hex so Tailwind's slash-opacity syntax (bg-brand/40) still works.
+         *
+         * `-deep` is always the higher-contrast variant for coloured TEXT and
+         * `-soft` the tinted chip background — which means they swap lightness
+         * between themes rather than swapping meaning.
          */
-        canvas: "#131319", // body — deep slate, faint cool-violet
-        surface: "#1c1c26", // elevated cards
-        surface2: "#24242f", // insets / inputs
-        line: "#2c2c3a", // hairline borders
-        line2: "#3b3b4e", // stronger borders / hover
-        night: "#ecebf3", // primary text (near-white)
-        dusk: "#a8a4bd", // secondary text
-        haze: "#8b86a4", // tertiary text / muted labels (AA on dark surface)
-        brand: { DEFAULT: "#8f74ff", soft: "#241d3b", deep: "#bca9ff" }, // violet
-        warm: { DEFAULT: "#f2b452", soft: "#2f2413", deep: "#f8ca7d" }, // honey — XP / streak
-        grass: { DEFAULT: "#2fbe85", soft: "#122c22", deep: "#63e3a9" }, // success / done
-        berry: { DEFAULT: "#f2687d", soft: "#321a20", deep: "#ff97a2" }, // danger / high priority
-        sky: { DEFAULT: "#5aa7ef", soft: "#152633", deep: "#8cc3f7" }, // info / low priority
+        canvas: "rgb(var(--c-canvas) / <alpha-value>)", // page background
+        surface: "rgb(var(--c-surface) / <alpha-value>)", // elevated cards
+        surface2: "rgb(var(--c-surface2) / <alpha-value>)", // insets / inputs
+        line: "rgb(var(--c-line) / <alpha-value>)", // hairline borders
+        line2: "rgb(var(--c-line2) / <alpha-value>)", // stronger borders / hover
+        night: "rgb(var(--c-night) / <alpha-value>)", // primary text
+        dusk: "rgb(var(--c-dusk) / <alpha-value>)", // secondary text
+        haze: "rgb(var(--c-haze) / <alpha-value>)", // tertiary text / muted labels
+        brand: {
+          DEFAULT: "rgb(var(--c-brand) / <alpha-value>)",
+          soft: "rgb(var(--c-brand-soft) / <alpha-value>)",
+          deep: "rgb(var(--c-brand-deep) / <alpha-value>)",
+        },
+        warm: {
+          DEFAULT: "rgb(var(--c-warm) / <alpha-value>)",
+          soft: "rgb(var(--c-warm-soft) / <alpha-value>)",
+          deep: "rgb(var(--c-warm-deep) / <alpha-value>)",
+        },
+        grass: {
+          DEFAULT: "rgb(var(--c-grass) / <alpha-value>)",
+          soft: "rgb(var(--c-grass-soft) / <alpha-value>)",
+          deep: "rgb(var(--c-grass-deep) / <alpha-value>)",
+        },
+        berry: {
+          DEFAULT: "rgb(var(--c-berry) / <alpha-value>)",
+          soft: "rgb(var(--c-berry-soft) / <alpha-value>)",
+          deep: "rgb(var(--c-berry-deep) / <alpha-value>)",
+        },
+        sky: {
+          DEFAULT: "rgb(var(--c-sky) / <alpha-value>)",
+          soft: "rgb(var(--c-sky-soft) / <alpha-value>)",
+          deep: "rgb(var(--c-sky-deep) / <alpha-value>)",
+        },
 
         /*
          * ── Summon (gacha) sub-brand: dark immersive stage ───────
@@ -64,17 +90,16 @@ export default {
       },
       boxShadow: {
         /*
-         * ── Twilight depth ──
-         * On dark, a drop shadow is nearly invisible, so elevation comes from
-         * a deeper drop PLUS a 1px inset top highlight that catches the light —
-         * the trick that makes dark surfaces read as genuinely raised.
+         * Elevation is themed too. Dark needs a deep drop plus a 1px inset top
+         * highlight to read as raised; light needs the opposite — an almost
+         * invisible drop and no highlight, or cards look like they're floating
+         * off the page. Values in index.css.
          */
-        soft: "0 1px 2px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
-        raised:
-          "0 10px 28px -10px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05)",
-        pop: "0 24px 56px -18px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)",
-        brand: "0 10px 26px -8px rgba(143,116,255,0.55)",
-        warm: "0 10px 26px -8px rgba(242,180,82,0.4)",
+        soft: "var(--sh-soft)",
+        raised: "var(--sh-raised)",
+        pop: "var(--sh-pop)",
+        brand: "var(--sh-brand)",
+        warm: "var(--sh-warm)",
         // ── Dark gacha tokens (kept for the Summon view) ──
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7)",
         lift: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 16px 40px -16px rgba(0,0,0,0.85)",

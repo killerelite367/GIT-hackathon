@@ -6,6 +6,7 @@ import SyllabusImport from "./components/SyllabusImport";
 import FocusModal from "./components/FocusModal";
 import TodayView from "./views/TodayView";
 import ScheduleView from "./views/ScheduleView";
+import StudyView from "./views/StudyView";
 import ModulesView from "./views/ModulesView";
 import RewardsView from "./views/RewardsView";
 import FriendsView from "./views/FriendsView";
@@ -16,8 +17,9 @@ import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
-import { Settings, Flame } from "lucide-react";
+import { Settings, Flame, Sun, Moon } from "lucide-react";
 import Logo from "./components/Logo";
+import { useTheme } from "./lib/useTheme";
 
 /**
  * The landing page lives at the root URL and the app lives at #/app, the way
@@ -35,6 +37,7 @@ function greeting() {
 
 export default function App() {
   const { data } = useStore();
+  const { resolved, toggle: toggleTheme } = useTheme();
   useDailyReminder();
   const [view, setView] = useState<View>("today");
   const [modalOpen, setModalOpen] = useState(false);
@@ -91,6 +94,11 @@ export default function App() {
       heading: "Your semester plan",
       sub: "Every deadline, spread into daily study blocks.",
     },
+    study: {
+      kicker: "Study",
+      heading: "Study tools",
+      sub: "Notes, flashcards, key terms, and quizzes from your own material.",
+    },
     grades: {
       kicker: "Grades",
       heading: "Modules & GPA",
@@ -146,6 +154,14 @@ export default function App() {
                 <span className="text-brand-deep">Lv {levelFromXp(data.game.xp)}</span>
               </div>
               <button
+                onClick={toggleTheme}
+                aria-label={resolved === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                title={resolved === "light" ? "Dark mode" : "Light mode"}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-dusk shadow-soft transition hover:text-night active:scale-95"
+              >
+                {resolved === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              </button>
+              <button
                 onClick={() => setView("settings")}
                 aria-label="Settings"
                 aria-current={view === "settings" ? "page" : undefined}
@@ -172,6 +188,7 @@ export default function App() {
               />
             )}
             {view === "planner" && <ScheduleView />}
+            {view === "study" && <StudyView onGoToSettings={() => setView("settings")} />}
             {view === "grades" && <ModulesView />}
             {view === "rewards" && <RewardsView />}
             {view === "friends" && <FriendsView />}

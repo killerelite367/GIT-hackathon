@@ -5,6 +5,7 @@ import {
   Trophy,
   Users,
   Settings,
+  Layers,
 } from "lucide-react";
 import type { View } from "../nav";
 import { levelProgress } from "../lib/gamification";
@@ -14,6 +15,7 @@ import Logo from "./Logo";
 export const NAV: { view: View; icon: typeof Home; label: string }[] = [
   { view: "today", icon: Home, label: "Today" },
   { view: "planner", icon: CalendarRange, label: "Planner" },
+  { view: "study", icon: Layers, label: "Study" },
   { view: "grades", icon: GraduationCap, label: "Grades" },
   { view: "rewards", icon: Trophy, label: "Rewards" },
   { view: "friends", icon: Users, label: "Friends" },

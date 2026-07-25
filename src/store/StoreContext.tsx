@@ -7,7 +7,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { AppData, Assignment, Module } from "../types";
+import type { AppData, Assignment, CardStage, Module, StudySet } from "../types";
 import { loadData, saveData, resetData, exportDataFile, parseImportedData } from "../lib/storage";
 import { applyCompletion, levelFromXp } from "../lib/gamification";
 import { buildSchedule } from "../lib/scheduler";
@@ -73,6 +73,13 @@ interface StoreValue {
   setReminders: (enabled: boolean, reminderDate?: string) => void;
   exportData: () => void;
   importData: (file: File) => Promise<boolean>;
+  /** Save a freshly generated study set. */
+  addStudySet: (set: StudySet) => void;
+  deleteStudySet: (id: string) => void;
+  /** Move one flashcard between New / Learning / Mastered. */
+  setCardStage: (setId: string, cardId: string, stage: CardStage) => void;
+  /** Put every card in a set back to New. */
+  resetCardStages: (setId: string) => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -481,6 +488,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const addStudySet = useCallback(
+    (set: StudySet) => {
+      setData((d) => ({ ...d, studySets: [set, ...(d.studySets ?? [])] }));
+      pushToast(
+        `📚 “${set.title}” — ${set.flashcards.length} cards, ${set.quiz.length} questions`,
+        "info"
+      );
+    },
+    [pushToast]
+  );
+
+  const deleteStudySet = useCallback((id: string) => {
+    setData((d) => ({ ...d, studySets: (d.studySets ?? []).filter((s) => s.id !== id) }));
+  }, []);
+
+  const setCardStage = useCallback((setId: string, cardId: string, stage: CardStage) => {
+    setData((d) => ({
+      ...d,
+      studySets: (d.studySets ?? []).map((s) =>
+        s.id !== setId
+          ? s
+          : {
+              ...s,
+              flashcards: s.flashcards.map((c) => (c.id === cardId ? { ...c, stage } : c)),
+            }
+      ),
+    }));
+  }, []);
+
+  const resetCardStages = useCallback((setId: string) => {
+    setData((d) => ({
+      ...d,
+      studySets: (d.studySets ?? []).map((s) =>
+        s.id !== setId
+          ? s
+          : { ...s, flashcards: s.flashcards.map((c) => ({ ...c, stage: "new" as CardStage })) }
+      ),
+    }));
+  }, []);
+
   const exportData = useCallback(() => {
     exportDataFile(data);
     pushToast("📦 Backup downloaded", "info");
@@ -526,6 +573,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setReminders,
       exportData,
       importData,
+      addStudySet,
+      deleteStudySet,
+      setCardStage,
+      resetCardStages,
     }),
     [
       data,
@@ -552,6 +603,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setReminders,
       exportData,
       importData,
+      addStudySet,
+      deleteStudySet,
+      setCardStage,
+      resetCardStages,
     ]
   );
 

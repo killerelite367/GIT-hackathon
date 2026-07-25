@@ -2,9 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ═══════════════════════════════════════════════════════════
+   THEME TOKENS
+   Channels are space-separated RGB so Tailwind's slash-opacity
+   (bg-brand/40) keeps working. Swapping data-theme on <html>
+   re-themes every component; none of them know which is active.
+   ═══════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #131319;
+
+  /* Twilight — deep slate, one confident violet accent. */
+  --c-canvas: 19 19 25;
+  --c-surface: 28 28 38;
+  --c-surface2: 36 36 47;
+  --c-line: 44 44 58;
+  --c-line2: 59 59 78;
+  --c-night: 236 235 243;
+  --c-dusk: 168 164 189;
+  /* Nudged up from 139 134 164, which measured 4.42:1 on surface2 — just under
+     AA for small labels. Imperceptible change, now 4.7:1. */
+  --c-haze: 144 139 169;
+
+  --c-brand: 143 116 255;
+  --c-brand-soft: 36 29 59;
+  --c-brand-deep: 188 169 255;
+  --c-warm: 242 180 82;
+  --c-warm-soft: 47 36 19;
+  --c-warm-deep: 248 202 125;
+  --c-grass: 47 190 133;
+  --c-grass-soft: 18 44 34;
+  --c-grass-deep: 99 227 169;
+  --c-berry: 242 104 125;
+  --c-berry-soft: 50 26 32;
+  --c-berry-deep: 255 151 162;
+  --c-sky: 90 167 239;
+  --c-sky-soft: 21 38 51;
+  --c-sky-deep: 140 195 247;
+
+  /* On dark, elevation comes from a deep drop + a 1px top highlight. */
+  --sh-soft: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --sh-raised: 0 10px 28px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --sh-pop: 0 24px 56px -18px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --sh-brand: 0 10px 26px -8px rgba(143, 116, 255, 0.55);
+  --sh-warm: 0 10px 26px -8px rgba(242, 180, 82, 0.4);
+
+  --ambient-a: rgba(143, 116, 255, 0.16);
+  --ambient-b: rgba(90, 167, 239, 0.09);
+  --scrollbar: #33333f;
+  --scrollbar-hover: #45455a;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /*
+   * Paper — near-monochrome. Ink is the accent, so buttons and the logo read
+   * black-on-white. The semantic hues survive but are pulled way down in
+   * chroma: they still carry meaning (overdue, done, priority) without
+   * breaking the quiet. Killing them entirely would cost real information.
+   */
+  --c-canvas: 250 250 251;
+  --c-surface: 255 255 255;
+  --c-surface2: 245 245 247;
+  --c-line: 232 232 237;
+  --c-line2: 214 214 221;
+  --c-night: 22 22 26;
+  --c-dusk: 90 90 100;
+  /* 108 not 132: the lighter grey measured 3.7:1 on white — under AA for the
+     small labels this token is used for. This lands at 5.2:1. */
+  --c-haze: 108 108 119;
+
+  --c-brand: 22 22 26;
+  --c-brand-soft: 241 241 244;
+  --c-brand-deep: 0 0 0;
+  --c-warm: 176 122 20;
+  --c-warm-soft: 253 246 231;
+  --c-warm-deep: 138 94 12;
+  --c-grass: 22 150 100;
+  --c-grass-soft: 235 248 242;
+  --c-grass-deep: 16 112 74;
+  --c-berry: 214 60 84;
+  --c-berry-soft: 253 238 240;
+  --c-berry-deep: 172 36 58;
+  --c-sky: 42 118 200;
+  --c-sky-soft: 236 243 252;
+  --c-sky-deep: 28 88 155;
+
+  /* On light, elevation must be almost nothing or cards look detached. */
+  --sh-soft: 0 1px 2px rgba(18, 18, 24, 0.05);
+  --sh-raised: 0 4px 14px -6px rgba(18, 18, 24, 0.12);
+  --sh-pop: 0 18px 44px -16px rgba(18, 18, 24, 0.2);
+  --sh-brand: 0 4px 12px -4px rgba(18, 18, 24, 0.22);
+  --sh-warm: 0 4px 12px -4px rgba(176, 122, 20, 0.24);
+
+  /* The drifting colour wash is a dark-theme device — off on paper. */
+  --ambient-a: transparent;
+  --ambient-b: transparent;
+  --scrollbar: #d6d6dd;
+  --scrollbar-hover: #bcbcc6;
 }
 
 * {
@@ -21,8 +118,8 @@ body {
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.005em;
-  color: #ecebf3;
-  background: var(--bg);
+  color: rgb(var(--c-night));
+  background: rgb(var(--c-canvas));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -63,9 +160,9 @@ body {
   inset: -20% -10% -10% -10%;
   z-index: -2;
   background:
-    radial-gradient(900px 520px at 88% -6%, rgba(143, 116, 255, 0.16), transparent 60%),
-    radial-gradient(820px 500px at 4% 8%, rgba(90, 167, 239, 0.09), transparent 58%),
-    var(--bg);
+    radial-gradient(900px 520px at 88% -6%, var(--ambient-a), transparent 60%),
+    radial-gradient(820px 500px at 4% 8%, var(--ambient-b), transparent 58%),
+    rgb(var(--c-canvas));
   animation: ambient-drift 26s ease-in-out infinite alternate;
 }
 @keyframes ambient-drift {
@@ -74,8 +171,8 @@ body {
 }
 
 ::selection {
-  background: rgba(143, 116, 255, 0.32);
-  color: #fff;
+  background: rgb(var(--c-brand) / 0.28);
+  color: rgb(var(--c-night));
 }
 
 ::-webkit-scrollbar {
@@ -83,13 +180,13 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #33333f;
+  background: var(--scrollbar);
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #45455a;
+  background: var(--scrollbar-hover);
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
@@ -104,9 +201,25 @@ body {
 
 /* Accessible keyboard focus ring, consistent across the theme */
 :focus-visible {
-  outline: 2px solid #8f74ff;
+  outline: 2px solid rgb(var(--c-brand));
   outline-offset: 2px;
   border-radius: 8px;
+}
+
+/*
+ * The Summon / Garden / Workshop chamber stays dark in BOTH themes — it's a
+ * deliberate game stage, and its cinematics are built on glow against black.
+ * Forcing it to paper would wreck every effect, so it pins its own tokens.
+ */
+.summon-stage,
+[data-theme="light"] .summon-stage {
+  --c-night: 233 233 242;
+  --c-dusk: 168 164 189;
+  --c-haze: 139 134 164;
+  --c-surface: 28 26 19;
+  --c-surface2: 35 32 25;
+  --c-line: 44 40 32;
+  --c-line2: 58 53 42;
 }
 
 /*

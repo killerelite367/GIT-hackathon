@@ -104,6 +104,21 @@ desktop, bottom bar on mobile); Settings is the gear.
 - **Burnout radar** — clusters deadlines by week, flags overloaded weeks, and
   tells you which task to start early.
 
+### Study tools (Study tab)
+Paste notes or upload a handout, and one AI pass produces four linked artefacts:
+**Summarized Notes**, **Key Terms**, **Flashcards**, and a **Multiple Choice
+Quiz**. Deliberately one call rather than four — the artefacts should describe
+the same material, and asking separately lets them drift.
+- Flashcards track New / Learning / Mastered, flip on tap, and support
+  "definition on front". Mastered cards leave the queue; the deck can be reset.
+- Quiz answers are validated on the way in — a question whose `answerIndex`
+  doesn't point at a real option is dropped rather than shown, so a malformed
+  response can never mark a student wrong.
+- Uses the same transport as the scanner, so it inherits webhook mode and the
+  "no API key in the browser" property. **Requires the updated
+  `n8n/studyquest-scan.json`** — an older deployment answers scan-only and the
+  app says so explicitly.
+
 ### Task & study management
 - Full CRUD on assignments (add / edit / complete / delete) via a modal.
 - **Focus timer** — a real 15/25/50-min session tied to one task; the minutes
@@ -132,6 +147,16 @@ desktop, bottom bar on mobile); Settings is the gear.
 
 ## 6. Design system
 
+- **Two themes, one token set.** Every colour resolves through CSS variables
+  keyed off `data-theme` on `<html>`, so no component knows which theme is
+  live. **Dark** is the original twilight violet-on-slate; **light** is a
+  near-monochrome paper theme where ink *is* the accent (buttons and the logo
+  read black-on-white). Toggle in the header; the choice persists, and
+  `system` keeps following the OS. Both palettes are verified WCAG-AA by
+  measurement, not by eye.
+- The Summon / Garden / Workshop chamber stays dark in **both** themes — it's a
+  game stage whose cinematics are built on glow against black, so it pins its
+  own tokens.
 - **Twilight dark theme.** A deep slate base (`#131319`, not harsh black) with
   elevated surfaces, so it reads as a considered mix of tones. One confident
   violet accent carries actions; semantic hues (grass / warm / berry / sky) are
@@ -186,7 +211,9 @@ rendering with AA contrast and no overflow.
 - Real push notifications when the tab is closed (needs a PWA + service worker).
 - Group-project / collaboration features.
 - `.ics` calendar export.
-- A light/dark theme toggle (would require a CSS-variable token refactor).
+- The remaining study tools from the reference: Short Answer, Practice Test,
+  Podcast. The generator and the tab shell are built, so each is a prompt field
+  plus a renderer.
 - Tests + CI.
 - Functional hardening surfaced by the design critique: confirm-before-delete,
   a ⌘K command palette / keyboard shortcuts, and a first-run onboarding.

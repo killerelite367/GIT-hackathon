@@ -35,6 +35,45 @@ export interface Module {
   credits: number;
 }
 
+/** How well a card is known. Drives the New / Learning / Mastered counts. */
+export type CardStage = "new" | "learning" | "mastered";
+
+export interface Flashcard {
+  id: string;
+  front: string; // the term or prompt
+  back: string; // the definition or answer
+  stage: CardStage;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  answerIndex: number;
+  explanation: string;
+}
+
+export interface KeyTerm {
+  term: string;
+  definition: string;
+}
+
+/**
+ * One generated study set — the notes, cards, and quiz all derived from a
+ * single source document, kept together so they stay in sync.
+ */
+export interface StudySet {
+  id: string;
+  title: string;
+  module: string;
+  createdAt: string; // ISO timestamp
+  source: "scan" | "paste";
+  summary: string[]; // summarized notes, one bullet per line
+  keyTerms: KeyTerm[];
+  flashcards: Flashcard[];
+  quiz: QuizQuestion[];
+}
+
 export interface GameState {
   xp: number;
   streakDays: number;
@@ -77,4 +116,6 @@ export interface AppData {
   assignments: Assignment[];
   blocks: StudyBlock[];
   game: GameState;
+  /** Generated study sets. Optional so older backups still import cleanly. */
+  studySets?: StudySet[];
 }
