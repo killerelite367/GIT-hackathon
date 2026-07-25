@@ -813,3 +813,150 @@ body {
   15% { opacity: 1; }
   100% { transform: translateY(260px) rotate(180deg); opacity: 0; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PRE-SUMMON CUTSCENE — the gacha machine does its thing before
+   any energy gathers. Camera pushes in, the crank turns, the
+   machine rumbles and a capsule drops down the chute and cracks.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Whole-stage camera push-in, so the machine feels approached. */
+@keyframes cs-push-in {
+  0%   { transform: scale(0.62) translateY(18px); opacity: 0; }
+  22%  { opacity: 1; }
+  70%  { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.14) translateY(-6px); }
+}
+.cs-stage { animation: cs-push-in 2.9s cubic-bezier(.33,.9,.4,1) both; }
+
+/* The crank handle turns a half-rotation, with a little wind-back. */
+@keyframes cs-crank {
+  0%, 18%  { transform: rotate(0deg); }
+  46%      { transform: rotate(150deg); }
+  56%      { transform: rotate(132deg); }
+  100%     { transform: rotate(190deg); }
+}
+.cs-crank { transform-origin: 50% 50%; animation: cs-crank 2.9s cubic-bezier(.5,0,.3,1) both; }
+
+/* Machine body shudders harder as the crank bottoms out. */
+@keyframes cs-rumble {
+  0%, 30%   { transform: translate(0,0) rotate(0deg); }
+  42%       { transform: translate(-3px,1px) rotate(-0.7deg); }
+  50%       { transform: translate(3px,-1px) rotate(0.7deg); }
+  58%       { transform: translate(-4px,2px) rotate(-1deg); }
+  66%       { transform: translate(4px,-2px) rotate(1deg); }
+  74%       { transform: translate(-2px,1px) rotate(-0.5deg); }
+  82%, 100% { transform: translate(0,0) rotate(0deg); }
+}
+.cs-rumble { animation: cs-rumble 2.9s ease-in-out both; }
+
+/* Capsules jostling inside the glass dome. */
+@keyframes cs-jostle {
+  0%, 28%  { transform: translate(0,0) rotate(0deg); }
+  44%      { transform: translate(var(--jx,4px), -6px) rotate(22deg); }
+  60%      { transform: translate(calc(var(--jx,4px) * -1), 3px) rotate(-18deg); }
+  76%      { transform: translate(var(--jx,4px), -2px) rotate(10deg); }
+  100%     { transform: translate(0,0) rotate(0deg); }
+}
+.cs-jostle { animation: cs-jostle 2.9s ease-in-out both; }
+
+/* The chosen capsule falls down the chute and settles with a bounce. */
+@keyframes cs-drop {
+  0%, 56%  { transform: translateY(-96px) scale(0.7); opacity: 0; }
+  60%      { opacity: 1; }
+  76%      { transform: translateY(52px) scale(1); }
+  82%      { transform: translateY(34px) scale(1.06, 0.94); }
+  88%      { transform: translateY(52px) scale(0.96, 1.04); }
+  94%      { transform: translateY(46px) scale(1); }
+  100%     { transform: translateY(50px) scale(1); }
+}
+.cs-drop { animation: cs-drop 2.9s cubic-bezier(.5,0,.4,1) both; }
+
+/* Rarity-coloured light spills out of the machine as it commits. */
+@keyframes cs-tease {
+  0%, 52%  { opacity: 0; transform: scale(0.5); }
+  70%      { opacity: 0.85; transform: scale(1.1); }
+  85%      { opacity: 0.45; transform: scale(0.95); }
+  100%     { opacity: 0.9; transform: scale(1.25); }
+}
+.cs-tease { animation: cs-tease 2.9s ease-out both; }
+
+/* Marquee bulbs blink awake one after another. */
+@keyframes cs-bulb {
+  0%, 20% { opacity: 0.18; }
+  35%     { opacity: 1; }
+  60%     { opacity: 0.35; }
+  100%    { opacity: 1; }
+}
+.cs-bulb { animation: cs-bulb 2.9s ease-in-out both; }
+
+/* Final white wipe that hands off into the charge phase. */
+@keyframes cs-handoff {
+  0%, 88% { opacity: 0; }
+  100%    { opacity: 1; }
+}
+.cs-handoff { animation: cs-handoff 2.9s ease-in both; }
+
+/* Title card that slides in over the machine. */
+@keyframes cs-title {
+  0%      { opacity: 0; transform: translateY(14px); letter-spacing: 0.9em; }
+  30%     { opacity: 1; }
+  70%     { opacity: 1; transform: translateY(0); letter-spacing: 0.35em; }
+  100%    { opacity: 0; transform: translateY(-8px); letter-spacing: 0.3em; }
+}
+.cs-title { animation: cs-title 2.9s ease-out both; }
+
+/* Per-hero counter pip when several legendary+ awaken back to back. */
+@keyframes queue-pip {
+  0%   { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.queue-pip { animation: queue-pip 0.35s cubic-bezier(.22,1,.36,1) both; }
+
+/* Saint Seiya cosmos — stars ignite, then the constellation draws itself. */
+@keyframes star-ignite {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.8); }
+  100% { opacity: 0.9; transform: scale(1); }
+}
+@keyframes constellation-draw {
+  0%   { stroke-dashoffset: 1; opacity: 0; }
+  20%  { opacity: 0.9; }
+  100% { stroke-dashoffset: 0; opacity: 0.75; }
+}
+
+/* ── Genshin-style wish sky, layered under the machine ─────────── */
+
+/* Slow starfield drift so the sky never feels frozen. */
+@keyframes sky-drift {
+  0%   { transform: translate3d(0,0,0) scale(1.1); }
+  100% { transform: translate3d(-3%, 2%, 0) scale(1.1); }
+}
+.cs-sky { animation: sky-drift 12s linear both; }
+
+/* The wish comet: streaks in from upper-left, slams into centre. */
+@keyframes cs-comet {
+  0%   { transform: translate(-58vw, -42vh) scale(0.35); opacity: 0; }
+  12%  { opacity: 1; }
+  58%  { transform: translate(0, 0) scale(1); opacity: 1; }
+  66%  { transform: translate(0, 0) scale(1.5); opacity: 0.9; }
+  100% { transform: translate(0, 0) scale(0.2); opacity: 0; }
+}
+.cs-comet { animation: cs-comet 2.9s cubic-bezier(.55,.05,.35,1) both; }
+
+/* Its tail stretches behind it along the travel axis. */
+@keyframes cs-tail {
+  0%, 8%  { opacity: 0; transform: scaleX(0.2); }
+  30%     { opacity: 0.85; transform: scaleX(1); }
+  58%     { opacity: 0.5; transform: scaleX(0.5); }
+  100%    { opacity: 0; transform: scaleX(0); }
+}
+.cs-tail { transform-origin: 100% 50%; animation: cs-tail 2.9s ease-out both; }
+
+/* Impact shockwave when the comet lands on the machine. */
+@keyframes cs-impact {
+  0%, 56% { transform: scale(0); opacity: 0; }
+  62%     { opacity: 0.9; }
+  100%    { transform: scale(3.4); opacity: 0; }
+}
+.cs-impact-ring { animation: cs-impact 2.9s cubic-bezier(.2,.7,.3,1) both; }
