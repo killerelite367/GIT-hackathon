@@ -37,3 +37,16 @@ export async function signOut() {
   if (!supabase) return;
   await supabase.auth.signOut();
 }
+
+export async function signInWithGoogle() {
+  if (!supabase) return { error: "Supabase not configured" };
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin + "#/app",
+    },
+  });
+
+  return { error };
+}

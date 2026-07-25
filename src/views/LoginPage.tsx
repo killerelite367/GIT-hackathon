@@ -1,10 +1,12 @@
 import { useState } from "react";
 import Logo from "../components/Logo";
-import { signInWithEmail } from "../lib/auth";
+import { signInWithEmail, signUpWithEmail, signInWithGoogle } from "../lib/auth";
 
 export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,6 +26,38 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
       setError(err.message);
     } else {
       onLogin();
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Email and password required");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    const { error: err } = await signUpWithEmail(email, password);
+    setIsLoading(false);
+
+    if (err) {
+      setError(err.message);
+    } else {
+      setError("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      alert("✅ Account created! Please sign in.");
+      setTab("signin");
     }
   };
 
@@ -74,16 +108,42 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
         {/* Main card */}
         <div className="w-full max-w-md">
           <div className="rounded-2xl border-2 border-white bg-black p-8 sm:p-10 shadow-2xl">
+            {/* Tabs */}
+            <div className="mb-8 flex gap-4 border-b-2 border-white/20">
+              <button
+                onClick={() => setTab("signin")}
+                className={`flex-1 pb-3 text-lg font-bold transition ${
+                  tab === "signin"
+                    ? "text-white border-b-2 border-white"
+                    : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setTab("signup")}
+                className={`flex-1 pb-3 text-lg font-bold transition ${
+                  tab === "signup"
+                    ? "text-white border-b-2 border-white"
+                    : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
             {/* Header */}
             <div className="mb-8 text-center">
               <h1 className="text-3xl font-black text-white sm:text-4xl">
-                Sign In
+                {tab === "signin" ? "Welcome Back" : "Create Account"}
               </h1>
-              <p className="mt-2 text-sm text-gray-400">Enter your details to continue</p>
+              <p className="mt-2 text-sm text-gray-400">
+                {tab === "signin" ? "Enter your email and password to sign in" : "Join StudyQuest to start summoning"}
+              </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSignIn} className="space-y-5">
+            <form onSubmit={tab === "signin" ? handleSignIn : handleSignUp} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-white mb-2">
                   Email
@@ -112,6 +172,22 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
                 />
               </div>
 
+              {tab === "signup" && (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-white mb-2">
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-lg border-2 border-white bg-black px-4 py-3 text-white placeholder-gray-600 transition focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ color: "#00ff41" }}
+                  />
+                </div>
+              )}
+
               {error && (
                 <div className="rounded-lg border-2 border-red-600 bg-black px-4 py-2.5 text-sm text-red-500">
                   {error}
@@ -123,7 +199,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
                 disabled={isLoading}
                 className="w-full rounded-lg bg-white px-4 py-3 font-bold text-black transition hover:bg-gray-100 disabled:opacity-50 sm:py-3.5"
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? (tab === "signin" ? "Signing in..." : "Creating account...") : tab === "signin" ? "Sign In" : "Create Account"}
               </button>
             </form>
 
@@ -136,9 +212,8 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
 
             {/* Google button */}
             <button
-              onClick={() => {
-                window.location.href = "#/auth/google";
-              }}
+              onClick={() => signInWithGoogle()}
+              type="button"
               className="w-full rounded-lg border-2 border-white bg-black px-4 py-3 font-semibold text-white transition hover:bg-gray-950"
             >
               <div className="flex items-center justify-center gap-2">
