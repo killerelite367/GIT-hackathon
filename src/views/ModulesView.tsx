@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Plus, Trash2 } from "lucide-react";
+import { Calculator, Plus } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
