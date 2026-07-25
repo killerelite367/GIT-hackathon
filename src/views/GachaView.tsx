@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from "react";
+import React, { useState, useEffect, type CSSProperties } from "react";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
@@ -519,10 +519,18 @@ function RevealOverlay({
     }
   };
 
+  // Disable body scroll when overlay is active
+  React.useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   return (
     <div
       onClick={handleBackdrop}
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 overflow-hidden p-6 backdrop-blur-md ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-6 backdrop-blur-md ${
         phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
       } ${phase === "burst" && group !== "conveyor" ? "vfx-screen-shake-heavy" : ""}`}
       style={{ animation: "gacha-fade 0.25s ease-out" }}

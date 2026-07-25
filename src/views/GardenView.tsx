@@ -3,6 +3,7 @@ import { Sprout, Sparkles, BookOpen, Coffee, X } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import { SPIRIT_BY_ID, RARITY, type Spirit } from "../lib/gacha";
+import { computeGpa, scoreToGrade } from "../lib/gpa";
 
 const MAX_PLANTS = 8;
 
@@ -50,12 +51,13 @@ function gardenLuck(ids: string[]): number {
 
 export default function GardenView() {
   const { data, placeInGarden, removeFromGarden } = useStore();
-  const { game, assignments } = data;
+  const { game, assignments, modules } = data;
   const [selected, setSelected] = useState<string | null>(null);
   const [studyMode, setStudyMode] = useState(false);
 
   const done = assignments.filter((a) => a.completed).length;
   const health = gardenHealth(done, assignments.length);
+  const gpa = computeGpa(modules);
   const placed = Object.entries(game.garden).slice(0, MAX_PLANTS); // [key, spiritId]
   const placedIds = placed.map(([, id]) => id);
   const luck = gardenLuck(placedIds);
@@ -101,6 +103,33 @@ export default function GardenView() {
           {studyMode ? <BookOpen size={15} /> : <Coffee size={15} />}
           {studyMode ? "Study mode" : "Rest mode"}
         </button>
+      </div>
+
+      {/* 🎯 GPA SIGN BOARD */}
+      <div className="rounded-3xl border-4 border-neon-yellow bg-gradient-to-br from-neon-yellow/20 to-neon-purple/10 p-6 shadow-lg">
+        <div className="mb-4 text-center">
+          <p className="text-sm font-bold uppercase tracking-widest text-neon-yellow">📊 Your Academic Dashboard</p>
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <div className="rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-purple p-4 text-center">
+              <p className="text-xs uppercase tracking-wider text-white/60">Current GPA</p>
+              <p className="mt-1 font-display text-4xl font-bold text-white">{gpa.toFixed(2)}</p>
+              <p className="text-xs text-white/50">out of 4.0</p>
+            </div>
+            <div className="h-20 w-px bg-neon-yellow/30" />
+            <div className="grid grid-cols-2 gap-3">
+              {modules.map((m) => {
+                const g = m.grade != null ? scoreToGrade(m.grade) : null;
+                return (
+                  <div key={m.code} className="rounded-lg bg-white/5 p-2 text-center border border-neon-yellow/20">
+                    <p className="text-xs font-bold text-neon-yellow">{m.code}</p>
+                    <p className="text-sm font-bold text-white">{g?.letter || "—"}</p>
+                    <p className="text-xs text-white/60">{m.grade || "—"}%</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* stat strip */}
