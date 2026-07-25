@@ -1,0 +1,148 @@
+{
+  "name": "StudyQuest — Document Scan",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "studyquest-scan",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "rawBody": false
+        }
+      },
+      "id": "webhook-in",
+      "name": "Scan Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-460, 0],
+      "webhookId": "studyquest-scan"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the Gemini request from what StudyQuest posted.\n// Incoming: { imageBase64, mimeType, today, knownModules } or { ping: true }.\n\nconst b = $json.body ?? $json;\n\n// Settings -> \"Test connection\" sends {ping:true}. Answer without spending quota.\nif (b.ping) {\n  return [{ json: { skip: true } }];\n}\n\nif (!b.imageBase64) {\n  throw new Error('No imageBase64 in the request body.');\n}\n\nconst today = b.today || new Date().toISOString().slice(0, 10);\nconst known = Array.isArray(b.knownModules) ? b.knownModules.filter(Boolean) : [];\nconst TYPES = ['CA', 'Group Project', 'Reflection', 'Exam', 'Quiz'];\n\nconst prompt = [\n  'You are the document scanner for StudyQuest, a study planner used by Singapore polytechnic students.',\n  '',\n  'Read the attached document image and extract every piece of assessed work you can find: continuous assessments, quizzes, exams, group projects, reflections, presentations, submissions.',\n  '',\n  `Today's date is ${today}. Use it to resolve any date that omits a year - always pick the NEXT occurrence, never a date in the past. Return every date as YYYY-MM-DD.`,\n  '',\n  'Rules:',\n  '- \"weight\" is the percentage of the module grade (1-100). If the document does not state one, estimate from the assessment type.',\n  '- \"estHours\" is the total effort in hours (1-40).',\n  `- \"type\" must be exactly one of: ${TYPES.join(', ')}.`,\n  known.length\n    ? `- \"module\" is the module code. Modules already in this account: ${known.join(', ')} - reuse these codes when the document refers to them.`\n    : '- \"module\" is the module code such as C240. Leave it empty if the document does not show one.',\n  '- \"confidence\" is 0-1: how sure you are this is a real assessment with the right date.',\n  '- Do NOT invent assignments. If there is no assessed work, return an empty list and say what the document was in \"note\".',\n  '- If the document shows achieved marks (results slip, graded rubric, transcript), fill \"grades\" with module code and score out of 100. Letter grades: A=85, B+=78, B=72, C+=65, C=58, D+=52, D=45, F=30. Otherwise leave \"grades\" empty.',\n  '- Ignore anything that is not assessed work: lecture topics, readings, timetable slots without a submission, admin notices.'\n].join('\\n');\n\nconst responseSchema = {\n  type: 'OBJECT',\n  properties: {\n    documentType: { type: 'STRING' },\n    note: { type: 'STRING' },\n    assignments: {\n      type: 'ARRAY',\n      items: {\n        type: 'OBJECT',\n        properties: {\n          title: { type: 'STRING' },\n          module: { type: 'STRING' },\n          type: { type: 'STRING', enum: TYPES },\n          dueDate: { type: 'STRING' },\n          weight: { type: 'NUMBER' },\n          estHours: { type: 'NUMBER' },\n          confidence: { type: 'NUMBER' }\n        },\n        required: ['title', 'type', 'dueDate', 'weight', 'estHours', 'confidence']\n      }\n    },\n    grades: {\n      type: 'ARRAY',\n      items: {\n        type: 'OBJECT',\n        properties: {\n          module: { type: 'STRING' },\n          score: { type: 'NUMBER' },\n          label: { type: 'STRING' }\n        },\n        required: ['module', 'score', 'label']\n      }\n    }\n  },\n  required: ['documentType', 'note', 'assignments', 'grades']\n};\n\nreturn [{\n  json: {\n    skip: false,\n    geminiBody: {\n      contents: [{\n        parts: [\n          { text: prompt },\n          { inlineData: { mimeType: b.mimeType || 'image/jpeg', data: b.imageBase64 } }\n        ]\n      }],\n      generationConfig: {\n        temperature: 0.1,\n        responseMimeType: 'application/json',\n        responseSchema\n      }\n    }\n  }\n}];"
+      },
+      "id": "build-request",
+      "name": "Build Gemini Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-240, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "is-ping",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "is-ping",
+      "name": "Is Ping?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-20, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ assignments: [], grades: [], documentType: 'ping', note: 'Webhook reachable.' }) }}",
+        "options": {}
+      },
+      "id": "respond-ping",
+      "name": "Respond Ping",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [420, -120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-goog-api-key",
+              "value": "PASTE_YOUR_GEMINI_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.geminiBody) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "call-gemini",
+      "name": "Gemini Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [200, 120]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unwrap Gemini's response into the flat shape StudyQuest expects.\nconst text = $json?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';\n\nlet out = {};\ntry {\n  out = JSON.parse(text);\n} catch (e) {\n  const m = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (m) {\n    try { out = JSON.parse(m[0]); } catch (e2) { out = {}; }\n  }\n}\n\nreturn [{\n  json: {\n    assignments: Array.isArray(out.assignments) ? out.assignments : [],\n    grades: Array.isArray(out.grades) ? out.grades : [],\n    documentType: out.documentType || 'document',\n    note: out.note || ''\n  }\n}];"
+      },
+      "id": "parse-result",
+      "name": "Parse Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-scan",
+      "name": "Respond Scan",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [640, 120]
+    }
+  ],
+  "connections": {
+    "Scan Webhook": {
+      "main": [[{ "node": "Build Gemini Request", "type": "main", "index": 0 }]]
+    },
+    "Build Gemini Request": {
+      "main": [[{ "node": "Is Ping?", "type": "main", "index": 0 }]]
+    },
+    "Is Ping?": {
+      "main": [
+        [{ "node": "Respond Ping", "type": "main", "index": 0 }],
+        [{ "node": "Gemini Vision", "type": "main", "index": 0 }]
+      ]
+    },
+    "Gemini Vision": {
+      "main": [[{ "node": "Parse Result", "type": "main", "index": 0 }]]
+    },
+    "Parse Result": {
+      "main": [[{ "node": "Respond Scan", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "instanceId": "studyquest" },
+  "tags": []
+}

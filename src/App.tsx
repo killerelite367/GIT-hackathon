@@ -38,7 +38,8 @@ export default function App() {
   const [view, setView] = useState<View>("today");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
-  const [importOpen, setImportOpen] = useState(false);
+  // null = closed; otherwise the tab the import modal should open on.
+  const [importTab, setImportTab] = useState<"paste" | "scan" | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
   // Hash route: "" → landing, "#/app" → the app.
@@ -167,7 +168,8 @@ export default function App() {
               <TodayView
                 onAdd={openAdd}
                 onEdit={openEdit}
-                onImport={() => setImportOpen(true)}
+                onImport={() => setImportTab("paste")}
+                onScan={() => setImportTab("scan")}
                 onFocus={openFocus}
               />
             )}
@@ -177,7 +179,8 @@ export default function App() {
             {view === "friends" && <FriendsView />}
             {view === "settings" && (
               <SettingsView
-                onImportSyllabus={() => setImportOpen(true)}
+                onImportSyllabus={() => setImportTab("paste")}
+                onScanDocument={() => setImportTab("scan")}
                 onShowLanding={showLanding}
               />
             )}
@@ -193,7 +196,16 @@ export default function App() {
         modules={data.modules}
         onClose={() => setModalOpen(false)}
       />
-      {importOpen && <SyllabusImport onClose={() => setImportOpen(false)} />}
+      {importTab && (
+        <SyllabusImport
+          initialTab={importTab}
+          onClose={() => setImportTab(null)}
+          onGoToSettings={() => {
+            setImportTab(null);
+            setView("settings");
+          }}
+        />
+      )}
       <FocusModal
         open={focusOpen}
         initialAssignmentId={focusId}

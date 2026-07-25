@@ -2,11 +2,6 @@ import { useState } from "react";
 import { useStore } from "../store/StoreContext";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 
-interface GroupMember {
-  email: string;
-  contribution: number;
-}
-
 const TURTLE_SHELLS = [
   "bg-gradient-to-br from-green-400 to-green-600",
   "bg-gradient-to-br from-blue-400 to-blue-600",
@@ -123,7 +118,7 @@ export default function GroupProjectView() {
               <ellipse cx="200" cy="200" rx="190" ry="170" fill="none" stroke="#86efac" strokeWidth="2" opacity="0.5" />
 
               {/* Lily pads */}
-              {game.groupMembers.map((member, idx) => {
+              {game.groupMembers.map((_member, idx) => {
                 const { x, y } = getTurtlePosition(idx, game.groupMembers.length);
                 return (
                   <g key={`lilypad-${idx}`}>

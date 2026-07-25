@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Users, Share2, Copy, Check } from "lucide-react";
-import GardenView from "./GardenView";
+import { Share2, Copy, Check } from "lucide-react";
 
 interface FriendGarden {
   name: string;

@@ -1,5 +1,4 @@
 import { useStore } from "../store/StoreContext";
-import { Flower, Heart } from "lucide-react";
 
 interface Accessory {
   id: string;
