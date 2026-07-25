@@ -164,6 +164,87 @@ export function useMaskedHeading<T extends HTMLElement>(delay = 0.1) {
   return ref;
 }
 
+/**
+ * Word-by-word scrub: the paragraph starts dim and each word lights up as the
+ * section crosses the viewport. Words are wrapped in spans at runtime rather
+ * than in the markup, so the copy stays readable, selectable and translatable —
+ * and if this never runs, CSS leaves the text fully visible.
+ */
+export function useWordScrub<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReducedMotion()) return;
+    if (el.dataset.scrubbed === "1") return; // StrictMode double-invoke guard
+    el.dataset.scrubbed = "1";
+
+    // Recurse so inline <b> emphasis survives the wrapping.
+    const wrap = (node: Node) => {
+      [...node.childNodes].forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          (child.textContent ?? "").split(/(\s+)/).forEach((piece) => {
+            if (piece === "" || /^\s+$/.test(piece)) {
+              frag.appendChild(document.createTextNode(piece));
+            } else {
+              const s = document.createElement("span");
+              s.className = "w";
+              s.textContent = piece;
+              frag.appendChild(s);
+            }
+          });
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          wrap(child);
+        }
+      });
+    };
+    wrap(el);
+
+    const ctx = gsap.context(() => {
+      gsap.to(el.querySelectorAll(".w"), {
+        opacity: 1,
+        stagger: 0.06,
+        ease: "none",
+        scrollTrigger: { trigger: el, start: "top 78%", end: "bottom 85%", scrub: 0.6 },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
+
+  return ref;
+}
+
+/**
+ * Cursor-follow glow on cards: writes the pointer position into --mx/--my so
+ * CSS can place a radial highlight. Pointer-driven only, so touch devices and
+ * keyboard users simply never see it.
+ */
+export function useCardGlow<T extends HTMLElement>(selector = ".lp-card") {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    const cards = Array.from(root.querySelectorAll<HTMLElement>(selector));
+    const onMove = (e: PointerEvent) => {
+      const card = e.currentTarget as HTMLElement;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+      card.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    cards.forEach((c) => c.addEventListener("pointermove", onMove));
+    return () => cards.forEach((c) => c.removeEventListener("pointermove", onMove));
+  }, [selector]);
+
+  return ref;
+}
+
 /** Subtle magnetic pull toward the cursor — used sparingly, on the main CTA. */
 export function useMagnetic<T extends HTMLElement>(strength = 0.28) {
   const ref = useRef<T>(null);
