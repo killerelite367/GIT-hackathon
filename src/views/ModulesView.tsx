@@ -3,6 +3,7 @@ import { Calculator } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
+import GradeBoard from "../components/GradeBoard";
 
 export default function ModulesView() {
   const { data, updateModule } = useStore();
@@ -15,6 +16,9 @@ export default function ModulesView() {
 
   return (
     <section className="space-y-6">
+      {/* Grade Board */}
+      <GradeBoard modules={modules} />
+
       <div className="grid gap-6 md:grid-cols-3">
         {/* GPA ring feature */}
         <div className="flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6 text-center shadow-soft">

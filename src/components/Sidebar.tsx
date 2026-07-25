@@ -3,6 +3,7 @@ import {
   CalendarRange,
   GraduationCap,
   Trophy,
+  Users,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -15,6 +16,7 @@ export const NAV: { view: View; icon: typeof Home; label: string }[] = [
   { view: "planner", icon: CalendarRange, label: "Planner" },
   { view: "grades", icon: GraduationCap, label: "Grades" },
   { view: "rewards", icon: Trophy, label: "Rewards" },
+  { view: "friends", icon: Users, label: "Friends" },
 ];
 
 /** Bottom-nav set (mobile): the four primary destinations. Settings lives in the header. */

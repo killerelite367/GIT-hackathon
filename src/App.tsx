@@ -8,6 +8,7 @@ import TodayView from "./views/TodayView";
 import ScheduleView from "./views/ScheduleView";
 import ModulesView from "./views/ModulesView";
 import RewardsView from "./views/RewardsView";
+import FriendsView from "./views/FriendsView";
 import SettingsView from "./views/SettingsView";
 import LandingPage from "./views/LandingPage";
 import type { View } from "./nav";
@@ -98,6 +99,11 @@ export default function App() {
       heading: "Your progress",
       sub: "Earn XP by studying, then summon Study Spirits.",
     },
+    friends: {
+      kicker: "Friends",
+      heading: "Friends' Gardens",
+      sub: "View and share GPA gardens with friends.",
+    },
     settings: {
       kicker: "Settings",
       heading: "Settings & data",
@@ -168,6 +174,7 @@ export default function App() {
             {view === "planner" && <ScheduleView />}
             {view === "grades" && <ModulesView />}
             {view === "rewards" && <RewardsView />}
+            {view === "friends" && <FriendsView />}
             {view === "settings" && (
               <SettingsView
                 onImportSyllabus={() => setImportOpen(true)}
