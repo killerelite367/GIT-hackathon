@@ -106,51 +106,79 @@ export default function GroupProjectView() {
           <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
             <h3 className="mb-4 text-center text-sm font-bold text-haze">👥 Team Turtles</h3>
 
-            <svg viewBox="0 0 400 400" className="w-full max-w-md mx-auto">
-              {/* Center circle */}
-              <circle cx="200" cy="200" r="30" className="fill-neon-purple/20 stroke-neon-purple" strokeWidth="2" />
+            <svg viewBox="0 0 400 400" className="w-full max-w-md mx-auto drop-shadow-lg">
+              {/* Pond water */}
+              <defs>
+                <radialGradient id="pondGradient" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#4ade80" />
+                  <stop offset="100%" stopColor="#22c55e" />
+                </radialGradient>
+                <filter id="shadow">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+                </filter>
+              </defs>
 
-              {/* Turtles in circle */}
+              {/* Pond background with gradient */}
+              <ellipse cx="200" cy="200" rx="180" ry="160" fill="url(#pondGradient)" opacity="0.3" />
+              <ellipse cx="200" cy="200" rx="190" ry="170" fill="none" stroke="#86efac" strokeWidth="2" opacity="0.5" />
+
+              {/* Lily pads */}
+              {game.groupMembers.map((member, idx) => {
+                const { x, y } = getTurtlePosition(idx, game.groupMembers.length);
+                return (
+                  <g key={`lilypad-${idx}`}>
+                    {/* Lily pad (circular green leaf) */}
+                    <circle cx={x} cy={y} r="26" className="fill-green-600" opacity="0.7" />
+                    <circle cx={x} cy={y} r="26" fill="none" stroke="#16a34a" strokeWidth="1.5" />
+                    {/* Lily pad veins */}
+                    <line x1={x} y1={y - 20} x2={x} y2={y + 20} stroke="#15803d" strokeWidth="1" opacity="0.5" />
+                    <line x1={x - 20} y1={y} x2={x + 20} y2={y} stroke="#15803d" strokeWidth="1" opacity="0.5" />
+                  </g>
+                );
+              })}
+
+              {/* Turtles on lily pads */}
               {game.groupMembers.map((member, idx) => {
                 const { x, y, rotation } = getTurtlePosition(idx, game.groupMembers.length);
                 const contribution = member.contribution;
                 const isWorking = contribution > 0;
 
                 return (
-                  <g key={idx} transform={`translate(${x} ${y}) rotate(${rotation})`}>
-                    {/* Connection line to center */}
-                    <line
-                      x1="0"
-                      y1="0"
-                      x2={200 - x}
-                      y2={200 - y}
-                      className="stroke-line"
-                      strokeWidth="1"
-                      opacity="0.3"
-                    />
+                  <g key={`turtle-${idx}`} transform={`translate(${x} ${y}) rotate(${rotation})`} filter="url(#shadow)">
+                    {/* 3D shadow effect */}
+                    <ellipse cx="1" cy="1" rx="18" ry="22" className="fill-black" opacity="0.2" />
 
-                    {/* Turtle shell */}
-                    <ellipse
-                      cx="0"
-                      cy="0"
-                      rx="18"
-                      ry="22"
-                      className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]}
-                      opacity={isWorking ? 1 : 0.4}
-                    />
+                    {/* Turtle shell - 3D layered effect */}
+                    <ellipse cx="0" cy="0" rx="18" ry="22" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 1 : 0.4} />
+                    <ellipse cx="0" cy="-2" rx="16" ry="20" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 0.7 : 0.3} />
+
+                    {/* Shell pattern */}
+                    <circle cx="-6" cy="-4" r="4" fill="white" opacity={isWorking ? 0.3 : 0.1} />
+                    <circle cx="6" cy="4" r="4" fill="white" opacity={isWorking ? 0.3 : 0.1} />
 
                     {/* Turtle head */}
                     <circle cx="0" cy="-28" r="10" className="fill-green-700" opacity={isWorking ? 1 : 0.4} />
-                    <circle cx="-3" cy="-32" r="3" className="fill-black" />
+                    <circle cx="0" cy="-30" r="8" className="fill-green-600" opacity={isWorking ? 0.8 : 0.3} />
 
-                    {/* Contribution percentage label */}
+                    {/* Turtle eyes - fiercer! */}
+                    <circle cx="-3" cy="-32" r="2.5" className="fill-black" />
+                    <circle cx="3" cy="-32" r="2.5" className="fill-black" />
+                    {isWorking && (
+                      <>
+                        <circle cx="-2.5" cy="-33" r="1" className="fill-white" />
+                        <circle cx="3.5" cy="-33" r="1" className="fill-white" />
+                      </>
+                    )}
+
+                    {/* Contribution percentage label - bold! */}
                     {contribution > 0 && (
                       <text
                         x="0"
-                        y="4"
+                        y="5"
                         textAnchor="middle"
-                        className="font-bold text-white text-[10px]"
+                        className="font-bold text-white text-[12px]"
                         dominantBaseline="middle"
+                        fontWeight="900"
                       >
                         {contribution}%
                       </text>
@@ -158,6 +186,9 @@ export default function GroupProjectView() {
                   </g>
                 );
               })}
+
+              {/* Water ripples animation hint */}
+              <circle cx="200" cy="200" r="180" fill="none" stroke="#86efac" strokeWidth="1" opacity="0.2" />
             </svg>
 
             {/* Work breakdown */}

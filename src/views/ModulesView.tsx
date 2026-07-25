@@ -13,8 +13,38 @@ export default function ModulesView() {
   const [focusModule, setFocusModule] = useState(modules[0]?.code ?? "");
   const needed = scoreNeededFor(modules, focusModule, target);
 
+  const getGradeBg = (letter?: string) => {
+    if (letter === "A") return "bg-gradient-to-br from-emerald-400 to-emerald-600";
+    if (letter === "B+") return "bg-gradient-to-br from-green-400 to-green-600";
+    if (letter === "B") return "bg-gradient-to-br from-blue-400 to-blue-600";
+    if (letter === "C+") return "bg-gradient-to-br from-yellow-400 to-yellow-600";
+    if (letter === "C") return "bg-gradient-to-br from-yellow-500 to-yellow-700";
+    if (letter === "D+") return "bg-gradient-to-br from-orange-400 to-orange-600";
+    if (letter === "D") return "bg-gradient-to-br from-orange-500 to-orange-700";
+    return "bg-gradient-to-br from-red-400 to-red-600";
+  };
+
   return (
     <section className="space-y-6">
+      {/* Grade Board */}
+      <div>
+        <h3 className="mb-4 font-display text-lg font-bold text-night">📊 Grade Board</h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {modules.map((m) => {
+            const g = m.grade != null ? scoreToGrade(m.grade) : null;
+            const gradeBg = getGradeBg(g?.letter);
+            return (
+              <div key={m.code} className={`${gradeBg} rounded-2xl p-4 text-center text-white shadow-lg`}>
+                <div className="text-3xl mb-2">{g?.letter === "A" ? "🌟" : g?.letter?.includes("B") ? "⭐" : g?.letter?.includes("C") ? "📚" : "🔥"}</div>
+                <div className="text-2xl font-bold">{g?.letter || "—"}</div>
+                <div className="text-xs font-bold mt-1">{m.code}</div>
+                {m.grade && <div className="text-xs opacity-80 mt-1">{m.grade}%</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-3">
         {/* GPA ring feature */}
         <div className="flex flex-col items-center justify-center rounded-2xl border border-line bg-surface p-6 text-center shadow-soft">

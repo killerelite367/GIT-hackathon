@@ -1,9 +1,8 @@
 import type { Spirit } from "../lib/gacha";
 
 /**
- * A cute textbook-buddy character, drawn as an original animated SVG.
- * Big blinking eyes, blushing cheeks, a little smile, and tiny feet that
- * "walk" in place. Colours and the top accessory come from the spirit's art.
+ * A diverse textbook-buddy character with multiple eye styles and notebook designs.
+ * Features: fierce/calm/sleepy eyes, different notebook patterns, unique personalities.
  */
 export default function SpiritArt({
   spirit,
@@ -17,6 +16,134 @@ export default function SpiritArt({
   talking?: boolean;
 }) {
   const { body, trim, belly, accessory, rainbow, angry } = spirit.art;
+
+  // Deterministic eye style based on spirit ID
+  const spiritHash = spirit.id.charCodeAt(0) + spirit.id.charCodeAt(spirit.id.length - 1);
+  const eyeStyle = ["fierce", "calm", "sleepy", "wide", "happy"][spiritHash % 5];
+  const notebookStyle = ["regular", "spiral", "minimalist", "striped", "dotted"][spiritHash % 5];
+
+  const renderEyes = () => {
+    switch (eyeStyle) {
+      case "fierce":
+        return (
+          <g className="sp-eyes">
+            {/* Wide intense eyes */}
+            <circle cx="48" cy="58" r="11" fill="#fff" />
+            <circle cx="72" cy="58" r="11" fill="#fff" />
+            <circle cx="50" cy="60" r="6" fill="#2a2540" />
+            <circle cx="74" cy="60" r="6" fill="#2a2540" />
+            <circle cx="52" cy="55" r="2.5" fill="#ff6b6b" />
+            <circle cx="76" cy="55" r="2.5" fill="#ff6b6b" />
+            {/* Sharp eyebrows */}
+            <line x1="38" y1="48" x2="58" y2="44" stroke={trim} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="82" y1="48" x2="62" y2="44" stroke={trim} strokeWidth="2.5" strokeLinecap="round" />
+          </g>
+        );
+      case "sleepy":
+        return (
+          <g className="sp-eyes">
+            {/* Half-closed eyes */}
+            <ellipse cx="48" cy="62" rx="10" ry="6" fill="#fff" />
+            <ellipse cx="72" cy="62" rx="10" ry="6" fill="#fff" />
+            <path d="M40 62 Q48 58 56 62" stroke="#2a2540" strokeWidth="3" fill="#2a2540" />
+            <path d="M64 62 Q72 58 80 62" stroke="#2a2540" strokeWidth="3" fill="#2a2540" />
+            <circle cx="48" cy="62" r="1.5" fill="#fff" />
+            <circle cx="72" cy="62" r="1.5" fill="#fff" />
+          </g>
+        );
+      case "wide":
+        return (
+          <g className="sp-eyes">
+            {/* Big surprised/energetic eyes */}
+            <circle cx="47" cy="57" r="13" fill="#fff" />
+            <circle cx="73" cy="57" r="13" fill="#fff" />
+            <circle cx="50" cy="59" r="6" fill="#2a2540" />
+            <circle cx="76" cy="59" r="6" fill="#2a2540" />
+            <circle cx="51.5" cy="55" r="2.5" fill="#fff" />
+            <circle cx="77.5" cy="55" r="2.5" fill="#fff" />
+          </g>
+        );
+      case "calm":
+        return (
+          <g className="sp-eyes">
+            {/* Peaceful closed/happy eyes */}
+            <path d="M42 56 Q48 62 54 56" stroke="#2a2540" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+            <path d="M66 56 Q72 62 78 56" stroke="#2a2540" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+            <circle cx="48" cy="60" r="1" fill="#2a2540" />
+            <circle cx="72" cy="60" r="1" fill="#2a2540" />
+          </g>
+        );
+      default: // happy
+        return (
+          <g className="sp-eyes">
+            <circle cx="48" cy="58" r="9" fill="#fff" />
+            <circle cx="72" cy="58" r="9" fill="#fff" />
+            <circle cx="50" cy="59" r="4.5" fill="#2a2540" />
+            <circle cx="74" cy="59" r="4.5" fill="#2a2540" />
+            <circle cx="51.5" cy="56.5" r="1.8" fill="#fff" />
+            <circle cx="75.5" cy="56.5" r="1.8" fill="#fff" />
+          </g>
+        );
+    }
+  };
+
+  const renderNotebook = () => {
+    switch (notebookStyle) {
+      case "spiral":
+        return (
+          <>
+            <rect x="24" y="34" width="72" height="76" rx="13" fill={body} stroke={trim} strokeWidth="3.5" />
+            {/* Spiral binding */}
+            <circle cx="30" cy="45" r="2.5" fill={trim} opacity="0.6" />
+            <circle cx="30" cy="57" r="2.5" fill={trim} opacity="0.6" />
+            <circle cx="30" cy="69" r="2.5" fill={trim} opacity="0.6" />
+            <circle cx="30" cy="81" r="2.5" fill={trim} opacity="0.6" />
+            <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
+            <rect x="24" y="82" width="72" height="15" fill={belly} opacity="0.55" />
+          </>
+        );
+      case "minimalist":
+        return (
+          <>
+            <rect x="28" y="38" width="64" height="68" rx="8" fill={body} stroke={trim} strokeWidth="2" />
+            <line x1="60" y1="34" x2="60" y2="108" stroke={trim} strokeWidth="1.5" opacity="0.4" />
+            <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
+          </>
+        );
+      case "striped":
+        return (
+          <>
+            <rect x="24" y="34" width="72" height="76" rx="13" fill={body} stroke={trim} strokeWidth="3.5" />
+            {/* Horizontal stripes */}
+            <line x1="28" y1="50" x2="92" y2="50" stroke={belly} strokeWidth="2" opacity="0.3" />
+            <line x1="28" y1="65" x2="92" y2="65" stroke={belly} strokeWidth="2" opacity="0.3" />
+            <line x1="28" y1="80" x2="92" y2="80" stroke={belly} strokeWidth="2" opacity="0.3" />
+            <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
+            <rect x="24" y="82" width="72" height="15" fill={belly} opacity="0.55" />
+          </>
+        );
+      case "dotted":
+        return (
+          <>
+            <rect x="24" y="34" width="72" height="76" rx="13" fill={body} stroke={trim} strokeWidth="3.5" strokeDasharray="3,3" />
+            <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
+            <circle cx="35" cy="50" r="1.5" fill={trim} opacity="0.4" />
+            <circle cx="50" cy="55" r="1.5" fill={trim} opacity="0.4" />
+            <circle cx="70" cy="52" r="1.5" fill={trim} opacity="0.4" />
+            <circle cx="85" cy="58" r="1.5" fill={trim} opacity="0.4" />
+          </>
+        );
+      default: // regular
+        return (
+          <>
+            <rect x="24" y="34" width="72" height="76" rx="13" fill={body} stroke={trim} strokeWidth="3.5" />
+            <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
+            <rect x="24" y="82" width="72" height="15" fill={belly} opacity="0.55" />
+            <rect x="34" y="87" width="30" height="5" rx="2.5" fill={trim} opacity="0.5" />
+          </>
+        );
+    }
+  };
 
   return (
     <svg
@@ -57,23 +184,11 @@ export default function SpiritArt({
           </g>
         )}
 
-        {/* book cover */}
-        <rect x="24" y="34" width="72" height="76" rx="13" fill={body} stroke={trim} strokeWidth="3.5" />
-        {/* page edge on the right */}
-        <rect x="89" y="39" width="7" height="66" rx="3" fill={belly} />
-        {/* label band */}
-        <rect x="24" y="82" width="72" height="15" fill={belly} opacity="0.55" />
-        <rect x="34" y="87" width="30" height="5" rx="2.5" fill={trim} opacity="0.5" />
+        {/* Notebook/book cover with different styles */}
+        {renderNotebook()}
 
-        {/* face — eyes blink together */}
-        <g className="sp-eyes">
-          <circle cx="48" cy="58" r="9" fill="#fff" />
-          <circle cx="72" cy="58" r="9" fill="#fff" />
-          <circle cx="50" cy="59" r="4.5" fill="#2a2540" />
-          <circle cx="74" cy="59" r="4.5" fill="#2a2540" />
-          <circle cx="51.5" cy="56.5" r="1.8" fill="#fff" />
-          <circle cx="75.5" cy="56.5" r="1.8" fill="#fff" />
-        </g>
+        {/* face — diverse eyes! */}
+        {renderEyes()}
 
         {/* angry brows (demon) */}
         {angry && (
