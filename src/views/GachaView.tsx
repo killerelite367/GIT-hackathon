@@ -1,4 +1,5 @@
 import React, { useState, useEffect, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
@@ -736,10 +737,16 @@ function RevealOverlay({
     };
   }, []);
 
-  return (
+  /**
+   * Portalled to <body> on purpose. The view container carries a `transform`
+   * from `animate-viewin`, and a transformed ancestor becomes the containing
+   * block for `position: fixed` — which pinned this overlay to a 4000px-tall
+   * panel instead of the viewport and pushed the hero far below the fold.
+   */
+  return createPortal(
     <div
       onClick={handleBackdrop}
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-6 backdrop-blur-md ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-4 backdrop-blur-md sm:p-6 ${
         phase === "awaken" && themeBackground ? "" : phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
       } ${phase === "burst" && group !== "conveyor" ? "vfx-screen-shake-heavy" : ""}`}
       style={{
@@ -928,9 +935,10 @@ function RevealOverlay({
       )}
 
       {phase !== "cards" && (
-        <p className="absolute bottom-8 text-[11px] text-white/30">tap to skip</p>
+        <p className="absolute bottom-3 text-[11px] text-white/30">tap to skip</p>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -955,7 +963,7 @@ function AwakenStage({
 
   return (
     <div
-      className={`relative flex flex-col items-center gap-5 ${
+      className={`relative flex max-h-full flex-col items-center justify-center gap-2 sm:gap-4 ${
         meta.tier >= RARITY.demon.tier ? "gq-tremble" : ""
       } ${meta.tier >= RARITY.secret.tier ? "gq-invert" : ""}`}
     >
@@ -976,9 +984,10 @@ function AwakenStage({
         </span>
       ))}
 
-      {/* "hero 2 of 3" — only when a multi actually landed several legendaries */}
+      {/* "hero 2 of 3" — only when a multi actually landed several legendaries.
+          Kept in normal flow so it can never clip off the top of the stage. */}
       {total > 1 && (
-        <div className="queue-pip absolute -top-10 flex items-center gap-1.5">
+        <div className="queue-pip flex items-center gap-1.5">
           {Array.from({ length: total }).map((_, i) => (
             <span
               key={i}
