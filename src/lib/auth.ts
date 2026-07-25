@@ -1,29 +1,55 @@
 import { supabase } from "./supabase";
 
 export async function signInWithEmail(email: string, password: string) {
-  if (!supabase) return { error: "Supabase not configured" };
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error?.code === "invalid_grant") {
-    return await signUpWithEmail(email, password);
+  if (!supabase) {
+    const err = new Error("Supabase not configured");
+    return { error: err, data: null };
   }
 
-  return { data, error };
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error?.code === "invalid_grant") {
+      return await signUpWithEmail(email, password);
+    }
+
+    if (error) {
+      console.error("Sign in error:", error);
+      return { error, data: null };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Sign in exception:", err);
+    return { error: err as Error, data: null };
+  }
 }
 
 export async function signUpWithEmail(email: string, password: string) {
-  if (!supabase) return { error: "Supabase not configured" };
+  if (!supabase) {
+    const err = new Error("Supabase not configured");
+    return { error: err, data: null };
+  }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-  return { data, error };
+    if (error) {
+      console.error("Sign up error:", error);
+      return { error, data: null };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Sign up exception:", err);
+    return { error: err as Error, data: null };
+  }
 }
 
 export async function getCurrentUser() {
