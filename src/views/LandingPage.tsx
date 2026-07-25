@@ -132,6 +132,47 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
         </header>
 
+        {/* ── Gacha Summoning Section ──────────────────────────── */}
+        <section className="lp-gacha-hero">
+          <div className="lp-gacha-content">
+            <h2 className="lp-gacha-title">Every study session summons a new spirit</h2>
+            <p className="lp-gacha-desc">
+              Finish your focus session → Earn Focus Crystals → Summon a Study Spirit. No pay-to-win.
+              Every summon is a real study achievement.
+            </p>
+          </div>
+
+          <div className="lp-summon-showcase">
+            <style>{`
+              @keyframes summon-pop {
+                0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+                60% { transform: scale(1.1); }
+                100% { transform: scale(1); opacity: 1; }
+              }
+              @keyframes glow {
+                0%, 100% { filter: drop-shadow(0 0 10px #00ff41); }
+                50% { filter: drop-shadow(0 0 20px #00ff41) drop-shadow(0 0 30px #00ff41); }
+              }
+              .spirit-item {
+                animation: summon-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+              }
+              .spirit-item:nth-child(1) { animation-delay: 0.2s; }
+              .spirit-item:nth-child(2) { animation-delay: 0.4s; }
+              .spirit-item:nth-child(3) { animation-delay: 0.6s; }
+              .spirit-item:nth-child(4) { animation-delay: 0.8s; }
+              .spirit-item:nth-child(5) { animation-delay: 1s; }
+              .spirit-item:nth-child(6) { animation-delay: 1.2s; }
+            `}</style>
+            <div className="lp-spirit-grid">
+              {['🍓', '🫐', '🍇', '🍑', '🥭', '🍋'].map((emoji, i) => (
+                <div key={i} className="spirit-item" style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 15px #00ff41)' }}>
+                  {emoji}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── Pinned 3D board scene ────────────────────────────── */}
         <section className="board-scene" id="board" aria-label="How StudyQuest plans your semester">
           <div className="board-pin">

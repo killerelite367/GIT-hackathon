@@ -7,12 +7,14 @@ export async function signInWithEmail(email: string, password: string) {
   }
 
   try {
+    // Try to sign in
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error?.code === "invalid_grant") {
+    // If user doesn't exist, try to sign up
+    if (error?.code === "invalid_grant" || error?.message?.includes("Invalid login credentials")) {
       return await signUpWithEmail(email, password);
     }
 
@@ -60,8 +62,19 @@ export async function getCurrentUser() {
 }
 
 export async function signOut() {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  if (!supabase) return { error: "Supabase not configured" };
+
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Sign out error:", error);
+      return { error };
+    }
+    return { error: null };
+  } catch (err) {
+    console.error("Sign out exception:", err);
+    return { error: err as Error };
+  }
 }
 
 export async function signInWithGoogle() {

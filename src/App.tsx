@@ -18,10 +18,10 @@ import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
-import { Settings, Flame, Sun, Moon } from "lucide-react";
+import { Settings, Flame, Sun, Moon, LogOut } from "lucide-react";
 import Logo from "./components/Logo";
 import { useTheme } from "./lib/useTheme";
-import { getCurrentUser } from "./lib/auth";
+import { getCurrentUser, signOut } from "./lib/auth";
 
 /**
  * The landing page lives at the root URL and the app lives at #/app, the way
@@ -187,6 +187,18 @@ export default function App() {
                 }`}
               >
                 <Settings size={16} />
+              </button>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  setHash("");
+                  setUser(null);
+                }}
+                aria-label="Sign out"
+                title="Sign out"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-dusk shadow-soft transition hover:text-night active:scale-95"
+              >
+                <LogOut size={16} />
               </button>
             </div>
           </header>
