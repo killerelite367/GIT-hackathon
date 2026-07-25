@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar, { BottomNav } from "./components/Sidebar";
 import Toasts from "./components/Toasts";
 import AssignmentModal from "./components/AssignmentModal";
@@ -17,7 +17,12 @@ import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
 import { Sparkles, Settings, Flame } from "lucide-react";
 
-const ENTERED_KEY = "studyquest:entered";
+/**
+ * The landing page lives at the root URL and the app lives at #/app, the way
+ * a normal site works. No hidden "already visited" flag — where you are is
+ * always visible in the address bar, shareable, and the back button works.
+ */
+const APP_ROUTE = "#/app";
 
 function greeting() {
   const h = new Date().getHours();
@@ -35,31 +40,25 @@ export default function App() {
   const [importOpen, setImportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
-  // Returning visitors go straight to the app; the landing stays reachable
-  // from Settings.
-  const [entered, setEntered] = useState(() => {
-    try {
-      return localStorage.getItem(ENTERED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
+  // Hash route: "" → landing, "#/app" → the app.
+  const [hash, setHash] = useState(() =>
+    typeof window === "undefined" ? "" : window.location.hash
+  );
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  const inApp = hash.startsWith(APP_ROUTE);
 
   const enterApp = () => {
-    try {
-      localStorage.setItem(ENTERED_KEY, "1");
-    } catch {
-      /* storage unavailable — still enter for this session */
-    }
-    setEntered(true);
+    window.location.hash = APP_ROUTE.slice(1); // fires hashchange
   };
   const showLanding = () => {
-    try {
-      localStorage.removeItem(ENTERED_KEY);
-    } catch {
-      /* ignore */
-    }
-    setEntered(false);
+    // Drop the hash without leaving a bare "#" behind in the address bar.
+    window.history.pushState(null, "", window.location.pathname + window.location.search);
+    setHash("");
+    window.scrollTo(0, 0);
   };
 
   const openAdd = () => {
@@ -75,8 +74,8 @@ export default function App() {
     setFocusOpen(true);
   };
 
-  // Every hook above runs unconditionally; the landing gate comes after.
-  if (!entered) return <LandingPage onEnter={enterApp} />;
+  // Every hook above runs unconditionally; the route branch comes after.
+  if (!inApp) return <LandingPage onEnter={enterApp} />;
 
   const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     today: {
