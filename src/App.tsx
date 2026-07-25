@@ -16,7 +16,8 @@ import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
-import { Sparkles, Settings, Flame } from "lucide-react";
+import { Settings, Flame } from "lucide-react";
+import Logo from "./components/Logo";
 
 /**
  * The landing page lives at the root URL and the app lives at #/app, the way
@@ -120,11 +121,8 @@ export default function App() {
       <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-9">
           {/* Mobile brand */}
-          <div className="mb-5 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-white shadow-brand">
-              <Sparkles size={16} />
-            </div>
-            <span className="font-display text-base font-bold text-night">StudyQuest</span>
+          <div className="mb-5 lg:hidden">
+            <Logo size="md" />
           </div>
 
           {/* Page header */}

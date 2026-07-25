@@ -1,5 +1,4 @@
 import {
-  Sparkles,
   ArrowRight,
   Wand2,
   CalendarRange,
@@ -16,6 +15,7 @@ import {
   useMaskedHeading,
   useMagnetic,
 } from "../lib/motion";
+import Logo from "../components/Logo";
 
 /**
  * The landing page — a brand surface, not app chrome. Committed violet hero,
@@ -43,12 +43,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 
         {/* Nav */}
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-              <Sparkles size={18} />
-            </div>
-            <span className="font-display text-lg font-bold tracking-tightish">StudyQuest</span>
-          </div>
+          <Logo size="lg" tileClass="bg-white/15 backdrop-blur" textClass="text-white" />
           <div className="hidden items-center gap-7 text-sm font-medium text-white/80 md:flex">
             <a href="#how" className="transition hover:text-white">
               How it works
@@ -378,12 +373,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
 
       <footer className="border-t border-line py-8">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 text-sm text-haze sm:px-8">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white">
-              <Sparkles size={14} />
-            </div>
-            <span className="font-display font-bold text-night">StudyQuest</span>
-          </div>
+          <Logo size="sm" tileClass="bg-brand text-white" />
           <p>Built for RP students · Semester 2026-S2</p>
         </div>
       </footer>

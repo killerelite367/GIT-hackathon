@@ -5,11 +5,11 @@ import {
   Trophy,
   Users,
   Settings,
-  Sparkles,
 } from "lucide-react";
 import type { View } from "../nav";
 import { levelProgress } from "../lib/gamification";
 import { useStore } from "../store/StoreContext";
+import Logo from "./Logo";
 
 export const NAV: { view: View; icon: typeof Home; label: string }[] = [
   { view: "today", icon: Home, label: "Today" },
@@ -60,13 +60,8 @@ export default function Sidebar({
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-surface/70 p-4 backdrop-blur-sm lg:flex">
-      <div className="flex items-center gap-2.5 px-2 py-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-brand">
-          <Sparkles size={18} />
-        </div>
-        <span className="font-display text-lg font-bold tracking-tightish text-night">
-          StudyQuest
-        </span>
+      <div className="px-2 py-3">
+        <Logo size="lg" />
       </div>
 
       <nav className="mt-6 space-y-1">
