@@ -155,7 +155,8 @@ export default function App() {
             </div>
           </header>
 
-          <div className="mt-8">
+          {/* key={view} re-mounts on navigation so each screen animates in */}
+          <div key={view} className="mt-8 animate-viewin">
             {view === "today" && (
               <TodayView
                 onAdd={openAdd}

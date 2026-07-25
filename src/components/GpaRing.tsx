@@ -23,13 +23,13 @@ export default function GpaRing({ gpa, max = 4 }: Props) {
   return (
     <div className="relative h-44 w-44">
       <svg className="h-44 w-44 -rotate-90" viewBox="0 0 128 128">
-        <circle cx="64" cy="64" r={r} fill="none" stroke="#eae7f4" strokeWidth="10" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="#2c2c3a" strokeWidth="10" />
         <circle
           cx="64"
           cy="64"
           r={r}
           fill="none"
-          stroke="#6d49ff"
+          stroke="#8f74ff"
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={c}

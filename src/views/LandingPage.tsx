@@ -62,7 +62,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
           <button
             onClick={onEnter}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-brand-deep shadow-lg transition hover:bg-white/90 active:scale-95"
+            className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#4a2fd0] shadow-lg transition hover:bg-white/90 active:scale-95"
           >
             Open StudyQuest
           </button>
@@ -95,7 +95,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button
                 onClick={onEnter}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-[15px] font-bold text-brand-deep shadow-xl transition hover:bg-white/90 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-[15px] font-bold text-[#4a2fd0] shadow-xl transition hover:bg-white/90 active:scale-95"
               >
                 Start planning — it's free
                 <ArrowRight size={17} />
@@ -323,7 +323,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             <button
               data-reveal
               onClick={onEnter}
-              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-[15px] font-bold text-brand-deep transition hover:bg-white/90 active:scale-95"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-[15px] font-bold text-[#4a2fd0] transition hover:bg-white/90 active:scale-95"
             >
               Summon your first spirit
               <ArrowRight size={16} />
@@ -600,13 +600,13 @@ function FocusPreview() {
     <div className="rounded-2xl border border-line bg-surface p-6 text-center shadow-soft">
       <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
         <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="44" fill="none" stroke="#eae7f4" strokeWidth="8" />
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#2c2c3a" strokeWidth="8" />
           <circle
             cx="50"
             cy="50"
             r="44"
             fill="none"
-            stroke="#6d49ff"
+            stroke="#8f74ff"
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={2 * Math.PI * 44}

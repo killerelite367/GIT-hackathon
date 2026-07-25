@@ -139,8 +139,10 @@ export default function TodayView({
                 </div>
               </div>
               <div className="space-y-3">
-                {rest.map((a) => (
-                  <AssignmentCard key={a.id} a={a} onEdit={onEdit} onFocus={onFocus} />
+                {rest.map((a, i) => (
+                  <div key={a.id} className="animate-rise" style={{ animationDelay: `${i * 60}ms` }}>
+                    <AssignmentCard a={a} onEdit={onEdit} onFocus={onFocus} />
+                  </div>
                 ))}
               </div>
             </section>

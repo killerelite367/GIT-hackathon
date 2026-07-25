@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
-  --bg: #f3f2fb;
+  color-scheme: dark;
+  --bg: #131319;
 }
 
 * {
@@ -21,7 +21,7 @@ body {
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.005em;
-  color: #1c1830;
+  color: #ecebf3;
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -49,9 +49,9 @@ body {
 }
 
 /*
- * Ambient warmth: two soft, wide colour washes high in the frame — a violet
- * and a honey glow — so the bright canvas feels alive rather than flat white.
- * Deliberately faint; the cards do the talking.
+ * Ambient depth: two slow-drifting colour washes over the deep base — a violet
+ * and a cool teal — so the surface feels alive and lit rather than flat black.
+ * Faint and always in motion; the cards do the talking.
  */
 .app-shell {
   position: relative;
@@ -60,17 +60,22 @@ body {
 .app-shell::before {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: -20% -10% -10% -10%;
   z-index: -2;
   background:
-    radial-gradient(1000px 520px at 92% -12%, rgba(109, 73, 255, 0.08), transparent 60%),
-    radial-gradient(920px 500px at 0% -8%, rgba(243, 154, 26, 0.06), transparent 58%),
+    radial-gradient(900px 520px at 88% -6%, rgba(143, 116, 255, 0.16), transparent 60%),
+    radial-gradient(820px 500px at 4% 8%, rgba(90, 167, 239, 0.09), transparent 58%),
     var(--bg);
+  animation: ambient-drift 26s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-2.5%, 1.5%, 0) scale(1.06); }
 }
 
 ::selection {
-  background: rgba(109, 73, 255, 0.18);
-  color: #1c1830;
+  background: rgba(143, 116, 255, 0.32);
+  color: #fff;
 }
 
 ::-webkit-scrollbar {
@@ -78,13 +83,13 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d0e8;
+  background: #33333f;
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #c3bcda;
+  background: #45455a;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
@@ -99,22 +104,21 @@ body {
 
 /* Accessible keyboard focus ring, consistent across the theme */
 :focus-visible {
-  outline: 2px solid #6d49ff;
+  outline: 2px solid #8f74ff;
   outline-offset: 2px;
   border-radius: 8px;
 }
 
 /*
- * The Summon view is a deliberate dark "chamber" embedded in the bright app.
- * This stage restores a dark backdrop + light-on-dark scrollbar so Jayden's
- * gacha spectacle reads as intentional immersion, not a broken section.
+ * The Summon view is a still-darker "chamber" nested inside the twilight app —
+ * a near-black stage so the gacha spectacle's colour and glow pop against it.
  */
 .summon-stage {
   color-scheme: dark;
   color: #e9e9f2;
   background:
-    radial-gradient(1100px 620px at 50% -10%, rgba(169, 139, 255, 0.14), transparent 60%),
-    #0d0d16;
+    radial-gradient(1100px 620px at 50% -10%, rgba(169, 139, 255, 0.16), transparent 60%),
+    #0a0a12;
 }
 .summon-stage ::selection {
   background: rgba(169, 139, 255, 0.32);

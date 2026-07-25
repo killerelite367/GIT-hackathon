@@ -40,7 +40,7 @@ export default function RewardsView() {
       </div>
 
       {tab === "progress" ? (
-        <div className="space-y-6">
+        <div key="progress" className="animate-viewin space-y-6">
           {/* Reward stats */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <RewardStat icon={<Zap size={18} />} tone="brand" label="Level" value={`${lp.level}`}>
@@ -92,8 +92,11 @@ export default function RewardsView() {
           </section>
         </div>
       ) : (
-        /* The game surfaces share one dark chamber inside the bright app. */
-        <div className="summon-stage overflow-hidden rounded-[1.75rem] p-4 shadow-pop ring-1 ring-brand/20 sm:p-6">
+        /* The game surfaces share one still-darker chamber inside the app. */
+        <div
+          key={tab}
+          className="summon-stage animate-viewin overflow-hidden rounded-[1.75rem] p-4 shadow-pop ring-1 ring-brand/20 sm:p-6"
+        >
           {tab === "summon" && <GachaView />}
           {tab === "garden" && <GardenView />}
           {tab === "workshop" && <WorkshopView />}

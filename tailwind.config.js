@@ -21,24 +21,27 @@ export default {
       },
       colors: {
         /*
-         * ── Main app: bright & friendly light theme ──────────────
-         * A warm-but-cool near-white canvas with white cards, one confident
-         * violet brand color, and friendly semantic hues. High-contrast ink
-         * for text. This is what the whole app (except the Summon view) uses.
+         * ── Main app: refined "twilight" dark theme ──────────────
+         * A deep slate base (not harsh black) with elevated surfaces, so the
+         * UI reads as a considered mix of tones rather than either glaring
+         * white or flat black. One confident violet accent carries actions.
+         * Semantic hues are dark-tuned; each has a `-deep` LIGHT variant for
+         * readable coloured text and a `-soft` DEEP variant for tinted chips.
+         * Same token NAMES as before, so components re-theme by value.
          */
-        canvas: "#f3f2fb", // body background — light, faint violet-grey (not cream)
-        surface: "#ffffff", // cards
-        surface2: "#f5f3fd", // insets / inputs
-        line: "#e7e3f2", // hairline borders
-        line2: "#d6d0e8", // stronger borders / hover
-        night: "#1c1830", // primary text (violet-black)
-        dusk: "#4f4866", // secondary text
-        haze: "#5e5678", // tertiary text / muted labels (AA on the light canvas)
-        brand: { DEFAULT: "#6d49ff", soft: "#ece7ff", deep: "#4a2fd0" }, // violet
-        warm: { DEFAULT: "#f39a1a", soft: "#fdeecd", deep: "#b5730b" }, // honey — XP / rewards / streak
-        grass: { DEFAULT: "#17a06a", soft: "#d7f1e5", deep: "#0d8256" }, // success / done
-        berry: { DEFAULT: "#e5476a", soft: "#fbdde4", deep: "#c72d50" }, // danger / high priority / overdue
-        sky: { DEFAULT: "#2f8fe0", soft: "#dcecfb", deep: "#1f6fb8" }, // info / low priority
+        canvas: "#131319", // body — deep slate, faint cool-violet
+        surface: "#1c1c26", // elevated cards
+        surface2: "#24242f", // insets / inputs
+        line: "#2c2c3a", // hairline borders
+        line2: "#3b3b4e", // stronger borders / hover
+        night: "#ecebf3", // primary text (near-white)
+        dusk: "#a8a4bd", // secondary text
+        haze: "#8b86a4", // tertiary text / muted labels (AA on dark surface)
+        brand: { DEFAULT: "#8f74ff", soft: "#241d3b", deep: "#bca9ff" }, // violet
+        warm: { DEFAULT: "#f2b452", soft: "#2f2413", deep: "#f8ca7d" }, // honey — XP / streak
+        grass: { DEFAULT: "#2fbe85", soft: "#122c22", deep: "#63e3a9" }, // success / done
+        berry: { DEFAULT: "#f2687d", soft: "#321a20", deep: "#ff97a2" }, // danger / high priority
+        sky: { DEFAULT: "#5aa7ef", soft: "#152633", deep: "#8cc3f7" }, // info / low priority
 
         /*
          * ── Summon (gacha) sub-brand: dark immersive stage ───────
@@ -60,12 +63,18 @@ export default {
         },
       },
       boxShadow: {
-        // ── Light-theme depth: soft, violet-tinted, friendly ──
-        soft: "0 1px 2px rgba(28,24,48,0.05), 0 2px 8px -3px rgba(80,70,130,0.10)",
-        raised: "0 1px 2px rgba(28,24,48,0.05), 0 8px 22px -8px rgba(80,70,130,0.16)",
-        pop: "0 2px 6px rgba(28,24,48,0.06), 0 18px 40px -12px rgba(80,70,130,0.26)",
-        brand: "0 8px 20px -6px rgba(109,73,255,0.45)",
-        warm: "0 8px 20px -6px rgba(243,154,26,0.45)",
+        /*
+         * ── Twilight depth ──
+         * On dark, a drop shadow is nearly invisible, so elevation comes from
+         * a deeper drop PLUS a 1px inset top highlight that catches the light —
+         * the trick that makes dark surfaces read as genuinely raised.
+         */
+        soft: "0 1px 2px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+        raised:
+          "0 10px 28px -10px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05)",
+        pop: "0 24px 56px -18px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)",
+        brand: "0 10px 26px -8px rgba(143,116,255,0.55)",
+        warm: "0 10px 26px -8px rgba(242,180,82,0.4)",
         // ── Dark gacha tokens (kept for the Summon view) ──
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7)",
         lift: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 16px 40px -16px rgba(0,0,0,0.85)",
@@ -90,6 +99,10 @@ export default {
           "0%": { transform: "translateY(10px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        viewin: {
+          "0%": { transform: "translateY(8px) scale(0.995)", opacity: "0" },
+          "100%": { transform: "translateY(0) scale(1)", opacity: "1" },
+        },
         glowpulse: {
           "0%,100%": { opacity: "0.55" },
           "50%": { opacity: "1" },
@@ -103,6 +116,7 @@ export default {
         slideup: "slideup 0.28s cubic-bezier(0.22,1,0.36,1)",
         popin: "popin 0.2s cubic-bezier(0.22,1,0.36,1)",
         rise: "rise 0.45s cubic-bezier(0.22,1,0.36,1) both",
+        viewin: "viewin 0.4s cubic-bezier(0.22,1,0.36,1) both",
         glowpulse: "glowpulse 3s ease-in-out infinite",
         shimmer: "shimmer 1.6s infinite",
       },

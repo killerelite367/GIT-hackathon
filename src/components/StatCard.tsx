@@ -24,7 +24,7 @@ export default function StatCard({ label, value, sub, icon, tone, progress, inde
   const c = TONE[tone];
   return (
     <div
-      className="group animate-rise rounded-2xl border border-line bg-surface p-4 shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-raised sm:p-5"
+      className="group animate-rise rounded-2xl border border-line bg-surface p-4 shadow-soft transition duration-300 hover:-translate-y-1 hover:border-line2 hover:shadow-raised sm:p-5"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="flex items-center gap-2.5">

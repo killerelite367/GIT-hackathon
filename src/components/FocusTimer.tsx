@@ -143,13 +143,13 @@ export default function FocusTimer({
       <div className="mt-4 flex items-center justify-center">
         <div className="relative flex h-32 w-32 items-center justify-center">
           <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="44" fill="none" stroke="#eae7f4" strokeWidth="8" />
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#2c2c3a" strokeWidth="8" />
             <circle
               cx="50"
               cy="50"
               r="44"
               fill="none"
-              stroke="#6d49ff"
+              stroke="#8f74ff"
               strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 44}
