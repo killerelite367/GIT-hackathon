@@ -105,33 +105,6 @@ export default function GardenView() {
         </button>
       </div>
 
-      {/* 🎯 GPA SIGN BOARD */}
-      <div className="rounded-3xl border-4 border-neon-yellow bg-gradient-to-br from-neon-yellow/20 to-neon-purple/10 p-6 shadow-lg">
-        <div className="mb-4 text-center">
-          <p className="text-sm font-bold uppercase tracking-widest text-neon-yellow">📊 Your Academic Dashboard</p>
-          <div className="mt-3 flex items-center justify-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-purple p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-white/60">Current GPA</p>
-              <p className="mt-1 font-display text-4xl font-bold text-white">{gpa.toFixed(2)}</p>
-              <p className="text-xs text-white/50">out of 4.0</p>
-            </div>
-            <div className="h-20 w-px bg-neon-yellow/30" />
-            <div className="grid grid-cols-2 gap-3">
-              {modules.map((m) => {
-                const g = m.grade != null ? scoreToGrade(m.grade) : null;
-                return (
-                  <div key={m.code} className="rounded-lg bg-white/5 p-2 text-center border border-neon-yellow/20">
-                    <p className="text-xs font-bold text-neon-yellow">{m.code}</p>
-                    <p className="text-sm font-bold text-white">{g?.letter || "—"}</p>
-                    <p className="text-xs text-white/60">{m.grade || "—"}%</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* stat strip */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-edge bg-panel/70 p-4">
@@ -158,6 +131,23 @@ export default function GardenView() {
         className="relative h-[380px] overflow-hidden rounded-2xl border border-edge"
         style={{ background: studyMode ? "linear-gradient(180deg,#101830,#0a1020)" : health.sky }}
       >
+        {/* 🎯 GPA SIGN BOARD - INSIDE GARDEN */}
+        <div className="absolute top-4 left-4 right-4 rounded-2xl border-3 border-neon-yellow/60 bg-black/70 backdrop-blur-md p-3 max-w-xs">
+          <p className="text-xs font-bold uppercase tracking-widest text-neon-yellow">📊 GPA</p>
+          <p className="mt-1 font-display text-3xl font-bold text-white">{gpa.toFixed(2)}</p>
+          <p className="text-xs text-white/50">of 4.0</p>
+          <div className="mt-2 grid grid-cols-3 gap-1">
+            {modules.slice(0, 3).map((m) => {
+              const g = m.grade != null ? scoreToGrade(m.grade) : null;
+              return (
+                <div key={m.code} className="rounded text-center bg-white/5 p-1">
+                  <p className="text-[10px] font-bold text-neon-yellow">{m.code}</p>
+                  <p className="text-xs font-bold text-white">{g?.letter || "—"}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
         {/* sun / moon */}
         <div
           className="pointer-events-none absolute h-20 w-20 rounded-full"

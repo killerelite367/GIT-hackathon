@@ -661,7 +661,7 @@ function RevealOverlay({
 
           {/* the crystal HATCHES — cracks, splits open, the hero rises out of
               the light, gets knocked, then BURSTS with power, then walks/talks */}
-          <div className="sp-stroll relative flex h-52 w-52 items-center justify-center">
+          <div className="sp-stroll relative flex h-40 w-40 items-center justify-center">
             {/* the crystal shell, sitting where the charge-orb ended up */}
             <div className="shell-crack pointer-events-none absolute inset-0 flex items-center justify-center">
               <div
@@ -716,7 +716,7 @@ function RevealOverlay({
             <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
               <div className="sp-impact">
                 <div className="sp-hop">
-                  <CharacterArt spirit={best.spirit} size={best.spirit.element ? 210 : 190} talking />
+                  <CharacterArt spirit={best.spirit} size={best.spirit.element ? 140 : 130} talking />
                 </div>
               </div>
             </div>
