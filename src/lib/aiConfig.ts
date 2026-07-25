@@ -23,6 +23,14 @@ export type ScanMode = "direct" | "webhook";
  *  photographed documents well. (2.0-flash has no free-tier quota left.) */
 export const GEMINI_MODEL = "gemini-2.5-flash";
 
+/**
+ * The team's n8n scan endpoint. Safe to commit — it is an address, not a
+ * credential; the Gemini key lives inside the workflow on the server. Shipping
+ * it means a fresh visitor can scan immediately with no setup, and no key is
+ * ever inlined into the bundle. Overridable in Settings or via env.
+ */
+export const DEFAULT_WEBHOOK_URL = "https://n8ngc.codeblazar.org/webhook/studyquest-scan";
+
 const envKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim() ?? "";
 const envHook = (import.meta.env.VITE_SCAN_WEBHOOK_URL as string | undefined)?.trim() ?? "";
 
@@ -57,7 +65,12 @@ export function isUserKey(): boolean {
 }
 
 export function getWebhookUrl(): string {
-  return read(HOOK_STORAGE) || envHook;
+  return read(HOOK_STORAGE) || envHook || DEFAULT_WEBHOOK_URL;
+}
+
+/** True when the webhook is the shipped default rather than one the user set. */
+export function isDefaultWebhook(): boolean {
+  return !read(HOOK_STORAGE) && !envHook;
 }
 
 export function setWebhookUrl(v: string) {
@@ -67,9 +80,9 @@ export function setWebhookUrl(v: string) {
 export function getMode(): ScanMode {
   const m = read(MODE_STORAGE);
   if (m === "direct" || m === "webhook") return m;
-  // Default to whichever is actually configured, preferring the webhook since
-  // it keeps the key off the client.
-  return getWebhookUrl() ? "webhook" : "direct";
+  // Webhook by default: there is always one configured (see DEFAULT_WEBHOOK_URL)
+  // and it keeps the API key off the client entirely.
+  return "webhook";
 }
 
 export function setMode(m: ScanMode) {

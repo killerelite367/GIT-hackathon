@@ -27,6 +27,7 @@ import {
   getMode,
   setMode,
   isUserKey,
+  isDefaultWebhook,
   maskKey,
   GEMINI_MODEL,
   type ScanMode,
@@ -190,9 +191,9 @@ function ScanSettings({ onScanDocument }: { onScanDocument: () => void }) {
             />
           </label>
           <p className="mt-1.5 text-[11px] text-haze">
-            Import <span className="font-mono">n8n/studyquest-scan.json</span> into n8n, add
-            your Gemini key there, activate it, and paste the Production URL here. The key
-            stays on the server.
+            {isDefaultWebhook()
+              ? "Using StudyQuest's shared scan workflow — nothing to set up. The API key lives on the server, never in this page. Paste your own URL above to point at a different n8n instance."
+              : "Pointing at your own n8n instance. Clear the field to fall back to the shared workflow."}
           </p>
         </>
       )}

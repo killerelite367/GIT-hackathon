@@ -208,8 +208,23 @@ rendering with AA contrast and no overflow.
 
 Two modes, switched in **Settings → AI document scan**.
 
-**Direct to Gemini** (default; simplest). The browser calls the Gemini API
-itself. The key comes from either:
+**Via n8n webhook — the default. Nothing to set up.** The app ships pointing at
+the team's live workflow (`DEFAULT_WEBHOOK_URL` in `src/lib/aiConfig.ts`). The
+browser POSTs the image there; n8n adds the Gemini key server-side and returns
+the parsed rows. Verified from a clean build with no `.env` present: the bundle
+contains no API key, and the only network call the page makes is to n8n.
+
+The URL is committed on purpose — it is an address, not a credential. To point
+at your own n8n instead, paste a URL in Settings (or set `VITE_SCAN_WEBHOOK_URL`);
+clearing it falls back to the shared one. Setup for your own instance is in
+`n8n/README.md`.
+
+> Because the endpoint is public, anyone who finds it can spend the workflow's
+> Gemini quota. Narrow the webhook node's `allowedOrigins` from `*` to the
+> deployed domain once it's known.
+
+**Direct to Gemini** (opt-in; useful offline from n8n). The browser calls the
+Gemini API itself. The key comes from either:
 - the field in Settings — stored in `localStorage`, never committed, never
   leaves the browser. **Best for a demo.**
 - `VITE_GEMINI_API_KEY` in `.env` (gitignored) at build time.
@@ -218,11 +233,6 @@ itself. The key comes from either:
 > is readable by anyone who opens devtools on the deployed site, and scanners
 > harvest keys off public repos and deploys. For anything public, use webhook
 > mode or have each user paste their own key in Settings.
-
-**Via n8n webhook** (hardened). The browser POSTs the image to an n8n workflow
-that holds the key server-side. Import `n8n/studyquest-scan.json`, add your key
-in the *Gemini Vision* node, activate it, and paste the Production URL into
-Settings. Full steps in `n8n/README.md`.
 
 **Test connection** in Settings verifies the key/webhook before a live demo
 (the webhook ping short-circuits before Gemini, so it costs no quota).
