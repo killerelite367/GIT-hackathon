@@ -110,12 +110,20 @@
 
 html {
   scroll-behavior: smooth;
+  /*
+   * Every text-*, p-*, m-*, gap-*, w-*, h-*, and rounded-* utility in this
+   * app is Tailwind's default rem scale, which is relative to THIS root, not
+   * to body. Raising it (browser default is 16px) scales text, spacing, and
+   * sizing together everywhere, proportionally, from one line — instead of
+   * hand-editing hundreds of scattered class names with no shared ratio.
+   */
+  font-size: 18px;
 }
 
 body {
   margin: 0;
   font-family: "Figtree", system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 1rem; /* tracks the root scale above, was a fixed 15px */
   line-height: 1.55;
   letter-spacing: -0.005em;
   color: rgb(var(--c-night));
