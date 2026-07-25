@@ -70,7 +70,7 @@ export default function App() {
   const inApp = hash.startsWith(APP_ROUTE);
 
   const enterApp = () => {
-    window.location.hash = "app"; // fires hashchange
+    window.location.hash = "#/app"; // fires hashchange
   };
   const showLanding = () => {
     // Drop the hash without leaving a bare "#" behind in the address bar.
