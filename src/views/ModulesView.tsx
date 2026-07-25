@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
-import { Calculator, Plus } from "lucide-react";
+import { Calculator, Plus, LogOut } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
 import { supabase } from "../lib/supabase";
-import { getOrCreateAnonymousUser } from "../lib/auth";
+import { getCurrentUser, signInWithGoogle, signOut } from "../lib/auth";
 
 export default function ModulesView() {
   const { data, updateModule } = useStore();
   const { modules } = data;
   const gpa = computeGpa(modules);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    getOrCreateAnonymousUser();
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    checkUser();
   }, []);
 
   const [target, setTarget] = useState(3.7);
@@ -65,8 +70,35 @@ export default function ModulesView() {
     return "bg-gradient-to-br from-red-400 to-red-600";
   };
 
+  if (!user) {
+    return (
+      <section className="space-y-6">
+        <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-transparent p-8 text-center">
+          <h2 className="mb-3 text-2xl font-bold text-night">Sign in to manage your modules</h2>
+          <p className="mb-6 text-sm text-haze">Connect your Google account to save your grades and track your GPA</p>
+          <button
+            onClick={() => signInWithGoogle()}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-bold text-white hover:bg-brand/80 transition"
+          >
+            🔐 Sign in with Google
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-6">
+      {/* Sign out button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => signOut().then(() => setUser(null))}
+          className="flex items-center gap-2 rounded bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/30 transition"
+        >
+          <LogOut size={14} /> Sign out
+        </button>
+      </div>
+
       {/* ➕ ADD MODULE FORM */}
       <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-transparent p-5">
         <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-neon-cyan">
