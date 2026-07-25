@@ -48,6 +48,7 @@ Then open the local URL. The **root URL is the landing page**; **`#/app`** is th
 | Motion | GSAP + ScrollTrigger, Lenis (landing page) + CSS keyframes (app) |
 | Icons | lucide-react |
 | Persistence | `localStorage` (works fully offline, no backend needed) |
+| AI scanning | Google Gemini 2.5 Flash (vision) — direct from the browser, or via an n8n webhook |
 | Fonts | Bricolage Grotesque (display), Figtree (body/UI), JetBrains Mono (data) |
 | Backend (scaffolded, unused) | Supabase client — abstracted behind an `AppData` shape, ready to wire |
 
@@ -86,6 +87,13 @@ desktop, bottom bar on mobile); Settings is the gear.
 - **Syllabus parser** — paste any module guide / brief / Brightspace text; it
   extracts title, due date, weightage, type, module code, and an effort
   estimate. Heuristic/offline, shows a confirm list before saving.
+- **AI document scan** — photograph a module guide, brief, or results slip
+  (camera, drag-drop, paste a screenshot, or a PDF) and Gemini reads it. Returns
+  the same `ParsedAssignment` shape as the text parser, so scanned rows flow
+  through the identical confirm list → auto-scheduler pipeline. A results slip
+  additionally updates module scores, so the GPA moves from a photo.
+  Photos are downscaled to 1600px in-browser before upload; nothing is stored.
+  Configure under **Settings → AI document scan** (see §11).
 - **Auto-scheduler** — spreads each assignment's remaining effort backward from
   its deadline into daily study blocks (capped per day). Reflows when you fall
   behind.
@@ -173,6 +181,7 @@ backup, and mobile-responsive layout. Build passes clean; all screens verified
 rendering with AA contrast and no overflow.
 
 **Still open (nice-to-haves, not blockers):**
+- Multi-page / batch scanning (one document at a time today).
 - Supabase auth + real multi-device sync (the store is abstracted for it).
 - Real push notifications when the tab is closed (needs a PWA + service worker).
 - Group-project / collaboration features.
@@ -192,3 +201,35 @@ rendering with AA contrast and no overflow.
   the app restructure and will re-conflict on `nav.ts` / `App.tsx` / `Sidebar`.
 - Repo owner is `killerelite367`; add collaborators under repo Settings if a
   teammate needs push access.
+
+---
+
+## 11. AI document scan — setup & security
+
+Two modes, switched in **Settings → AI document scan**.
+
+**Direct to Gemini** (default; simplest). The browser calls the Gemini API
+itself. The key comes from either:
+- the field in Settings — stored in `localStorage`, never committed, never
+  leaves the browser. **Best for a demo.**
+- `VITE_GEMINI_API_KEY` in `.env` (gitignored) at build time.
+
+> ⚠️ **Every `VITE_*` value is inlined into the JS bundle.** A key set that way
+> is readable by anyone who opens devtools on the deployed site, and scanners
+> harvest keys off public repos and deploys. For anything public, use webhook
+> mode or have each user paste their own key in Settings.
+
+**Via n8n webhook** (hardened). The browser POSTs the image to an n8n workflow
+that holds the key server-side. Import `n8n/studyquest-scan.json`, add your key
+in the *Gemini Vision* node, activate it, and paste the Production URL into
+Settings. Full steps in `n8n/README.md`.
+
+**Test connection** in Settings verifies the key/webhook before a live demo
+(the webhook ping short-circuits before Gemini, so it costs no quota).
+
+Notes:
+- Model is `gemini-2.5-flash`. `gemini-2.0-flash` has no free-tier quota.
+- The free tier is rate-limited; a 429 surfaces as "the free quota is used up
+  for now" and pasting text still works, so a demo never hard-fails.
+- iPhone HEIC photos may not decode in-browser — set Camera to "Most
+  Compatible", or screenshot the document first.

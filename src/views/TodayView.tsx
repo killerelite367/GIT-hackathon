@@ -1,4 +1,4 @@
-import { Timer, Check, Plus, Wand2, Clock, AlertTriangle, PartyPopper, ChevronRight } from "lucide-react";
+import { Timer, Check, Plus, Wand2, Clock, AlertTriangle, PartyPopper, ChevronRight, ScanLine } from "lucide-react";
 import type { Assignment } from "../types";
 import Button from "../components/Button";
 import AssignmentCard from "../components/AssignmentCard";
@@ -12,11 +12,13 @@ export default function TodayView({
   onAdd,
   onEdit,
   onImport,
+  onScan,
   onFocus,
 }: {
   onAdd: () => void;
   onEdit: (a: Assignment) => void;
   onImport: () => void;
+  onScan: () => void;
   onFocus: (id?: string) => void;
 }) {
   const { data, completeAssignment, toggleBlockDone } = useStore();
@@ -108,11 +110,14 @@ export default function TodayView({
               <PartyPopper size={28} className="mx-auto text-grass" />
               <h2 className="mt-3 font-display text-xl font-bold text-night">All caught up!</h2>
               <p className="mt-1 text-sm text-dusk">
-                No open quests. Import a syllabus or add one to plan ahead.
+                No open quests. Scan a module guide, import a syllabus, or add one to plan ahead.
               </p>
-              <div className="mt-4 flex justify-center gap-2">
-                <Button variant="primary" icon={<Wand2 size={15} />} onClick={onImport}>
-                  Import syllabus
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <Button variant="primary" icon={<ScanLine size={15} />} onClick={onScan}>
+                  Scan a document
+                </Button>
+                <Button variant="secondary" icon={<Wand2 size={15} />} onClick={onImport}>
+                  Paste syllabus
                 </Button>
                 <Button variant="secondary" icon={<Plus size={15} />} onClick={onAdd}>
                   Add quest
@@ -130,6 +135,9 @@ export default function TodayView({
                   <span className="ml-2 text-sm font-medium text-haze">{rest.length}</span>
                 </h3>
                 <div className="flex gap-2">
+                  <Button variant="secondary" size="sm" icon={<ScanLine size={14} />} onClick={onScan}>
+                    Scan
+                  </Button>
                   <Button variant="secondary" size="sm" icon={<Wand2 size={14} />} onClick={onImport}>
                     Import
                   </Button>
