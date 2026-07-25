@@ -5,36 +5,48 @@ interface GradeBoardProps {
   modules: Module[];
 }
 
-const GRADE_COLORS: Record<string, { bg: string; text: string; emoji: string }> = {
-  "A+": { bg: "bg-gradient-to-br from-green-400 to-green-600", text: "text-white", emoji: "🌟" },
-  A: { bg: "bg-gradient-to-br from-green-400 to-green-600", text: "text-white", emoji: "⭐" },
-  "A-": { bg: "bg-gradient-to-br from-green-300 to-green-500", text: "text-white", emoji: "✨" },
-  B: { bg: "bg-gradient-to-br from-blue-400 to-blue-600", text: "text-white", emoji: "💙" },
-  C: { bg: "bg-gradient-to-br from-yellow-400 to-yellow-600", text: "text-white", emoji: "📚" },
-  D: { bg: "bg-gradient-to-br from-orange-400 to-orange-600", text: "text-white", emoji: "⚡" },
-  F: { bg: "bg-gradient-to-br from-red-400 to-red-600", text: "text-white", emoji: "🔥" },
-};
-
 export default function GradeBoard({ modules }: GradeBoardProps) {
+  const getGradeBg = (letter?: string): string => {
+    if (!letter) return "bg-gray-500";
+    if (letter === "A") return "bg-emerald-500";
+    if (letter === "B+") return "bg-green-500";
+    if (letter === "B") return "bg-blue-500";
+    if (letter === "C+") return "bg-yellow-500";
+    if (letter === "C") return "bg-yellow-600";
+    if (letter === "D+") return "bg-orange-500";
+    if (letter === "D") return "bg-orange-600";
+    return "bg-red-500";
+  };
+
+  const getGradeEmoji = (letter?: string): string => {
+    if (!letter) return "❓";
+    if (letter === "A") return "🌟";
+    if (letter === "B+") return "⭐";
+    if (letter === "B") return "💙";
+    if (letter === "C+") return "📚";
+    if (letter === "C") return "✏️";
+    if (letter === "D+") return "⚡";
+    if (letter === "D") return "💪";
+    return "🔥";
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="font-display text-xl font-bold text-night">📊 Grade Board</h3>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {modules.map((m) => {
           const g = m.grade != null ? scoreToGrade(m.grade) : null;
-          const gradeInfo = g ? GRADE_COLORS[g.letter] : GRADE_COLORS.F;
+          const bgColor = getGradeBg(g?.letter);
+          const emoji = getGradeEmoji(g?.letter);
 
           return (
-            <div
-              key={m.code}
-              className={`rounded-2xl p-4 text-center transition-transform hover:scale-105 ${gradeInfo.bg} shadow-lg`}
-            >
-              <div className="text-4xl mb-2">{g ? gradeInfo.emoji : "❓"}</div>
-              <div className="text-2xl font-bold text-white">{g?.letter || "—"}</div>
-              <div className="text-sm font-medium text-white/80 mt-1">{m.code}</div>
-              <div className="text-xs font-medium text-white/60 mt-1 truncate">{m.name}</div>
-              {g && <div className="text-xs text-white/70 mt-2">{m.grade}%</div>}
-              <div className="text-xs text-white/80 mt-1">{m.credits} cr</div>
+            <div key={m.code} className={`rounded-2xl p-4 text-center transition-transform hover:scale-105 ${bgColor} shadow-lg text-white`}>
+              <div className="text-4xl mb-2">{emoji}</div>
+              <div className="text-2xl font-bold">{g?.letter || "—"}</div>
+              <div className="text-sm font-medium mt-1">{m.code}</div>
+              <div className="text-xs font-medium opacity-80 mt-1 truncate">{m.name}</div>
+              {m.grade && <div className="text-xs opacity-70 mt-2">{m.grade}%</div>}
+              <div className="text-xs opacity-80 mt-1">{m.credits} cr</div>
             </div>
           );
         })}
