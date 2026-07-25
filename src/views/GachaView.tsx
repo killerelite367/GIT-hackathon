@@ -3,7 +3,6 @@ import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from 
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import CharacterArt from "../components/CharacterArt";
-import CrystalGem from "../components/CrystalGem";
 import {
   playCharge,
   playBurst,
@@ -147,18 +146,23 @@ export default function GachaView() {
 
           <div className="relative flex flex-col items-center text-center">
             <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-neon-yellow">
-              <Sparkles size={13} /> summon circle
+              <Sparkles size={13} /> legendary summons
             </p>
 
-            {/* Central faceted crystal — real SVG gem, gently bobbing */}
-            <div className="relative my-5 flex h-44 w-44 items-center justify-center">
-              <div
-                className="gq-orb-ring absolute inset-4 rounded-full blur-md"
-                style={{ background: "radial-gradient(circle, rgba(95,208,255,0.4), transparent 70%)" }}
-              />
-              <div className="gq-bob relative">
-                <CrystalGem size={150} />
-              </div>
+            {/* LANDSCAPE: Show legendary characters side by side */}
+            <div className="relative my-6 flex flex-row justify-center gap-4 w-full flex-wrap">
+              {SPIRITS.filter(s => RARITY[s.rarity].tier >= RARITY.legendary.tier).slice(0, 4).map(spirit => {
+                const meta = RARITY[spirit.rarity];
+                return (
+                  <div key={spirit.id} className="flex flex-col items-center rounded-2xl border-2 p-3" style={{background: RARITY_GRAD[spirit.rarity], borderColor: meta.glow, boxShadow: `0 0 30px ${meta.glow}`}}>
+                    <div className="h-24 w-24 flex items-center justify-center">
+                      <CharacterArt spirit={spirit} size={80} />
+                    </div>
+                    <p className="text-xs font-bold text-white mt-1">{spirit.name}</p>
+                    <p className={`text-[10px] font-mono ${meta.text}`}>{meta.label}</p>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Balance */}
@@ -171,7 +175,7 @@ export default function GachaView() {
             </div>
             <p className="mt-2 max-w-sm text-sm text-white/60">
               Earned <span className="font-semibold text-white">only</span> by completing real study
-              quests. Spend them to summon <span className="text-neon-purple">Study Spirits</span>.
+              quests. Summon legendary spirits!
             </p>
 
             {/* Pull buttons */}
