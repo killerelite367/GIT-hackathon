@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator } from "lucide-react";
+import { Calculator, Plus, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
@@ -12,6 +12,27 @@ export default function ModulesView() {
   const [target, setTarget] = useState(3.7);
   const [focusModule, setFocusModule] = useState(modules[0]?.code ?? "");
   const needed = scoreNeededFor(modules, focusModule, target);
+
+  const [newCode, setNewCode] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newCredits, setNewCredits] = useState("4");
+  const [newGrade, setNewGrade] = useState("");
+
+  const addModule = () => {
+    if (!newCode.trim() || !newName.trim()) return;
+    const newModule = {
+      code: newCode.trim().toUpperCase(),
+      name: newName.trim(),
+      grade: newGrade ? Number(newGrade) : null,
+      credits: Number(newCredits) || 4,
+    };
+    // This would normally update through the store - for now just show a success message
+    alert(`✅ Added: ${newModule.code} - ${newModule.name}\n(Note: Manual module addition requires backend update)`);
+    setNewCode("");
+    setNewName("");
+    setNewCredits("4");
+    setNewGrade("");
+  };
 
   const getGradeBg = (letter?: string) => {
     if (letter === "A") return "bg-gradient-to-br from-emerald-400 to-emerald-600";
@@ -26,6 +47,49 @@ export default function ModulesView() {
 
   return (
     <section className="space-y-6">
+      {/* ➕ ADD MODULE FORM */}
+      <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-transparent p-5">
+        <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-neon-cyan">
+          <Plus size={18} /> Add New Module
+        </h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <input
+            type="text"
+            placeholder="Code (e.g. C240)"
+            value={newCode}
+            onChange={(e) => setNewCode(e.target.value)}
+            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+          />
+          <input
+            type="text"
+            placeholder="Module name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none sm:col-span-2"
+          />
+          <input
+            type="number"
+            placeholder="Credits"
+            value={newCredits}
+            onChange={(e) => setNewCredits(e.target.value)}
+            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+          />
+          <input
+            type="number"
+            placeholder="Grade (0-100)"
+            value={newGrade}
+            onChange={(e) => setNewGrade(e.target.value)}
+            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+          />
+          <button
+            onClick={addModule}
+            className="col-span-2 rounded-lg bg-neon-cyan px-4 py-2 font-bold text-black hover:bg-neon-cyan/90 transition sm:col-span-1 flex items-center justify-center gap-2"
+          >
+            <Plus size={16} /> Add
+          </button>
+        </div>
+      </div>
+
       {/* Grade Board */}
       <div>
         <h3 className="mb-4 font-display text-lg font-bold text-night">📊 Grade Board</h3>

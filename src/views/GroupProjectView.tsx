@@ -146,39 +146,61 @@ export default function GroupProjectView() {
                 return (
                   <g key={`turtle-${idx}`} transform={`translate(${x} ${y}) rotate(${rotation})`} filter="url(#shadow)">
                     {/* 3D shadow effect */}
-                    <ellipse cx="1" cy="1" rx="18" ry="22" className="fill-black" opacity="0.2" />
+                    <ellipse cx="1.5" cy="2" rx="20" ry="24" className="fill-black" opacity="0.25" />
 
-                    {/* Turtle shell - 3D layered effect */}
-                    <ellipse cx="0" cy="0" rx="18" ry="22" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 1 : 0.4} />
-                    <ellipse cx="0" cy="-2" rx="16" ry="20" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 0.7 : 0.3} />
+                    {/* Turtle shell - rounded dome shape with pattern */}
+                    <ellipse cx="0" cy="0" rx="20" ry="26" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 1 : 0.4} />
 
-                    {/* Shell pattern */}
-                    <circle cx="-6" cy="-4" r="4" fill="white" opacity={isWorking ? 0.3 : 0.1} />
-                    <circle cx="6" cy="4" r="4" fill="white" opacity={isWorking ? 0.3 : 0.1} />
+                    {/* Shell dome highlight */}
+                    <ellipse cx="-8" cy="-8" rx="10" ry="8" fill="white" opacity={isWorking ? 0.25 : 0.1} />
 
-                    {/* Turtle head */}
-                    <circle cx="0" cy="-28" r="10" className="fill-green-700" opacity={isWorking ? 1 : 0.4} />
-                    <circle cx="0" cy="-30" r="8" className="fill-green-600" opacity={isWorking ? 0.8 : 0.3} />
+                    {/* Shell pattern - hexagon tiles */}
+                    <circle cx="-6" cy="-2" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
+                    <circle cx="0" cy="-4" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
+                    <circle cx="6" cy="-2" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
+                    <circle cx="-4" cy="6" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
+                    <circle cx="4" cy="6" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
 
-                    {/* Turtle eyes - fiercer! */}
-                    <circle cx="-3" cy="-32" r="2.5" className="fill-black" />
-                    <circle cx="3" cy="-32" r="2.5" className="fill-black" />
+                    {/* Cute little turtle legs */}
+                    <ellipse cx="-12" cy="8" rx="5" ry="8" className="fill-green-700" opacity={isWorking ? 0.9 : 0.35} />
+                    <ellipse cx="12" cy="8" rx="5" ry="8" className="fill-green-700" opacity={isWorking ? 0.9 : 0.35} />
+                    <ellipse cx="-8" cy="20" rx="4" ry="6" className="fill-green-600" opacity={isWorking ? 0.85 : 0.3} />
+                    <ellipse cx="8" cy="20" rx="4" ry="6" className="fill-green-600" opacity={isWorking ? 0.85 : 0.3} />
+
+                    {/* Cute tail poking out */}
+                    <path d="M 0 28 Q 2 36 0 44" stroke="#557a55" strokeWidth="3" fill="none" opacity={isWorking ? 0.8 : 0.3} strokeLinecap="round" />
+
+                    {/* Turtle head - cute rounded */}
+                    <circle cx="0" cy="-32" r="12" className="fill-green-600" opacity={isWorking ? 1 : 0.4} />
+                    <circle cx="0" cy="-34" r="10" className="fill-green-500" opacity={isWorking ? 0.95 : 0.38} />
+
+                    {/* Cute snout/mouth */}
+                    <circle cx="0" cy="-26" r="4" className="fill-green-700" opacity={isWorking ? 0.7 : 0.3} />
+
+                    {/* Turtle eyes - BIG and cute! */}
+                    <circle cx="-4" cy="-35" r="3.5" className="fill-white" opacity={isWorking ? 1 : 0.5} />
+                    <circle cx="4" cy="-35" r="3.5" className="fill-white" opacity={isWorking ? 1 : 0.5} />
+                    <circle cx="-3.5" cy="-35" r="2" className="fill-black" />
+                    <circle cx="4.5" cy="-35" r="2" className="fill-black" />
+
+                    {/* Cute eye shine - gives life! */}
                     {isWorking && (
                       <>
-                        <circle cx="-2.5" cy="-33" r="1" className="fill-white" />
-                        <circle cx="3.5" cy="-33" r="1" className="fill-white" />
+                        <circle cx="-2.2" cy="-36.5" r="0.8" className="fill-white" />
+                        <circle cx="5.2" cy="-36.5" r="0.8" className="fill-white" />
                       </>
                     )}
 
-                    {/* Contribution percentage label - bold! */}
+                    {/* Contribution percentage label */}
                     {contribution > 0 && (
                       <text
                         x="0"
-                        y="5"
+                        y="8"
                         textAnchor="middle"
-                        className="font-bold text-white text-[12px]"
+                        className="font-bold text-white text-[13px]"
                         dominantBaseline="middle"
                         fontWeight="900"
+                        filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"
                       >
                         {contribution}%
                       </text>
