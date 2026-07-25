@@ -119,7 +119,7 @@ export default function ShopView() {
 
                 {/* Name & description */}
                 <div className="mb-2">
-                  <p className="text-xs font-bold text-text">{acc.name}</p>
+                  <p className="text-xs font-bold text-night">{acc.name}</p>
                   <p className="text-[10px] text-haze">{acc.description}</p>
                 </div>
 
@@ -138,7 +138,7 @@ export default function ShopView() {
                   <button
                     onClick={() => buyAccessory(acc)}
                     disabled={game.crystals < acc.cost}
-                    className="w-full rounded bg-brand px-2 py-1 text-xs font-bold text-text disabled:opacity-50 hover:bg-brand/80 transition-colors"
+                    className="w-full rounded bg-brand px-2 py-1 text-xs font-bold text-white disabled:opacity-50 hover:bg-brand/80 transition-colors"
                   >
                     Buy
                   </button>
@@ -147,7 +147,7 @@ export default function ShopView() {
                       onClick={() => equipAccessory(acc.id)}
                       className={`w-full rounded px-2 py-1 text-xs font-bold transition-colors ${
                         isEquipped
-                          ? "bg-neon-cyan text-text"
+                          ? "bg-neon-cyan text-ink"
                           : "bg-neon-purple/30 text-neon-purple hover:bg-neon-purple/50"
                       }`}
                     >

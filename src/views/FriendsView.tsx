@@ -44,9 +44,9 @@ export default function FriendsView() {
       {/* Share your garden */}
       <div className="rounded-lg border border-line bg-surface p-4 shadow-soft">
         <h3 className="mb-3 text-sm font-bold text-haze">📤 Share Your Garden</h3>
-        <div className="flex items-center gap-2 rounded-lg bg-background p-3">
-          <span className="font-mono text-xs text-text break-all flex-1">your-garden-2026</span>
-          <button className="rounded bg-brand px-3 py-1 text-xs font-bold text-text hover:bg-brand/80 transition-colors flex items-center gap-1">
+        <div className="flex items-center gap-2 rounded-lg bg-surface2 p-3">
+          <span className="font-mono text-xs text-night break-all flex-1">your-garden-2026</span>
+          <button className="rounded bg-brand px-3 py-1 text-xs font-bold text-white hover:bg-brand/80 transition-colors flex items-center gap-1">
             <Share2 size={14} /> Share
           </button>
         </div>
@@ -70,7 +70,7 @@ export default function FriendsView() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-text">{friend.name}</p>
+                <p className="font-bold text-night">{friend.name}</p>
                 <p className="text-xs text-haze">{friend.code}</p>
               </div>
               <button
@@ -135,9 +135,9 @@ export default function FriendsView() {
           <input
             type="text"
             placeholder="Paste garden code here..."
-            className="flex-1 rounded border border-line bg-background px-3 py-2 text-sm text-text placeholder-haze focus:border-neon-purple focus:outline-none"
+            className="flex-1 rounded border border-line bg-surface2 px-3 py-2 text-sm text-night placeholder-haze focus:border-neon-purple focus:outline-none"
           />
-          <button className="rounded bg-brand px-4 py-2 font-bold text-text hover:bg-brand/80 transition-colors">
+          <button className="rounded bg-brand px-4 py-2 font-bold text-white hover:bg-brand/80 transition-colors">
             Add
           </button>
         </div>

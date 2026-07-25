@@ -15,6 +15,11 @@ function mergeWithDefaults(parsed: Partial<AppData>): AppData {
     assignments: parsed.assignments ?? base.assignments,
     blocks: parsed.blocks ?? base.blocks,
     game: { ...base.game, ...parsed.game },
+    // Anything added here must also be listed above: this function rebuilds the
+    // object field by field, and the store re-saves whatever it returns on the
+    // next render — so an omitted key isn't just dropped on load, it's erased
+    // from storage.
+    studySets: parsed.studySets ?? base.studySets ?? [],
   };
 }
 

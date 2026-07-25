@@ -58,28 +58,28 @@ export default function ModulesView() {
             placeholder="Code (e.g. C240)"
             value={newCode}
             onChange={(e) => setNewCode(e.target.value)}
-            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+            className="rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
           />
           <input
             type="text"
             placeholder="Module name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none sm:col-span-2"
+            className="rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none sm:col-span-2"
           />
           <input
             type="number"
             placeholder="Credits"
             value={newCredits}
             onChange={(e) => setNewCredits(e.target.value)}
-            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+            className="rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
           />
           <input
             type="number"
             placeholder="Grade (0-100)"
             value={newGrade}
             onChange={(e) => setNewGrade(e.target.value)}
-            className="rounded-lg border border-neon-cyan/30 bg-background px-3 py-2 text-sm font-medium text-white placeholder-white/40 focus:border-neon-cyan focus:outline-none"
+            className="rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
           />
           <button
             onClick={addModule}

@@ -83,12 +83,12 @@ export default function GroupProjectView() {
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMember()}
-            className="flex-1 rounded border border-line bg-background px-3 py-2 text-sm text-text placeholder-haze focus:border-neon-purple focus:outline-none"
+            className="flex-1 rounded border border-line bg-surface2 px-3 py-2 text-sm text-night placeholder-haze focus:border-neon-purple focus:outline-none"
           />
           <button
             onClick={addMember}
             disabled={game.groupMembers.length >= 6}
-            className="rounded bg-brand px-4 py-2 font-bold text-text disabled:opacity-50 hover:bg-brand/80 transition-colors flex items-center gap-2"
+            className="rounded bg-brand px-4 py-2 font-bold text-white disabled:opacity-50 hover:bg-brand/80 transition-colors flex items-center gap-2"
           >
             <Plus size={16} /> Add
           </button>
@@ -230,7 +230,7 @@ export default function GroupProjectView() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-text truncate">{member.email}</p>
+                    <p className="text-sm font-bold text-night truncate">{member.email}</p>
                     {member.contribution === 0 && (
                       <p className="text-xs text-neon-purple">🦗 Slacker turtle (no work assigned)</p>
                     )}
@@ -244,7 +244,7 @@ export default function GroupProjectView() {
                         max="100"
                         value={editingContribution}
                         onChange={(e) => setEditingContribution(e.target.value)}
-                        className="w-16 rounded border border-neon-purple bg-background px-2 py-1 text-sm font-bold text-text"
+                        className="w-16 rounded border border-neon-purple bg-surface2 px-2 py-1 text-sm font-bold text-night"
                       />
                       <span className="text-xs font-bold text-haze">%</span>
                       <button
@@ -252,7 +252,7 @@ export default function GroupProjectView() {
                           updateContribution(idx, parseInt(editingContribution) || 0);
                           setEditingIdx(null);
                         }}
-                        className="rounded bg-neon-cyan px-2 py-1 text-xs font-bold text-text hover:bg-neon-cyan/80 transition-colors"
+                        className="rounded bg-neon-cyan px-2 py-1 text-xs font-bold text-ink hover:bg-neon-cyan/80 transition-colors"
                       >
                         ✓
                       </button>
