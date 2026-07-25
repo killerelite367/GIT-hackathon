@@ -45,6 +45,22 @@ const GROUP_ENV: Record<DestructionGroup, string> = {
   freeze: "env-void", // system freeze, emerges from the void
 };
 
+// Theme-based backgrounds for character summons
+function getThemeBackground(spiritName: string): string {
+  const name = spiritName.toLowerCase();
+  if (name.includes("blueberry")) return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+  if (name.includes("strawberry")) return "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+  if (name.includes("raspberry")) return "linear-gradient(135deg, #fa709a 0%, #fee140 100%)";
+  if (name.includes("cherry")) return "linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)";
+  if (name.includes("grape")) return "linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)";
+  if (name.includes("matcha")) return "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+  if (name.includes("lemon")) return "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)";
+  if (name.includes("mango")) return "linear-gradient(135deg, #f97316 0%, #ea580c 100%)";
+  if (name.includes("peach")) return "linear-gradient(135deg, #fb923c 0%, #f97316 100%)";
+  if (name.includes("mint")) return "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)";
+  return "";
+}
+
 /** Rarity → gradient used for owned cards & reveal auras. */
 const RARITY_GRAD: Record<Rarity, string> = {
   common: "linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))",
@@ -452,6 +468,7 @@ function RevealOverlay({
   const bestMeta = RARITY[best.spirit.rarity];
   const grand = bestMeta.tier >= AWAKEN_TIER; // legendary+ gets the awakening
   const group = destructionGroup(best.spirit.rarity); // GDD machine-destruction cinematic
+  const themeBackground = getThemeBackground(best.spirit.name);
 
   const reduced =
     typeof window !== "undefined" &&
@@ -531,9 +548,12 @@ function RevealOverlay({
     <div
       onClick={handleBackdrop}
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-6 backdrop-blur-md ${
-        phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
+        phase === "awaken" && themeBackground ? "" : phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
       } ${phase === "burst" && group !== "conveyor" ? "vfx-screen-shake-heavy" : ""}`}
-      style={{ animation: "gacha-fade 0.25s ease-out" }}
+      style={{
+        animation: "gacha-fade 0.25s ease-out",
+        background: phase === "awaken" && themeBackground ? `${themeBackground}` : undefined,
+      }}
     >
       {/* rotating beams tinted by the incoming rarity */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
