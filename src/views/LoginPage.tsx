@@ -25,11 +25,14 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
     if (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       setError(errorMsg || "Sign in failed");
-      console.error("Sign in failed:", err);
+      console.error("LoginPage: Sign in failed:", err);
     } else {
       const user = data?.user ?? { email, id: `local_${Date.now()}` };
+      console.log("LoginPage: Sign in success, saving user:", user.email);
       localStorage.setItem("local_user", JSON.stringify(user));
+      console.log("LoginPage: Calling onLogin with:", user.email);
       onLogin(user);
+      console.log("LoginPage: onLogin called");
     }
   };
 
