@@ -22,6 +22,7 @@ import { Settings, Flame, Sun, Moon, LogOut } from "lucide-react";
 import Logo from "./components/Logo";
 import { useTheme } from "./lib/useTheme";
 import { getCurrentUser, signOut } from "./lib/auth";
+import { supabase } from "./lib/supabase";
 
 /**
  * The landing page lives at the root URL and the app lives at #/app, the way
@@ -60,6 +61,17 @@ export default function App() {
       setCheckingAuth(false);
     };
     checkUser();
+
+    // Listen for auth state changes (OAuth redirects, email login, etc.)
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          const currentUser = await getCurrentUser();
+          setUser(currentUser);
+        }
+      );
+      return () => subscription?.unsubscribe();
+    }
   }, []);
 
   useEffect(() => {
