@@ -220,6 +220,21 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
               Google
             </button>
 
+            {/*
+              Guest entry. Nothing in this app is server-authoritative — every
+              assignment, study set and spirit lives in localStorage — so the
+              login gates a door with no lock behind it. Without this, anyone
+              opening a deployed build where Supabase env vars aren't set hits
+              a sign-in form that can never succeed ("Supabase not configured").
+            */}
+            <button
+              onClick={() => onLogin({ email: "guest", guest: true })}
+              type="button"
+              className="mt-3 w-full rounded-lg border-2 border-white/40 bg-transparent px-3 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+            >
+              Continue as guest
+            </button>
+
             {/* Helper text */}
             <p className="mt-3 text-center text-xs text-gray-500">
               New? Just enter any email & password
