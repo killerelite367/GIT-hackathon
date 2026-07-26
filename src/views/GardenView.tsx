@@ -1,11 +1,20 @@
 import { useState, useRef } from "react";
 import { Sprout, Sparkles, BookOpen, Coffee, Heart } from "lucide-react";
 import { useStore } from "../store/StoreContext";
-import SpiritArt from "../components/SpiritArt";
-import { SPIRIT_BY_ID, RARITY, type Spirit } from "../lib/gacha";
-import { computeGpa } from "../lib/gpa";
+import { computeGpa, scoreToGrade } from "../lib/gpa";
 
 const GRID_SIZE = 4; // 4x4 = 16 slots, expandable later
+
+const SHOP_ITEMS = [
+  { id: "rose", name: "Rose", emoji: "🌹" },
+  { id: "sunflower", name: "Sunflower", emoji: "🌻" },
+  { id: "lily", name: "Lily", emoji: "🪷" },
+  { id: "tulip", name: "Tulip", emoji: "🌷" },
+  { id: "cherry", name: "Cherry Blossom", emoji: "🌸" },
+  { id: "hibiscus", name: "Hibiscus", emoji: "🌺" },
+  { id: "daisy", name: "Daisy", emoji: "🌼" },
+  { id: "lotus", name: "Lotus", emoji: "🪲" },
+];
 
 function gardenHealth(done: number, total: number) {
   const ratio = total === 0 ? 1 : done / total;
@@ -29,12 +38,7 @@ function gardenHealth(done: number, total: number) {
 }
 
 function gardenLuck(ids: string[]): number {
-  let luck = 0;
-  for (const id of ids) {
-    const s = SPIRIT_BY_ID[id];
-    if (s) luck += 0.5 + RARITY[s.rarity].tier * 0.4;
-  }
-  return Math.round(luck * 10) / 10;
+  return Math.round(ids.length * 2.5 * 10) / 10; // 2.5% per item placed
 }
 
 export default function GardenView() {
@@ -54,10 +58,9 @@ export default function GardenView() {
   const luck = gardenLuck(placedIds);
 
   const placedSet = new Set(placedIds);
-  const tray: Spirit[] = Object.keys(game.spirits)
-    .map((id) => SPIRIT_BY_ID[id])
-    .filter((s): s is Spirit => !!s && !placedSet.has(s.id))
-    .sort((a, b) => RARITY[b.rarity].tier - RARITY[a.rarity].tier);
+  const tray = SHOP_ITEMS.filter((item) =>
+    (game.accessories[item.id] || 0) > 0 && !placedSet.has(item.id)
+  );
 
   function handleDragStart(e: React.DragEvent, spiritId: string) {
     setDraggedSpirit(spiritId);
@@ -174,38 +177,56 @@ export default function GardenView() {
         className="relative rounded-2xl border border-edge overflow-hidden"
         style={{
           background: studyMode ? "linear-gradient(180deg,#101830,#0a1020)" : health.sky,
-          minHeight: "400px",
+          minHeight: "500px",
           backgroundAttachment: "fixed",
         }}
       >
+        {/* Sunny GPA Board */}
+        <div className="absolute top-6 left-6 right-6 rounded-2xl border-4 border-neon-yellow/80 bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 max-w-sm shadow-lg">
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-900">📊 Your GPA</p>
+          <p className="mt-2 font-display text-4xl font-bold text-amber-950">{gpa.toFixed(2)}</p>
+          <p className="text-sm text-amber-800">of 4.0</p>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {modules.slice(0, 3).map((m) => {
+              const g = m.grade != null ? scoreToGrade(m.grade) : null;
+              return (
+                <div key={m.code} className="rounded-lg bg-white/60 p-2 text-center border border-amber-200">
+                  <p className="text-xs font-bold text-amber-900">{m.code}</p>
+                  <p className="text-sm font-bold text-amber-950">{g?.letter || "—"}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Grid of draggable slots */}
-        <div className="grid gap-2 p-6" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}>
+        <div className="grid gap-2 p-6 mt-32" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}>
           {slots.map((slot) => {
-            const spiritId = game.garden[slot];
-            const spirit = spiritId ? SPIRIT_BY_ID[spiritId] : null;
+            const itemId = game.garden[slot];
+            const item = itemId ? SHOP_ITEMS.find((s) => s.id === itemId) : null;
 
             return (
               <div
                 key={slot}
-                draggable={!!spirit}
+                draggable={!!item}
                 onDragStart={(e) => {
-                  if (spirit) handleDragStart(e, spiritId);
+                  if (item) handleDragStart(e, itemId);
                 }}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDropOnSlot(e, slot)}
                 onClick={() => handleClickSlot(slot)}
                 className={`relative h-24 rounded-lg border-2 flex items-center justify-center cursor-move transition ${
-                  spirit
+                  item
                     ? "border-dashed border-edge bg-black/20 hover:bg-black/30"
                     : "border-dashed border-white/20 bg-white/5 hover:bg-white/10"
                 }`}
               >
-                {spirit ? (
+                {item ? (
                   <div className="text-center">
-                    <div className="flex justify-center mb-1">
-                      <SpiritArt spirit={spirit} size={60} />
+                    <div className="flex justify-center mb-1 text-5xl">
+                      {item.emoji}
                     </div>
-                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{spirit.name}</p>
+                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{item.name}</p>
                   </div>
                 ) : (
                   <p className="text-xs text-white/30">Drag here</p>
@@ -216,29 +237,29 @@ export default function GardenView() {
         </div>
       </div>
 
-      {/* tray of available spirits */}
+      {/* tray of available shop items */}
       <div className="rounded-2xl border border-edge bg-panel/50 p-4">
-        <p className="mb-3 text-sm font-semibold text-white">Available spirits</p>
+        <p className="mb-3 text-sm font-semibold text-white">Available flowers & pets</p>
         <div className="flex flex-wrap gap-2">
-          {tray.map((spirit) => (
+          {tray.map((item) => (
             <button
-              key={spirit.id}
+              key={item.id}
               draggable
-              onDragStart={(e) => handleDragStart(e, spirit.id)}
-              onClick={() => setSelected(spirit.id === selected ? null : spirit.id)}
+              onDragStart={(e) => handleDragStart(e, item.id)}
+              onClick={() => setSelected(item.id === selected ? null : item.id)}
               className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 transition ${
-                selected === spirit.id
+                selected === item.id
                   ? "border-neon-yellow bg-neon-yellow/20 text-neon-yellow"
                   : "border-edge bg-white/5 text-white/80 hover:bg-white/10"
               }`}
             >
-              <span className="text-sm">{spirit.emoji}</span>
-              <span className="text-xs font-semibold">{spirit.name}</span>
+              <span className="text-2xl">{item.emoji}</span>
+              <span className="text-xs font-semibold">{item.name}</span>
             </button>
           ))}
         </div>
         {tray.length === 0 && (
-          <p className="text-xs text-white/40">All spirits are placed!</p>
+          <p className="text-xs text-white/40">Buy flowers & pets from the shop to place them here!</p>
         )}
       </div>
     </section>
