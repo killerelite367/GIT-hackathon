@@ -237,15 +237,16 @@
   text-transform: uppercase;
 }
 
-/* ── pinned board scene ──
-   The height controls how much scroll the 3D sequence is scrubbed across:
-   enough for all three captions to be read, without dead stretches at
-   either end where the screen would be empty geometry. */
-.board-scene {
-  height: 285vh;
+/* ── pinned scene: the study loop ──
+   The height controls how much scroll the 3D sequence is scrubbed across.
+   Four acts (chaos → order → focus → summon) need noticeably more room than
+   three did; the summon in particular has to charge, break and settle without
+   the reader being rushed past it. */
+.loop-scene {
+  height: 400vh;
   position: relative;
 }
-.board-pin {
+.loop-pin {
   position: sticky;
   top: 0;
   height: 100vh;
@@ -592,11 +593,11 @@
 .lp-no3d .lp-scroll-hint {
   display: none;
 }
-.lp-no3d .board-scene {
+.lp-no3d .loop-scene {
   height: auto;
   padding: 110px 24px;
 }
-.lp-no3d .board-pin {
+.lp-no3d .loop-pin {
   position: static;
   height: auto;
   pointer-events: auto;
@@ -626,11 +627,11 @@
   }
   .lp-scroll-hint { display: none; }
   .lp-marquee-track { animation: none; }
-  .board-scene {
+  .loop-scene {
     height: auto;
     padding: 100px 24px;
   }
-  .board-pin {
+  .loop-pin {
     position: static;
     height: auto;
     pointer-events: auto;

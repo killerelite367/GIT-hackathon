@@ -120,8 +120,8 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             <button ref={ctaRef} onClick={onEnter} className="lp-btn lp-btn-primary">
               Open StudyQuest <ArrowRight size={18} className="lp-arrow" />
             </button>
-            <a href="#board" className="lp-btn lp-btn-ghost">
-              See how it works
+            <a href="#loop" className="lp-btn lp-btn-ghost">
+              Watch the loop
             </a>
           </div>
           <div className="lp-scroll-hint" aria-hidden="true">
@@ -132,31 +132,38 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
         </header>
 
-        {/* ── Pinned 3D board scene ────────────────────────────── */}
-        <section className="board-scene" id="board" aria-label="How StudyQuest plans your semester">
-          <div className="board-pin">
+        {/* ── Pinned 3D scene: the study loop, ending in a summon ── */}
+        <section className="loop-scene" id="loop" aria-label="The StudyQuest loop">
+          <div className="loop-pin">
             <div className="caption-stack">
               <div className="scene-caption">
-                <h2>Paste it once. It plans the rest.</h2>
+                <h2>Six module guides. One semester.</h2>
                 <p>
-                  Every deadline, weightage and submission in your module guide — read, ranked, and
-                  dropped onto your semester without you typing a thing.
+                  Every deadline and weightage pulled out of the pile and laid across your term — in
+                  the right order, before you've typed a single thing.
+                </p>
+              </div>
+              <div className="scene-caption">
+                <h2>Study time becomes currency.</h2>
+                <p>
+                  Finish a quest, run a real focus session, and the minutes you actually studied
+                  turn into XP and Focus Crystals.
                 </p>
               </div>
               <div className="scene-caption">
                 <h2>
-                  It sees the crunch <em>before</em> you do.
+                  Then you <em>spend</em> it.
                 </h2>
                 <p>
-                  Three deadlines landing in the same week? The burnout radar flags it early and
-                  tells you which one to start now.
+                  Crystals summon Study Spirits — 34 of them, across 11 rarity tiers. There's no
+                  shop. The only way in is to actually do the work.
                 </p>
               </div>
               <div className="scene-caption">
-                <h2>Study time that pays you back.</h2>
+                <h2>Meet your study buddy.</h2>
                 <p>
-                  Real focus sessions become XP and Focus Crystals — the only way to summon Study
-                  Spirits. You can't buy your way in.
+                  Collect them, fuse your duplicates in the Workshop, and plant the best ones in
+                  your GPA Garden.
                 </p>
               </div>
             </div>
