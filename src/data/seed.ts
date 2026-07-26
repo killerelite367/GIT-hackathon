@@ -94,6 +94,7 @@ export function seedData(): AppData {
       lastReminderDate: null,
       activityLog: {},
       garden: {},
+      gardenLikes: 0,
       bindingGlue: 0,
       accessories: {},
       equippedAccessories: [],

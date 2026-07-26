@@ -77,7 +77,7 @@ export default function GardenView() {
     if (!draggedSpirit) return;
 
     const existingInSlot = Object.entries(game.garden).find(
-      ([k, v]) => k === slot
+      ([k]) => k === slot
     )?.[1];
     if (existingInSlot && existingInSlot === draggedSpirit) return; // already there
 
