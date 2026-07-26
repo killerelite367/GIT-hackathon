@@ -77,7 +77,28 @@ export async function initQuestScene(canvas: HTMLCanvasElement): Promise<QuestSc
   scene.fog = new THREE.Fog(C.canvas, 10, 34);
 
   const FOV = 42;
-  const CAM_Z = 8.5;
+
+  /*
+   * ── Fitting a wide scene onto a narrow screen ──
+   *
+   * FOV is VERTICAL, so the horizontal field collapses with the aspect ratio:
+   * a 16:10 laptop sees ~62° across, a portrait phone barely 20°. Everything
+   * was framed for the wide case, so on a phone the crystal, shell, spirit and
+   * orbiters all overflowed the narrow view at once and read as one clump.
+   *
+   * `FIT` scales how far the camera sits from the action. It's capped at 1.9:
+   * fitting portrait exactly would need ~3.4x, which pushes the summon past
+   * the fog line (10 units) and shrinks it to a speck. Past the cap the shelf
+   * layout below reflows instead of the camera retreating further.
+   */
+  const startAspect = window.innerWidth / window.innerHeight;
+  const FIT = Math.min(1.9, Math.max(1, 1.55 / startAspect));
+  const PORTRAIT = startAspect < 0.85;
+
+  /** Camera z that sits `d` in front of the action (which lives around z=-3). */
+  const camZ = (d: number) => -3 + d * FIT;
+
+  const CAM_Z = camZ(11.5);
   const camera = new THREE.PerspectiveCamera(FOV, window.innerWidth / window.innerHeight, 0.1, 100);
   const camRig = new THREE.Group();
   camRig.add(camera);
@@ -268,14 +289,24 @@ export async function initQuestScene(canvas: HTMLCanvasElement): Promise<QuestSc
       const home = screenToWorld(screen.sx, screen.sy, depth, new THREE.Vector3());
 
       // slot: a tidy two-row shelf, the planned semester
-      const perRow = Math.ceil(BOOK_COUNT / 2);
+      /*
+       * The shelf reflows for portrait. A 2-row shelf spanning ±4.9 needs a
+       * very wide view; on a phone it either overflows the sides or forces the
+       * camera so far back the books become specks. Narrow and tall fits a
+       * portrait screen the way a phone layout should.
+       */
+      const rows = PORTRAIT ? 5 : 2;
+      const halfWidth = PORTRAIT ? 1.75 : 4.0;
+      const rowGap = PORTRAIT ? 0.62 : 1.15;
+      const topRow = PORTRAIT ? 1.35 : 0.72;
+      const perRow = Math.ceil(BOOK_COUNT / rows);
       const col = i % perRow;
       const row = Math.floor(i / perRow);
       const t = perRow > 1 ? col / (perRow - 1) : 0.5;
       const slot = new THREE.Vector3(
-        lerp(-4.9, 4.9, t),
-        0.72 - row * 1.15,
-        -2.6 - Math.sin(t * Math.PI) * 1.6
+        lerp(-halfWidth, halfWidth, t),
+        topRow - row * rowGap,
+        -2.6 - Math.sin(t * Math.PI) * (PORTRAIT ? 0.6 : 1.6)
       );
 
       group.position.copy(home);
@@ -511,19 +542,19 @@ export async function initQuestScene(canvas: HTMLCanvasElement): Promise<QuestSc
 
     mainTl
       /* approach */
-      .to(camRig.position, { z: 5.6, y: 0.42, duration: K, ease: "power1.inOut" }, 0)
+      .to(camRig.position, { z: camZ(8.6), y: 0.42, duration: K, ease: "power1.inOut" }, 0)
 
       /* ACT 1→2 — drifting books close ranks into a shelved semester */
       .to(S, { formation: 1, duration: 3.0, ease: "power2.inOut" }, K + 0.2)
       .to(S, { drift: 0.1, duration: 3.0, ease: "power2.inOut" }, K + 0.2)
       .to(caps[0], { opacity: 1, duration: 0.5 }, K + 0.4)
-      .to(camRig.position, { z: 4.1, y: 0.32, duration: 3.0, ease: "power1.inOut" }, K + 0.4)
+      .to(camRig.position, { z: camZ(7.1), y: 0.32, duration: 3.0, ease: "power1.inOut" }, K + 0.4)
       .to(caps[0], { opacity: 0, duration: 0.5 }, K + 3.6)
 
       /* ACT 3 — the work gets done; study time becomes crystal */
       .to(caps[1], { opacity: 1, duration: 0.5 }, K + 4.1)
       .to(S, { harvest: 1, duration: 4.4, ease: "power1.inOut" }, K + 4.0)
-      .to(camRig.position, { z: 3.1, y: 0.28, duration: 4.4, ease: "power1.inOut" }, K + 4.0)
+      .to(camRig.position, { z: camZ(6.1), y: 0.28, duration: 4.4, ease: "power1.inOut" }, K + 4.0)
       .to(caps[1], { opacity: 0, duration: 0.5 }, K + 8.1)
 
       /* ACT 4 — the summon */
@@ -536,7 +567,7 @@ export async function initQuestScene(canvas: HTMLCanvasElement): Promise<QuestSc
        * Spirit so one hands off to the other instead of cutting.
        */
       .to(S, { charge: 1, duration: 3.2, ease: "power1.in" }, K + 8.4)
-      .to(camRig.position, { z: 2.6, duration: 3.2, ease: "power1.inOut" }, K + 8.4)
+      .to(camRig.position, { z: camZ(5.6), duration: 3.2, ease: "power1.inOut" }, K + 8.4)
       /*
        * `burst` is scrubbed LINEARLY on purpose. Every effect derived from it
        * (shockwave, crystal collapse, shell split, flash) applies its own curve
@@ -562,7 +593,7 @@ export async function initQuestScene(canvas: HTMLCanvasElement): Promise<QuestSc
         scrollTrigger: { trigger: ".cta-band", start: "top 85%", end: "center 45%", scrub: 1.4 },
       })
       .to(spirit.position, { x: 0, y: -0.6, z: 1.4, ease: "power2.out" }, 0)
-      .to(camRig.position, { z: 5.6, y: 0.2, ease: "power2.out" }, 0);
+      .to(camRig.position, { z: camZ(8.6), y: 0.2, ease: "power2.out" }, 0);
   });
 
   // ── mouse parallax ─────────────────────────────────────────────────────

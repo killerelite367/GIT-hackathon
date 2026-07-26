@@ -235,13 +235,22 @@ export default function DocumentScan({
         onChange={pick}
         className="hidden"
       />
+      {/*
+        `sr-only`, not `hidden`, and the difference matters: `hidden` is
+        display:none, and mobile browsers ignore the `capture` attribute on an
+        input that isn't rendered — they silently fall back to the file picker,
+        so "Take photo" opened the file explorer instead of the camera.
+        sr-only keeps the input in the layout (1px, clipped) so capture works.
+      */}
       <input
         ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={pick}
-        className="hidden"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
       />
 
       {error && (
