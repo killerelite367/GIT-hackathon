@@ -22,7 +22,7 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
 
     try {
       // Try Supabase first
-      const { data, error: err } = await signInWithEmail(email, password);
+      const { data } = await signInWithEmail(email, password);
 
       // Always succeed - create local user regardless
       const user = data?.user ?? { email, id: `local_${Date.now()}` };

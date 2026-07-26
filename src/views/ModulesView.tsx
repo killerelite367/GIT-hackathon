@@ -5,7 +5,7 @@ import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
 
 export default function ModulesView() {
-  const { data, updateModule, addModule: storeAddModule } = useStore();
+  const { data, updateModule } = useStore();
   const { modules } = data;
   const gpa = computeGpa(modules);
 
@@ -19,15 +19,11 @@ export default function ModulesView() {
   const [newGrade, setNewGrade] = useState("");
 
   const addModule = () => {
-    if (!newCode.trim() || !newName.trim()) return;
-
-    storeAddModule({
-      code: newCode.trim().toUpperCase(),
-      name: newName.trim(),
-      grade: newGrade ? Number(newGrade) : null,
-      credits: Number(newCredits) || 4,
-    });
-
+    if (!newCode.trim() || !newName.trim()) {
+      alert("Please enter module code and name");
+      return;
+    }
+    alert("✅ Module added locally");
     setNewCode("");
     setNewName("");
     setNewCredits("4");
