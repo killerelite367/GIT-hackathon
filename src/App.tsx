@@ -12,14 +12,16 @@ import RewardsView from "./views/RewardsView";
 import FriendsView from "./views/FriendsView";
 import SettingsView from "./views/SettingsView";
 import LandingPage from "./views/LandingPage";
+import LoginPage from "./views/LoginPage";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
 import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
-import { Settings, Flame, Sun, Moon } from "lucide-react";
+import { Settings, Flame, Sun, Moon, LogOut } from "lucide-react";
 import Logo from "./components/Logo";
 import { useTheme } from "./lib/useTheme";
+import { getCurrentUser, signOut } from "./lib/auth";
 
 /**
  * The landing page lives at the root URL and the app lives at #/app, the way
@@ -42,14 +44,24 @@ export default function App() {
   const [view, setView] = useState<View>("today");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
-  // null = closed; otherwise the tab the import modal should open on.
   const [importTab, setImportTab] = useState<"paste" | "scan" | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
-  // Hash route: "" → landing, "#/app" → the app.
   const [hash, setHash] = useState(() =>
     typeof window === "undefined" ? "" : window.location.hash
   );
+  const [user, setUser] = useState<any>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      setCheckingAuth(false);
+    };
+    checkUser();
+  }, []);
+
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash);
     window.addEventListener("hashchange", onHashChange);
@@ -58,7 +70,7 @@ export default function App() {
   const inApp = hash.startsWith(APP_ROUTE);
 
   const enterApp = () => {
-    window.location.hash = APP_ROUTE.slice(1); // fires hashchange
+    window.location.hash = "#/app"; // fires hashchange
   };
   const showLanding = () => {
     // Drop the hash without leaving a bare "#" behind in the address bar.
@@ -80,8 +92,19 @@ export default function App() {
     setFocusOpen(true);
   };
 
-  // Every hook above runs unconditionally; the route branch comes after.
+  if (checkingAuth) return <div className="min-h-screen bg-black" />;
+
   if (!inApp) return <LandingPage onEnter={enterApp} />;
+
+  if (!user)
+    return (
+      <LoginPage
+        onLogin={(signedIn) => {
+          setUser(signedIn);
+          enterApp();
+        }}
+      />
+    );
 
   const TITLES: Record<View, { kicker: string; heading: string; sub: string }> = {
     today: {
@@ -172,6 +195,18 @@ export default function App() {
                 }`}
               >
                 <Settings size={16} />
+              </button>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  setUser(null);
+                  showLanding();
+                }}
+                aria-label="Sign out"
+                title="Sign out"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-dusk shadow-soft transition hover:text-night active:scale-95"
+              >
+                <LogOut size={16} />
               </button>
             </div>
           </header>

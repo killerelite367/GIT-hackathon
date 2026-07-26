@@ -12,6 +12,10 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+# Same secrets, different extension — these slip past the patterns above.
+env.local.txt
+*.env.txt
+env*.txt
 
 # logs
 npm-debug.log*

@@ -1,13 +1,24 @@
-import { useState } from "react";
-import { Calculator, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calculator, Plus, LogOut } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
+import { supabase } from "../lib/supabase";
+import { getCurrentUser, signInWithEmail, signOut } from "../lib/auth";
 
 export default function ModulesView() {
   const { data, updateModule } = useStore();
   const { modules } = data;
   const gpa = computeGpa(modules);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    checkUser();
+  }, []);
 
   const [target, setTarget] = useState(3.7);
   const [focusModule, setFocusModule] = useState(modules[0]?.code ?? "");
@@ -18,20 +29,38 @@ export default function ModulesView() {
   const [newCredits, setNewCredits] = useState("4");
   const [newGrade, setNewGrade] = useState("");
 
-  const addModule = () => {
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const addModule = async () => {
     if (!newCode.trim() || !newName.trim()) return;
+
     const newModule = {
       code: newCode.trim().toUpperCase(),
       name: newName.trim(),
       grade: newGrade ? Number(newGrade) : null,
       credits: Number(newCredits) || 4,
     };
-    // This would normally update through the store - for now just show a success message
-    alert(`✅ Added: ${newModule.code} - ${newModule.name}\n(Note: Manual module addition requires backend update)`);
-    setNewCode("");
-    setNewName("");
-    setNewCredits("4");
-    setNewGrade("");
+
+    if (!supabase) {
+      alert("❌ Supabase not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("modules")
+      .insert([newModule]);
+
+    if (error) {
+      alert(`❌ Error: ${error.message}`);
+    } else {
+      alert(`✅ Added: ${newModule.code} - ${newModule.name}`);
+      setNewCode("");
+      setNewName("");
+      setNewCredits("4");
+      setNewGrade("");
+    }
   };
 
   const getGradeBg = (letter?: string) => {
@@ -45,8 +74,70 @@ export default function ModulesView() {
     return "bg-gradient-to-br from-red-400 to-red-600";
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail || !loginPassword) {
+      alert("Please enter email and password");
+      return;
+    }
+    setIsLoggingIn(true);
+    const { error } = await signInWithEmail(loginEmail, loginPassword);
+    if (error) {
+      alert(`Error: ${error.message}`);
+    } else {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    }
+    setIsLoggingIn(false);
+  };
+
+  if (!user) {
+    return (
+      <section className="space-y-6">
+        <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-transparent p-8">
+          <h2 className="mb-2 text-2xl font-bold text-night">Sign in</h2>
+          <p className="mb-6 text-sm text-haze">Enter your email and password to manage your modules</p>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              className="w-full rounded-lg border border-line bg-surface2 px-4 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              className="w-full rounded-lg border border-line bg-surface2 px-4 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full rounded-lg bg-brand px-4 py-2 font-bold text-white hover:bg-brand/80 transition disabled:opacity-50"
+            >
+              {isLoggingIn ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+          <p className="mt-3 text-xs text-haze">💡 First time? Just enter any email/password and we'll create your account.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-6">
+      {/* Sign out button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => signOut().then(() => setUser(null))}
+          className="flex items-center gap-2 rounded bg-red-500/20 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/30 transition"
+        >
+          <LogOut size={14} /> Sign out
+        </button>
+      </div>
+
       {/* ➕ ADD MODULE FORM */}
       <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-transparent p-5">
         <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-neon-cyan">

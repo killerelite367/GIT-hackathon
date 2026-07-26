@@ -1,4 +1,5 @@
 import React, { useState, useEffect, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Gem, Sparkles, Info, Check, Zap, Volume2, VolumeX, Clover, Gift } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
@@ -429,12 +430,166 @@ function RarityRow({
   );
 }
 
-type Phase = "charge" | "burst" | "awaken" | "cards";
+type Phase = "cutscene" | "charge" | "burst" | "awaken" | "cards";
 
 // Timing of the summon cinematic (ms).
+const CUTSCENE_MS = 2900; // must match .cs-* keyframe durations in index.css
 const CHARGE_MS = 1500;
 const BURST_MS = 480;
 const AWAKEN_MS = 7000;
+
+/** Capsules tumbling inside the machine's glass dome. */
+const CAPSULES = [
+  { cx: 96, cy: 78, a: "#ff6fd6", b: "#ffe14d", jx: "5px" },
+  { cx: 128, cy: 70, a: "#5fd0ff", b: "#ffffff", jx: "-6px" },
+  { cx: 160, cy: 80, a: "#a98bff", b: "#7dffd0", jx: "4px" },
+  { cx: 110, cy: 106, a: "#5fffb0", b: "#ffffff", jx: "-4px" },
+  { cx: 146, cy: 108, a: "#ff9a3d", b: "#ffe14d", jx: "6px" },
+  { cx: 128, cy: 96, a: "#ffe14d", b: "#ff6fd6", jx: "-3px" },
+];
+
+/** Marquee bulbs ringing the machine's crown. */
+const BULBS = [
+  { x: 78, y: 40 }, { x: 100, y: 31 }, { x: 128, y: 28 },
+  { x: 156, y: 31 }, { x: 178, y: 40 },
+];
+
+/** Background stars for the wish sky the comet crosses. */
+const SKY_STARS = Array.from({ length: 46 }, (_, i) => ({
+  x: `${(i * 37) % 100}%`,
+  y: `${(i * 53) % 100}%`,
+  r: 1 + (i % 3),
+  delay: `${(i % 9) * 0.32}s`,
+}));
+
+/**
+ * The pre-summon cutscene: before any energy gathers, you actually watch the
+ * machine work. Camera pushes in, the crank turns, the drum rumbles, and a
+ * single capsule drops down the chute — glowing in the colour of whatever is
+ * about to come out, which is the tease every gacha game lives on.
+ */
+function SummonCutscene({ glow, label }: { glow: string; label: string }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+      {/* ── the wish sky ── starfield the comet crosses ── */}
+      <div
+        className="cs-sky absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 40%, #1b1b3a 0%, #0a0a16 55%, #05050b 100%)",
+        }}
+      />
+      <div className="absolute inset-0 opacity-70">
+        {SKY_STARS.map((s, i) => (
+          <span
+            key={i}
+            className="gq-twinkle absolute rounded-full bg-white"
+            style={{
+              left: s.x,
+              top: s.y,
+              width: s.r,
+              height: s.r,
+              animationDelay: s.delay,
+              boxShadow: "0 0 6px rgba(255,255,255,0.9)",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── the wish comet ── streaks in and slams into the machine ── */}
+      <div className="absolute left-1/2 top-1/2 flex items-center justify-center">
+        <div className="cs-comet relative flex items-center justify-center">
+          {/* tail, laid along the incoming diagonal */}
+          <span
+            className="cs-tail absolute h-1.5 w-[46vw] rounded-full"
+            style={{
+              background: `linear-gradient(to left, ${glow}, transparent)`,
+              transform: "rotate(36deg)",
+              right: 0,
+              filter: `blur(2px) drop-shadow(0 0 12px ${glow})`,
+            }}
+          />
+          <span
+            className="h-6 w-6 rounded-full bg-white"
+            style={{ boxShadow: `0 0 30px 10px ${glow}, 0 0 70px 24px ${glow}` }}
+          />
+        </div>
+        {/* impact shockwave at the landing point */}
+        <div
+          className="cs-impact-ring absolute h-40 w-40 rounded-full border-2"
+          style={{ borderColor: glow, boxShadow: `0 0 40px ${glow}` }}
+        />
+      </div>
+
+      <div className="cs-stage relative">
+        <svg width="256" height="330" viewBox="0 0 256 330" className="cs-rumble overflow-visible">
+          {/* rarity-coloured light spilling out from behind the machine */}
+          <circle className="cs-tease" cx="128" cy="96" r="86" fill={glow} opacity="0.5"
+            style={{ filter: "blur(26px)" }} />
+
+          {/* crown + marquee bulbs */}
+          <rect x="66" y="34" width="124" height="16" rx="8" fill="#2a2a3d" />
+          {BULBS.map((b, i) => (
+            <circle key={i} className="cs-bulb" cx={b.x} cy={b.y} r="4.5" fill={glow}
+              style={{ animationDelay: `${i * 0.09}s`, filter: `drop-shadow(0 0 6px ${glow})` }} />
+          ))}
+
+          {/* glass dome */}
+          <circle cx="128" cy="96" r="72" fill="rgba(255,255,255,0.07)"
+            stroke="rgba(255,255,255,0.35)" strokeWidth="3" />
+          {/* capsules tumbling inside */}
+          <g clipPath="url(#dome)">
+            {CAPSULES.map((c, i) => (
+              <g key={i} className="cs-jostle"
+                style={{ ["--jx" as string]: c.jx, transformOrigin: `${c.cx}px ${c.cy}px`,
+                         animationDelay: `${i * 0.05}s` }}>
+                <circle cx={c.cx} cy={c.cy} r="15" fill={c.b} />
+                <path d={`M ${c.cx - 15} ${c.cy} a 15 15 0 0 1 30 0 z`} fill={c.a} />
+                <circle cx={c.cx} cy={c.cy} r="15" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" />
+              </g>
+            ))}
+          </g>
+          <clipPath id="dome"><circle cx="128" cy="96" r="70" /></clipPath>
+          {/* glass highlight */}
+          <ellipse cx="104" cy="66" rx="20" ry="28" fill="rgba(255,255,255,0.18)" transform="rotate(-28 104 66)" />
+
+          {/* machine body */}
+          <rect x="56" y="164" width="144" height="126" rx="14" fill="#20202f"
+            stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" />
+          <rect x="56" y="164" width="144" height="12" rx="6" fill="#33334a" />
+
+          {/* crank */}
+          <circle cx="128" cy="208" r="21" fill="#33334a" stroke="rgba(255,255,255,0.25)" strokeWidth="2" />
+          <g className="cs-crank" style={{ transformOrigin: "128px 208px" }}>
+            <rect x="124" y="190" width="8" height="24" rx="4" fill={glow} />
+            <circle cx="128" cy="190" r="6" fill="#fff" />
+          </g>
+
+          {/* chute mouth */}
+          <rect x="92" y="242" width="72" height="40" rx="8" fill="#12121c"
+            stroke="rgba(255,255,255,0.18)" strokeWidth="2" />
+          {/* the capsule that drops */}
+          <g className="cs-drop" style={{ transformOrigin: "128px 210px" }}>
+            <circle cx="128" cy="210" r="17" fill="#fff" />
+            <path d="M 111 210 a 17 17 0 0 1 34 0 z" fill={glow} />
+            <circle cx="128" cy="210" r="17" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
+            <circle cx="128" cy="210" r="24" fill="none" stroke={glow} strokeWidth="1.5" opacity="0.6"
+              style={{ filter: `drop-shadow(0 0 10px ${glow})` }} />
+          </g>
+        </svg>
+      </div>
+
+      {/* title card */}
+      <p className="cs-title mt-6 font-mono text-sm font-bold uppercase text-white"
+        style={{ textShadow: `0 0 20px ${glow}` }}>
+        {label}
+      </p>
+
+      {/* white wipe that hands off into the charge phase */}
+      <div className="cs-handoff absolute inset-0" style={{ background: glow }} />
+    </div>
+  );
+}
 
 /** Small icon shown next to the rarity label so tiers read at a glance. */
 const RARITY_ICON: Record<Rarity, string> = {
@@ -467,25 +622,53 @@ function RevealOverlay({
   );
   const bestMeta = RARITY[best.spirit.rarity];
   const grand = bestMeta.tier >= AWAKEN_TIER; // legendary+ gets the awakening
-  const group = destructionGroup(best.spirit.rarity); // GDD machine-destruction cinematic
-  const themeBackground = getThemeBackground(best.spirit.name);
+
+  /**
+   * Every legendary-or-better in this pull gets its own awakening, played back
+   * to back. Sorted weakest → rarest so a lucky multi builds to its best hero
+   * instead of peaking on pull #1 and limping to the end.
+   */
+  const queue = outcomes
+    .filter((o) => RARITY[o.spirit.rarity].tier >= AWAKEN_TIER)
+    .sort((a, b) => RARITY[a.spirit.rarity].tier - RARITY[b.spirit.rarity].tier);
 
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "charge");
+  const [phase, setPhase] = useState<Phase>(reduced ? "cards" : "cutscene");
+  const [queueIdx, setQueueIdx] = useState(0);
+
+  // The hero currently on stage — during the awakening that's whoever is up in
+  // the queue; everywhere else the pull's headline act sets the mood.
+  const hero = queue[queueIdx] ?? best;
+  const group = destructionGroup(hero.spirit.rarity); // GDD machine-destruction cinematic
+  const themeBackground = getThemeBackground(hero.spirit.name);
+  // Before the awakening nobody has been revealed yet, so the stage teases the
+  // best pull; once heroes start walking out it tracks whoever is on stage.
+  const stageMeta = phase === "awaken" ? RARITY[hero.spirit.rarity] : bestMeta;
 
   // Reveal chime fires immediately (ties to the explosion); the spoken
   // catchphrase is held until the power-up lands and the bubble pops in,
   // so the voice feels connected to the character, not the explosion.
-  const speakBest = () => {
-    playReveal(best.spirit.rarity);
-    const line = voiceLine(best.spirit);
+  const speakHero = (o: PullOutcome) => {
+    playReveal(o.spirit.rarity);
+    const line = voiceLine(o.spirit);
     window.setTimeout(() => {
-      speak(line, best.spirit.rarity);
-      playTalk(line, best.spirit.rarity);
+      speak(line, o.spirit.rarity);
+      playTalk(line, o.spirit.rarity);
     }, 2150);
+  };
+
+  /** Hand off to the next queued hero, or to the card summary if that was the last. */
+  const advanceQueue = () => {
+    if (queueIdx < queue.length - 1) {
+      const next = queueIdx + 1;
+      setQueueIdx(next);
+      speakHero(queue[next]);
+    } else {
+      setPhase("cards");
+    }
   };
 
   useEffect(() => {
@@ -495,41 +678,51 @@ function RevealOverlay({
     }
     // Higher rarity = longer, more dramatic charge.
     const chargeMs = CHARGE_MS + bestMeta.tier * 220;
-    playCharge(chargeMs);
     const timers: number[] = [];
+    // The machine cinematic runs first; energy only starts gathering after it.
+    timers.push(
+      window.setTimeout(() => {
+        setPhase("charge");
+        playCharge(chargeMs);
+      }, CUTSCENE_MS)
+    );
     timers.push(
       window.setTimeout(() => {
         setPhase("burst");
         playBurst();
-      }, chargeMs)
+      }, CUTSCENE_MS + chargeMs)
     );
     timers.push(
       window.setTimeout(() => {
         if (grand) {
           setPhase("awaken");
-          speakBest();
+          speakHero(queue[0]);
         } else {
           setPhase("cards");
           playReveal(best.spirit.rarity);
         }
-      }, chargeMs + BURST_MS)
+      }, CUTSCENE_MS + chargeMs + BURST_MS)
     );
-    if (grand) {
-      timers.push(
-        window.setTimeout(() => setPhase("cards"), chargeMs + BURST_MS + AWAKEN_MS)
-      );
-    }
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Tap advances: charge/burst → reveal, awaken → cards, cards → dismiss.
+  // Each awakening gets its own timer, so a multi-pull with several legendaries
+  // walks the queue instead of cutting to the cards after the first one.
+  useEffect(() => {
+    if (phase !== "awaken" || reduced) return;
+    const t = window.setTimeout(advanceQueue, AWAKEN_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, queueIdx]);
+
+  // Tap advances: cutscene/charge/burst → awakening, awaken → next hero, cards → dismiss.
   const handleBackdrop = () => {
     if (phase === "cards") onClose();
-    else if (phase === "awaken") setPhase("cards");
+    else if (phase === "awaken") advanceQueue();
     else if (grand) {
       setPhase("awaken");
-      speakBest();
+      speakHero(queue[0]);
     } else {
       setPhase("cards");
       playReveal(best.spirit.rarity);
@@ -544,10 +737,16 @@ function RevealOverlay({
     };
   }, []);
 
-  return (
+  /**
+   * Portalled to <body> on purpose. The view container carries a `transform`
+   * from `animate-viewin`, and a transformed ancestor becomes the containing
+   * block for `position: fixed` — which pinned this overlay to a 4000px-tall
+   * panel instead of the viewport and pushed the hero far below the fold.
+   */
+  return createPortal(
     <div
       onClick={handleBackdrop}
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-6 backdrop-blur-md ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden p-4 backdrop-blur-md sm:p-6 ${
         phase === "awaken" && themeBackground ? "" : phase !== "cards" ? GROUP_ENV[group] : "bg-black/90"
       } ${phase === "burst" && group !== "conveyor" ? "vfx-screen-shake-heavy" : ""}`}
       style={{
@@ -555,17 +754,23 @@ function RevealOverlay({
         background: phase === "awaken" && themeBackground ? `${themeBackground}` : undefined,
       }}
     >
-      {/* rotating beams tinted by the incoming rarity */}
+      {/* rotating beams tinted by the incoming rarity (the hero on stage once
+          the awakening starts, the headline act before that) */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div
           className="gq-beams h-[200vh] w-[200vh] opacity-25"
-          style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}
+          style={{ filter: `drop-shadow(0 0 40px ${stageMeta.glow})` }}
         />
       </div>
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: `radial-gradient(circle at 50% 45%, ${bestMeta.glow}, transparent 60%)` }}
+        style={{ background: `radial-gradient(circle at 50% 45%, ${stageMeta.glow}, transparent 60%)` }}
       />
+
+      {/* ── CUTSCENE ── the wish comet falls and the machine works ── */}
+      {phase === "cutscene" && (
+        <SummonCutscene glow={bestMeta.glow} label="Summoning" />
+      )}
 
       {/* ── CHARGE ── energy gathers into a shaking, growing orb ── */}
       {phase === "charge" && (
@@ -629,141 +834,15 @@ function RevealOverlay({
         </div>
       )}
 
-      {/* ── AWAKEN ── the star flies out, wakes up, and SPEAKS (legendary+) ── */}
+      {/* ── AWAKEN ── every legendary+ wakes and SPEAKS, one hero at a time ── */}
       {phase === "awaken" && (
-        <div
-          className={`relative flex flex-col items-center gap-5 ${
-            bestMeta.tier >= RARITY.demon.tier ? "gq-tremble" : ""
-          } ${bestMeta.tier >= RARITY.secret.tier ? "gq-invert" : ""}`}
-        >
-          {/* escalating effects — richer for each higher rarity */}
-          <AwakenEffects
-            tier={bestMeta.tier}
-            glow={bestMeta.glow}
-            rainbow={!!best.spirit.art.rainbow}
-          />
-          {CONFETTI.map((c, i) => (
-            <span
-              key={i}
-              className="pointer-events-none absolute top-0 text-xl"
-              style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
-            >
-              {c.e}
-            </span>
-          ))}
-
-          <p
-            className={`font-mono text-sm font-bold uppercase tracking-[0.35em] ${bestMeta.text}`}
-            style={{ animation: "gacha-rise 0.5s ease-out both", textShadow: `0 0 18px ${bestMeta.glow}` }}
-          >
-            {bestMeta.label}
-          </p>
-
-          {/* the crystal HATCHES — cracks, splits open, the hero rises out of
-              the light, gets knocked, then BURSTS with power, then walks/talks */}
-          <div className="sp-stroll relative flex h-40 w-40 items-center justify-center">
-            {/* the crystal shell, sitting where the charge-orb ended up */}
-            <div className="shell-crack pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div
-                className="shell-half-l absolute h-24 w-14 origin-right rounded-l-full"
-                style={{ right: "50%", background: `linear-gradient(135deg, #fff, ${bestMeta.glow})`, boxShadow: `0 0 30px 4px ${bestMeta.glow}` }}
-              />
-              <div
-                className="shell-half-r absolute h-24 w-14 origin-left rounded-r-full"
-                style={{ left: "50%", background: `linear-gradient(315deg, #fff, ${bestMeta.glow})`, boxShadow: `0 0 30px 4px ${bestMeta.glow}` }}
-              />
-            </div>
-            {/* light bloom the instant it splits */}
-            <div
-              className="hatch-flash pointer-events-none absolute h-40 w-40 rounded-full"
-              style={{ background: `radial-gradient(circle, #fff, ${bestMeta.glow} 55%, transparent 75%)` }}
-            />
-
-            {/* power-up ring + light beam, timed to the post-hatch impact burst */}
-            <div
-              className="power-ring pointer-events-none absolute h-40 w-40 rounded-full border-4"
-              style={{ borderColor: bestMeta.glow, boxShadow: `0 0 40px 4px ${bestMeta.glow}` }}
-            />
-            <div
-              className="power-beam pointer-events-none absolute h-64 w-10"
-              style={{ background: `linear-gradient(to bottom, transparent, ${bestMeta.glow}, transparent)` }}
-            />
-
-            {/* RGB-split ghost duplicates — ??? only */}
-            {bestMeta.tier >= RARITY.secret.tier && (
-              <>
-                <div className="gq-rgb-r pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(-50deg)" }}>
-                  <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
-                </div>
-                <div className="gq-rgb-b pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(150deg)" }}>
-                  <SpiritArt spirit={best.spirit} size={190} talking walking={false} />
-                </div>
-              </>
-            )}
-
-            {/* rising flame particles licking up around the hero — demon only */}
-            {bestMeta.tier === RARITY.demon.tier &&
-              FLAMES.map((f, i) => (
-                <span
-                  key={i}
-                  className="gq-flame pointer-events-none absolute bottom-2 text-2xl"
-                  style={{ left: f.x, animationDelay: `${f.delay}s` }}
-                >
-                  🔥
-                </span>
-              ))}
-
-            <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${bestMeta.glow})` }}>
-              <div className="sp-impact">
-                <div className="sp-hop">
-                  <CharacterArt spirit={best.spirit} size={best.spirit.element ? 140 : 130} talking />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* speech bubble — appears right as the power-up lands, not before */}
-          <div
-            className="bubble-pop relative max-w-xs rounded-2xl border-2 bg-panel/95 px-5 py-3 text-center opacity-0"
-            style={{
-              borderColor: bestMeta.glow,
-              boxShadow: `0 0 30px -8px ${bestMeta.glow}`,
-              animationDelay: "2.15s",
-            }}
-          >
-            <p className="font-display text-base font-bold text-white">
-              “{voiceLine(best.spirit)}”
-            </p>
-            <span
-              className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l-2 border-t-2 bg-panel"
-              style={{ borderColor: bestMeta.glow }}
-            />
-          </div>
-
-          <div
-            className="flex flex-col items-center opacity-0"
-            style={{ animation: "gacha-rise 0.6s ease-out 2.3s both" }}
-          >
-            <p className="text-center font-display text-2xl font-extrabold text-white">
-              {best.spirit.name}
-            </p>
-            {best.spirit.title && (
-              <p className={`mt-0.5 font-mono text-[11px] uppercase tracking-widest ${bestMeta.text}`}>
-                “{best.spirit.title}”
-              </p>
-            )}
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setPhase("cards");
-            }}
-            className="rounded-xl border border-white/25 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white transition hover:scale-105"
-          >
-            Continue
-          </button>
-          <p className="text-[11px] text-white/40">tap anywhere to continue</p>
-        </div>
+        <AwakenStage
+          key={queueIdx} // remount so the whole cinematic replays per hero
+          outcome={hero}
+          index={queueIdx}
+          total={queue.length}
+          onContinue={advanceQueue}
+        />
       )}
 
       {/* ── CARDS ── the reveal ── */}
@@ -856,9 +935,238 @@ function RevealOverlay({
       )}
 
       {phase !== "cards" && (
-        <p className="absolute bottom-8 text-[11px] text-white/30">tap to skip</p>
+        <p className="absolute bottom-3 text-[11px] text-white/30">tap to skip</p>
       )}
+    </div>,
+    document.body
+  );
+}
+
+/**
+ * One hero's awakening. Rendered with a `key` so that every spirit in a
+ * multi-pull queue replays the full cinematic from frame one instead of
+ * cross-fading into the previous hero's half-finished animation.
+ */
+function AwakenStage({
+  outcome,
+  index,
+  total,
+  onContinue,
+}: {
+  outcome: PullOutcome;
+  index: number;
+  total: number;
+  onContinue: () => void;
+}) {
+  const meta = RARITY[outcome.spirit.rarity];
+  const { spirit } = outcome;
+
+  return (
+    <div
+      className={`relative flex max-h-full flex-col items-center justify-center gap-2 sm:gap-4 ${
+        meta.tier >= RARITY.demon.tier ? "gq-tremble" : ""
+      } ${meta.tier >= RARITY.secret.tier ? "gq-invert" : ""}`}
+    >
+      {/* escalating effects — richer for each higher rarity */}
+      <AwakenEffects tier={meta.tier} glow={meta.glow} rainbow={!!spirit.art.rainbow} />
+
+      {/* Saint Seiya cosmos — constellation ignites behind the hero, brighter
+          the rarer they are. Purely decorative, sits under everything. */}
+      <ConstellationField tier={meta.tier} glow={meta.glow} />
+
+      {CONFETTI.map((c, i) => (
+        <span
+          key={i}
+          className="pointer-events-none absolute top-0 text-xl"
+          style={{ left: c.x, animation: `spark-fall ${c.dur} linear ${c.delay} infinite` }}
+        >
+          {c.e}
+        </span>
+      ))}
+
+      {/* "hero 2 of 3" — only when a multi actually landed several legendaries.
+          Kept in normal flow so it can never clip off the top of the stage. */}
+      {total > 1 && (
+        <div className="queue-pip flex items-center gap-1.5">
+          {Array.from({ length: total }).map((_, i) => (
+            <span
+              key={i}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: i === index ? 22 : 8,
+                background: i <= index ? meta.glow : "rgba(255,255,255,0.22)",
+                boxShadow: i === index ? `0 0 10px ${meta.glow}` : undefined,
+              }}
+            />
+          ))}
+          <span className="ml-2 font-mono text-[10px] uppercase tracking-widest text-white/50">
+            {index + 1} / {total}
+          </span>
+        </div>
+      )}
+
+      <p
+        className={`font-mono text-sm font-bold uppercase tracking-[0.35em] ${meta.text}`}
+        style={{ animation: "gacha-rise 0.5s ease-out both", textShadow: `0 0 18px ${meta.glow}` }}
+      >
+        {meta.label}
+      </p>
+
+      {/* the crystal HATCHES — cracks, splits open, the hero rises out of
+          the light, gets knocked, then BURSTS with power, then walks/talks */}
+      <div className="sp-stroll relative flex h-40 w-40 items-center justify-center">
+        {/* the crystal shell, sitting where the charge-orb ended up */}
+        <div className="shell-crack pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div
+            className="shell-half-l absolute h-24 w-14 origin-right rounded-l-full"
+            style={{ right: "50%", background: `linear-gradient(135deg, #fff, ${meta.glow})`, boxShadow: `0 0 30px 4px ${meta.glow}` }}
+          />
+          <div
+            className="shell-half-r absolute h-24 w-14 origin-left rounded-r-full"
+            style={{ left: "50%", background: `linear-gradient(315deg, #fff, ${meta.glow})`, boxShadow: `0 0 30px 4px ${meta.glow}` }}
+          />
+        </div>
+        {/* light bloom the instant it splits */}
+        <div
+          className="hatch-flash pointer-events-none absolute h-40 w-40 rounded-full"
+          style={{ background: `radial-gradient(circle, #fff, ${meta.glow} 55%, transparent 75%)` }}
+        />
+
+        {/* power-up ring + light beam, timed to the post-hatch impact burst */}
+        <div
+          className="power-ring pointer-events-none absolute h-40 w-40 rounded-full border-4"
+          style={{ borderColor: meta.glow, boxShadow: `0 0 40px 4px ${meta.glow}` }}
+        />
+        <div
+          className="power-beam pointer-events-none absolute h-64 w-10"
+          style={{ background: `linear-gradient(to bottom, transparent, ${meta.glow}, transparent)` }}
+        />
+
+        {/* RGB-split ghost duplicates — ??? only */}
+        {meta.tier >= RARITY.secret.tier && (
+          <>
+            <div className="gq-rgb-r pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(-50deg)" }}>
+              <SpiritArt spirit={spirit} size={190} talking walking={false} />
+            </div>
+            <div className="gq-rgb-b pointer-events-none absolute mix-blend-screen" style={{ filter: "sepia(1) saturate(6) hue-rotate(150deg)" }}>
+              <SpiritArt spirit={spirit} size={190} talking walking={false} />
+            </div>
+          </>
+        )}
+
+        {/* rising flame particles licking up around the hero — demon only */}
+        {meta.tier === RARITY.demon.tier &&
+          FLAMES.map((f, i) => (
+            <span
+              key={i}
+              className="gq-flame pointer-events-none absolute bottom-2 text-2xl"
+              style={{ left: f.x, animationDelay: `${f.delay}s` }}
+            >
+              🔥
+            </span>
+          ))}
+
+        <div className="sp-hatch" style={{ filter: `drop-shadow(0 0 40px ${meta.glow})` }}>
+          <div className="sp-impact">
+            <div className="sp-hop">
+              <CharacterArt spirit={spirit} size={spirit.element ? 140 : 130} talking />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* speech bubble — appears right as the power-up lands, not before */}
+      <div
+        className="bubble-pop relative max-w-xs rounded-2xl border-2 bg-panel/95 px-5 py-3 text-center opacity-0"
+        style={{
+          borderColor: meta.glow,
+          boxShadow: `0 0 30px -8px ${meta.glow}`,
+          animationDelay: "2.15s",
+        }}
+      >
+        <p className="font-display text-base font-bold text-white">“{voiceLine(spirit)}”</p>
+        <span
+          className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l-2 border-t-2 bg-panel"
+          style={{ borderColor: meta.glow }}
+        />
+      </div>
+
+      <div
+        className="flex flex-col items-center opacity-0"
+        style={{ animation: "gacha-rise 0.6s ease-out 2.3s both" }}
+      >
+        <p className="text-center font-display text-2xl font-extrabold text-white">{spirit.name}</p>
+        {spirit.title && (
+          <p className={`mt-0.5 font-mono text-[11px] uppercase tracking-widest ${meta.text}`}>
+            “{spirit.title}”
+          </p>
+        )}
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onContinue();
+        }}
+        className="rounded-xl border border-white/25 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white transition hover:scale-105"
+      >
+        {index < total - 1 ? `Next hero (${index + 2}/${total})` : "Continue"}
+      </button>
+      <p className="text-[11px] text-white/40">
+        {index < total - 1 ? "tap anywhere for the next hero" : "tap anywhere to continue"}
+      </p>
     </div>
+  );
+}
+
+/** Fixed constellation, drawn once so the same stars appear every summon. */
+const STARS = [
+  { x: 18, y: 30 }, { x: 34, y: 16 }, { x: 50, y: 34 }, { x: 66, y: 14 },
+  { x: 80, y: 32 }, { x: 60, y: 56 }, { x: 40, y: 62 }, { x: 24, y: 50 },
+];
+
+/**
+ * Saint Seiya-style cosmos: stars ignite and the lines between them draw
+ * themselves in, so the hero arrives under their own constellation. Only the
+ * higher tiers earn the full figure — legendary gets a sparse sky.
+ */
+function ConstellationField({ tier, glow }: { tier: number; glow: string }) {
+  const shown = Math.min(STARS.length, 4 + (tier - AWAKEN_TIER) * 2);
+  const pts = STARS.slice(0, shown);
+  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+
+  return (
+    <svg
+      className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[105vh] w-[105vh] -translate-x-1/2 -translate-y-1/2 opacity-60"
+      viewBox="0 0 100 78"
+      aria-hidden="true"
+    >
+      <path
+        d={path}
+        fill="none"
+        stroke={glow}
+        strokeWidth="0.25"
+        strokeLinecap="round"
+        pathLength={1}
+        style={{
+          filter: `drop-shadow(0 0 1px ${glow})`,
+          strokeDasharray: 1,
+          animation: "constellation-draw 2.4s ease-out 0.3s both",
+        }}
+      />
+      {pts.map((p, i) => (
+        <circle
+          key={i}
+          cx={p.x}
+          cy={p.y}
+          r="0.7"
+          fill="#fff"
+          style={{
+            filter: `drop-shadow(0 0 2px ${glow})`,
+            animation: `star-ignite 0.6s ease-out ${0.3 + i * 0.16}s both`,
+          }}
+        />
+      ))}
+    </svg>
   );
 }
 

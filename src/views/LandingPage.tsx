@@ -132,7 +132,14 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
         </header>
 
-        {/* ── Pinned 3D scene: the study loop, ending in a summon ── */}
+        {/*
+          Pinned 3D scene: the study loop, ending in a summon.
+
+          This replaces the static emoji-grid gacha section that landed on main
+          in parallel — the same pitch, but played out in the 3D scene below
+          rather than told twice. That version also hardcoded a #00ff41 neon
+          green, which is outside the token set and doesn't survive light mode.
+        */}
         <section className="loop-scene" id="loop" aria-label="The StudyQuest loop">
           <div className="loop-pin">
             <div className="caption-stack">
