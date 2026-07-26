@@ -27,7 +27,9 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
       setError(errorMsg || "Sign in failed");
       console.error("Sign in failed:", err);
     } else {
-      onLogin(data?.user ?? { email });
+      const user = data?.user ?? { email, id: `local_${Date.now()}` };
+      localStorage.setItem("local_user", JSON.stringify(user));
+      onLogin(user);
     }
   };
 
@@ -56,12 +58,15 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
       setError(errorMsg || "Sign up failed");
       console.error("Sign up failed:", err);
     } else {
+      // Auto-login after successful signup
+      const user = { email, id: `local_${Date.now()}` };
+      localStorage.setItem("local_user", JSON.stringify(user));
       setError("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-      alert("✅ Account created! Please sign in.");
-      setTab("signin");
+      // Call onLogin directly instead of showing alert
+      setTimeout(() => onLogin(user), 100);
     }
   };
 

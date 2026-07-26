@@ -62,11 +62,24 @@ export async function getCurrentUser() {
   if (!supabase) return null;
 
   const { data: { user } } = await supabase.auth.getUser();
-  return user;
+
+  // If Supabase has a valid session, use it
+  if (user) return user;
+
+  // Otherwise check if we have a local login stored
+  const localUser = localStorage.getItem("local_user");
+  if (localUser) {
+    return JSON.parse(localUser);
+  }
+
+  return null;
 }
 
 export async function signOut() {
-  if (!supabase) return { error: "Supabase not configured" };
+  // Clear local user
+  localStorage.removeItem("local_user");
+
+  if (!supabase) return { error: null };
 
   try {
     const { error } = await supabase.auth.signOut();
