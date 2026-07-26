@@ -65,7 +65,7 @@ export default function App() {
     // Listen for auth state changes (OAuth redirects, email login, etc.)
     if (supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async () => {
           const currentUser = await getCurrentUser();
           setUser(currentUser);
         }

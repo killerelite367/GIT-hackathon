@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
-import { Sprout, Sparkles, BookOpen, Coffee, X, Heart } from "lucide-react";
+import { Sprout, Sparkles, BookOpen, Coffee, Heart } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import { SPIRIT_BY_ID, RARITY, type Spirit } from "../lib/gacha";
-import { computeGpa, scoreToGrade } from "../lib/gpa";
+import { computeGpa } from "../lib/gpa";
 
 const GRID_SIZE = 4; // 4x4 = 16 slots, expandable later
 
@@ -74,7 +74,7 @@ export default function GardenView() {
     if (!draggedSpirit) return;
 
     const existingInSlot = Object.entries(game.garden).find(
-      ([k, v]) => k === slot
+      ([k]) => k === slot
     )?.[1];
     if (existingInSlot && existingInSlot === draggedSpirit) return; // already there
 
