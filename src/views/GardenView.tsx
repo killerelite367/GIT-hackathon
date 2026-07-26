@@ -38,12 +38,7 @@ function gardenHealth(done: number, total: number) {
 }
 
 function gardenLuck(ids: string[]): number {
-  let luck = 0;
-  for (const id of ids) {
-    const s = SPIRIT_BY_ID[id];
-    if (s) luck += 0.5 + RARITY[s.rarity].tier * 0.4;
-  }
-  return Math.round(luck * 10) / 10;
+  return Math.round(ids.length * 2.5 * 10) / 10; // 2.5% per item placed
 }
 
 export default function GardenView() {
