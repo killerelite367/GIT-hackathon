@@ -1,23 +1,11 @@
-import { useState } from "react";
-import { Sprout, Sparkles, BookOpen, Coffee, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Sprout, Sparkles, BookOpen, Coffee, X, Heart } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import { SPIRIT_BY_ID, RARITY, type Spirit } from "../lib/gacha";
 import { computeGpa, scoreToGrade } from "../lib/gpa";
 
-const MAX_PLANTS = 8;
-
-/** Scatter positions across the scenic garden foreground (nearer = bigger). */
-const SPOTS = [
-  { x: "11%", y: "50%", s: 0.9 },
-  { x: "31%", y: "58%", s: 1.05 },
-  { x: "52%", y: "50%", s: 0.85 },
-  { x: "71%", y: "58%", s: 1.1 },
-  { x: "88%", y: "51%", s: 0.9 },
-  { x: "20%", y: "76%", s: 1.35 },
-  { x: "50%", y: "80%", s: 1.45 },
-  { x: "78%", y: "75%", s: 1.3 },
-];
+const GRID_SIZE = 4; // 4x4 = 16 slots, expandable later
 
 function gardenHealth(done: number, total: number) {
   const ratio = total === 0 ? 1 : done / total;
@@ -53,15 +41,17 @@ export default function GardenView() {
   const { data, placeInGarden, removeFromGarden } = useStore();
   const { game, assignments, modules } = data;
   const [selected, setSelected] = useState<string | null>(null);
+  const [draggedSpirit, setDraggedSpirit] = useState<string | null>(null);
   const [studyMode, setStudyMode] = useState(false);
+  const [likes, setLikes] = useState(data.game.gardenLikes ?? 0);
+  const [liked, setLiked] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const done = assignments.filter((a) => a.completed).length;
   const health = gardenHealth(done, assignments.length);
   const gpa = computeGpa(modules);
-  const placed = Object.entries(game.garden).slice(0, MAX_PLANTS); // [key, spiritId]
-  const placedIds = placed.map(([, id]) => id);
+  const placedIds = Object.values(game.garden);
   const luck = gardenLuck(placedIds);
-  const full = placed.length >= MAX_PLANTS;
 
   const placedSet = new Set(placedIds);
   const tray: Spirit[] = Object.keys(game.spirits)
@@ -69,17 +59,58 @@ export default function GardenView() {
     .filter((s): s is Spirit => !!s && !placedSet.has(s.id))
     .sort((a, b) => RARITY[b.rarity].tier - RARITY[a.rarity].tier);
 
-  function plant() {
-    if (!selected || full) return;
-    for (let i = 0; i < MAX_PLANTS; i++) {
-      const key = `p${i}`;
-      if (!game.garden[key]) {
-        placeInGarden(selected, key);
-        setSelected(null);
-        return;
-      }
+  function handleDragStart(e: React.DragEvent, spiritId: string) {
+    setDraggedSpirit(spiritId);
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+
+  function handleDropOnSlot(e: React.DragEvent, slot: string) {
+    e.preventDefault();
+    if (!draggedSpirit) return;
+
+    const existingInSlot = Object.entries(game.garden).find(
+      ([k, v]) => k === slot
+    )?.[1];
+    if (existingInSlot && existingInSlot === draggedSpirit) return; // already there
+
+    // If dragging from tray, just place it
+    placeInGarden(draggedSpirit, slot);
+    setDraggedSpirit(null);
+    setSelected(null);
+  }
+
+  function handleClickSlot(slot: string) {
+    // If a tray item is selected, place it on click
+    if (selected) {
+      placeInGarden(selected, slot);
+      setSelected(null);
+      return;
+    }
+    // If slot has a spirit, remove it
+    if (game.garden[slot]) {
+      removeFromGarden(slot);
     }
   }
+
+  function toggleLike() {
+    if (liked) {
+      setLikes(Math.max(0, likes - 1));
+    } else {
+      setLikes(likes + 1);
+    }
+    setLiked(!liked);
+  }
+
+  const slots = Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => {
+    const row = Math.floor(i / GRID_SIZE);
+    const col = i % GRID_SIZE;
+    return `${row},${col}`;
+  });
 
   return (
     <section className="space-y-5">
@@ -91,24 +122,35 @@ export default function GardenView() {
           </div>
           <div>
             <h2 className="font-display text-xl font-semibold tracking-tightish text-white">GPA Garden</h2>
-            <p className="text-sm text-white/50">Your garden reflects your real progress. Plant pets for luck.</p>
+            <p className="text-sm text-white/50">Drag spirits to place. Build your garden.</p>
           </div>
         </div>
-        <button
-          onClick={() => setStudyMode((v) => !v)}
-          className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition ${
-            studyMode ? "border-neon-purple/50 bg-neon-purple/15 text-neon-purple" : "border-edge text-white/60 hover:text-white"
-          }`}
-        >
-          {studyMode ? <BookOpen size={15} /> : <Coffee size={15} />}
-          {studyMode ? "Study mode" : "Rest mode"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLike}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+              liked ? "border-neon-pink/50 bg-neon-pink/15 text-neon-pink" : "border-edge text-white/60 hover:text-white"
+            }`}
+          >
+            <Heart size={15} fill={liked ? "currentColor" : "none"} />
+            {likes}
+          </button>
+          <button
+            onClick={() => setStudyMode((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+              studyMode ? "border-neon-purple/50 bg-neon-purple/15 text-neon-purple" : "border-edge text-white/60 hover:text-white"
+            }`}
+          >
+            {studyMode ? <BookOpen size={15} /> : <Coffee size={15} />}
+            {studyMode ? "Study" : "Rest"}
+          </button>
+        </div>
       </div>
 
-      {/* stat strip */}
+      {/* stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-edge bg-panel/70 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-white/40">Garden state</p>
+          <p className="text-[10px] uppercase tracking-wider text-white/40">Garden health</p>
           <p className="mt-1 font-display text-lg font-bold" style={{ color: health.ground }}>{health.label}</p>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
             <div className="h-full rounded-full transition-all" style={{ width: `${Math.round(health.ratio * 100)}%`, background: health.ground }} />
@@ -117,178 +159,86 @@ export default function GardenView() {
         <div className="rounded-2xl border border-edge bg-panel/70 p-4">
           <p className="text-[10px] uppercase tracking-wider text-white/40">Garden luck</p>
           <p className="mt-1 flex items-center gap-1 font-display text-lg font-bold text-neon-yellow"><Sparkles size={15} /> +{luck}%</p>
-          <p className="mt-1 text-[11px] text-white/40">{placed.length}/{MAX_PLANTS} pets planted</p>
+          <p className="mt-1 text-[11px] text-white/40">{placedIds.length}/{GRID_SIZE * GRID_SIZE} placed</p>
         </div>
         <div className="rounded-2xl border border-edge bg-panel/70 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-white/40">Binding glue</p>
-          <p className="mt-1 font-display text-lg font-bold text-neon-cyan">🩹 {game.bindingGlue ?? 0}</p>
-          <p className="mt-1 text-[11px] text-white/40">for the Workshop</p>
+          <p className="text-[10px] uppercase tracking-wider text-white/40">GPA Score</p>
+          <p className="mt-1 font-display text-lg font-bold text-neon-cyan">{gpa.toFixed(2)}</p>
+          <p className="mt-1 text-[11px] text-white/40">of 4.0</p>
         </div>
       </div>
 
-      {/* ══ the scenic garden — you're standing in it ══ */}
+      {/* garden grid */}
       <div
-        className="relative h-[380px] overflow-hidden rounded-2xl border border-edge"
-        style={{ background: studyMode ? "linear-gradient(180deg,#101830,#0a1020)" : health.sky }}
+        ref={gridRef}
+        className="relative rounded-2xl border border-edge overflow-hidden"
+        style={{
+          background: studyMode ? "linear-gradient(180deg,#101830,#0a1020)" : health.sky,
+          minHeight: "400px",
+          backgroundAttachment: "fixed",
+        }}
       >
-        {/* 🎯 GPA SIGN BOARD - INSIDE GARDEN */}
-        <div className="absolute top-4 left-4 right-4 rounded-2xl border-3 border-neon-yellow/60 bg-black/70 backdrop-blur-md p-3 max-w-xs">
-          <p className="text-xs font-bold uppercase tracking-widest text-neon-yellow">📊 GPA</p>
-          <p className="mt-1 font-display text-3xl font-bold text-white">{gpa.toFixed(2)}</p>
-          <p className="text-xs text-white/50">of 4.0</p>
-          <div className="mt-2 grid grid-cols-3 gap-1">
-            {modules.slice(0, 3).map((m) => {
-              const g = m.grade != null ? scoreToGrade(m.grade) : null;
-              return (
-                <div key={m.code} className="rounded text-center bg-white/5 p-1">
-                  <p className="text-[10px] font-bold text-neon-yellow">{m.code}</p>
-                  <p className="text-xs font-bold text-white">{g?.letter || "—"}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        {/* sun / moon */}
-        <div
-          className="pointer-events-none absolute h-20 w-20 rounded-full"
-          style={{
-            right: "12%", top: "10%",
-            background: studyMode
-              ? "radial-gradient(circle,#fff 30%,#dfe6ff 60%,transparent 72%)"
-              : health.mood === "sickly"
-              ? "radial-gradient(circle,#d8d8de 40%,transparent 72%)"
-              : "radial-gradient(circle,#fff6c0 30%,#ffe37a 55%,transparent 72%)",
-            boxShadow: studyMode
-              ? "0 0 40px 10px rgba(200,210,255,0.4)"
-              : health.mood === "sickly"
-              ? "none"
-              : "0 0 60px 18px rgba(255,220,90,0.5)",
-          }}
-        />
-        {/* clouds */}
-        {["18%", "60%", "80%"].map((left, i) => (
-          <div
-            key={i}
-            className="pointer-events-none absolute rounded-full bg-white"
-            style={{
-              left, top: `${12 + i * 7}%`, width: 90 - i * 14, height: 26 - i * 3,
-              opacity: studyMode ? 0.12 : health.mood === "sickly" ? 0.85 : 0.9,
-              filter: "blur(2px)",
-              boxShadow: "24px 6px 0 -4px #fff, -22px 6px 0 -6px #fff",
-            }}
-          />
-        ))}
-        {/* stars in study mode */}
-        {studyMode &&
-          [...Array(14)].map((_, i) => (
-            <span key={i} className="gq-twinkle absolute text-white/70" style={{ left: `${(i * 37) % 95}%`, top: `${(i * 23) % 45}%`, fontSize: 8, animationDelay: `${i * 0.2}s` }}>✦</span>
-          ))}
+        {/* Grid of draggable slots */}
+        <div className="grid gap-2 p-6" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}>
+          {slots.map((slot) => {
+            const spiritId = game.garden[slot];
+            const spirit = spiritId ? SPIRIT_BY_ID[spiritId] : null;
 
-        {/* distant hills */}
-        <div className="pointer-events-none absolute bottom-[32%] left-[-10%] h-40 w-[70%] rounded-[50%]" style={{ background: health.groundDark, opacity: 0.5 }} />
-        <div className="pointer-events-none absolute bottom-[34%] right-[-14%] h-44 w-[75%] rounded-[50%]" style={{ background: health.groundDark, opacity: 0.4 }} />
-
-        {/* ground */}
-        <div className="absolute inset-x-0 bottom-0 h-[42%]" style={{ background: `linear-gradient(180deg, ${health.ground}, ${health.groundDark})` }}>
-          <div className="pointer-events-none absolute inset-0 opacity-30" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgba(0,0,0,0.08) 0 2px, transparent 2px 26px)" }} />
-        </div>
-
-        {/* decorations */}
-        {health.mood === "vibrant" &&
-          ["8%", "26%", "44%", "62%", "82%", "94%"].map((x, i) => (
-            <span key={i} className="pointer-events-none absolute" style={{ left: x, bottom: `${6 + (i % 3) * 8}%`, fontSize: 18 }}>
-              {["🌷", "🌼", "🌸", "🌻"][i % 4]}
-            </span>
-          ))}
-        {health.mood === "vibrant" &&
-          ["30%", "68%"].map((x, i) => (
-            <span key={i} className="pointer-events-none absolute gq-bob" style={{ left: x, top: `${28 + i * 8}%`, fontSize: 20, animationDelay: `${i * 0.6}s` }}>🦋</span>
-          ))}
-        {health.mood === "normal" &&
-          ["14%", "50%", "84%"].map((x, i) => (
-            <span key={i} className="pointer-events-none absolute" style={{ left: x, bottom: "8%", fontSize: 16 }}>🌿</span>
-          ))}
-        {health.mood === "sickly" &&
-          ["10%", "40%", "72%", "92%"].map((x, i) => (
-            <span key={i} className="pointer-events-none absolute" style={{ left: x, bottom: `${6 + (i % 2) * 6}%`, fontSize: 16 }}>🥀</span>
-          ))}
-        {/* trees framing the scene */}
-        <span className="pointer-events-none absolute left-[2%] bottom-[26%] text-5xl" style={{ filter: health.mood === "sickly" ? "grayscale(0.6) brightness(0.7)" : "none" }}>🌳</span>
-        <span className="pointer-events-none absolute right-[3%] bottom-[24%] text-6xl" style={{ filter: health.mood === "sickly" ? "grayscale(0.6) brightness(0.7)" : "none" }}>🌳</span>
-
-        {/* planted pets standing in the garden */}
-        {placed.map(([key, id], i) => {
-          const s = SPIRIT_BY_ID[id];
-          if (!s) return null;
-          const spot = SPOTS[i] ?? SPOTS[SPOTS.length - 1];
-          return (
-            <button
-              key={key}
-              onClick={() => removeFromGarden(key)}
-              className="absolute z-10"
-              style={{ left: spot.x, bottom: spot.y, transform: `translateX(-50%) scale(${spot.s})` }}
-              title={`${s.name} — click to lift`}
-            >
-              <div className={studyMode ? "" : "sp-bob"} style={{ position: "relative" }}>
-                <div className="absolute left-1/2 top-[46px] h-2 w-10 -translate-x-1/2 rounded-[50%] bg-black/30 blur-[2px]" />
-                <SpiritArt spirit={s} size={50} walking={false} />
-                {studyMode ? (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs">🤓</span>
+            return (
+              <div
+                key={slot}
+                draggable={!!spirit}
+                onDragStart={(e) => {
+                  if (spirit) handleDragStart(e, spiritId);
+                }}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDropOnSlot(e, slot)}
+                onClick={() => handleClickSlot(slot)}
+                className={`relative h-24 rounded-lg border-2 flex items-center justify-center cursor-move transition ${
+                  spirit
+                    ? "border-dashed border-edge bg-black/20 hover:bg-black/30"
+                    : "border-dashed border-white/20 bg-white/5 hover:bg-white/10"
+                }`}
+              >
+                {spirit ? (
+                  <div className="text-center">
+                    <div className="flex justify-center mb-1">
+                      <SpiritArt spirit={spirit} size={60} />
+                    </div>
+                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{spirit.name}</p>
+                  </div>
                 ) : (
-                  <span className="absolute -top-1 right-0 text-[10px]">💤</span>
+                  <p className="text-xs text-white/30">Drag here</p>
                 )}
               </div>
-            </button>
-          );
-        })}
-
-        {/* plant prompt */}
-        {selected && !full && (
-          <div className="absolute inset-x-0 bottom-3 flex justify-center">
-            <button
-              onClick={plant}
-              className="rounded-full border border-neon-green/50 bg-black/60 px-4 py-2 text-sm font-bold text-neon-green backdrop-blur transition hover:bg-black/80"
-            >
-              🌱 Plant here
-            </button>
-          </div>
-        )}
-        {full && (
-          <div className="absolute inset-x-0 bottom-3 flex justify-center">
-            <span className="rounded-full bg-black/50 px-3 py-1 text-[11px] text-white/60">Garden full — lift a pet to make room</span>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
-      {/* planting tray */}
-      <div className="rounded-2xl border border-edge bg-panel/70 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-sm font-semibold text-white">Inventory · tap a pet, then “Plant here”</h3>
-          {selected && (
-            <button onClick={() => setSelected(null)} className="flex items-center gap-1 text-xs text-white/50 hover:text-white"><X size={12} /> cancel</button>
-          )}
+      {/* tray of available spirits */}
+      <div className="rounded-2xl border border-edge bg-panel/50 p-4">
+        <p className="mb-3 text-sm font-semibold text-white">Available spirits</p>
+        <div className="flex flex-wrap gap-2">
+          {tray.map((spirit) => (
+            <button
+              key={spirit.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, spirit.id)}
+              onClick={() => setSelected(spirit.id === selected ? null : spirit.id)}
+              className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 transition ${
+                selected === spirit.id
+                  ? "border-neon-yellow bg-neon-yellow/20 text-neon-yellow"
+                  : "border-edge bg-white/5 text-white/80 hover:bg-white/10"
+              }`}
+            >
+              <span className="text-sm">{spirit.emoji}</span>
+              <span className="text-xs font-semibold">{spirit.name}</span>
+            </button>
+          ))}
         </div>
-        {tray.length === 0 ? (
-          <p className="text-sm text-white/40">No pets to plant — summon some in the Summon tab, or lift a planted pet by tapping it.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {tray.map((s) => {
-              const meta = RARITY[s.rarity];
-              const isSel = selected === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setSelected(isSel ? null : s.id)}
-                  className={`flex w-24 flex-col items-center rounded-xl border p-2 transition ${isSel ? "scale-105" : "hover:-translate-y-0.5"}`}
-                  style={{ borderColor: isSel ? meta.glow : "#25252f", boxShadow: isSel ? `0 0 18px -4px ${meta.glow}` : undefined }}
-                >
-                  <SpiritArt spirit={s} size={40} walking={false} />
-                  <span className="mt-1 line-clamp-1 text-[10px] font-semibold text-white">{s.name}</span>
-                  <span className={`text-[9px] ${meta.text}`}>{meta.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {tray.length === 0 && (
+          <p className="text-xs text-white/40">All spirits are placed!</p>
         )}
       </div>
     </section>

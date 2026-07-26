@@ -97,6 +97,7 @@ export interface GameState {
 
   // ── GPA Garden ────────────────────────────────────────────
   garden: Record<string, string>; // tile "row,col" -> placed spirit id
+  gardenLikes: number; // how many people like this garden
   bindingGlue: number; // crafting material earned alongside crystals
 
   // ── Book Binding ──────────────────────────────────────────
