@@ -115,7 +115,7 @@ export default function SyllabusImport({
           <>
             <p className="mb-4 text-sm text-dusk">
               Photograph or paste a module guide, brief, or Brightspace announcement.
-              StudyQuest extracts every deadline, weightage, and effort estimate — then
+              Study Buddies extracts every deadline, weightage, and effort estimate — then
               auto-schedules them. No manual entry.
             </p>
 

@@ -2,19 +2,11 @@ import { useState, useRef } from "react";
 import { Sprout, Sparkles, BookOpen, Coffee, Heart } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import { computeGpa, scoreToGrade } from "../lib/gpa";
+import { SHOP_ITEMS, SHOP_ITEM_BY_ID } from "../data/shopItems";
+import { SPIRITS, SPIRIT_BY_ID } from "../lib/gacha";
+import SpiritArt from "../components/SpiritArt";
 
 const GRID_SIZE = 4; // 4x4 = 16 slots, expandable later
-
-const SHOP_ITEMS = [
-  { id: "rose", name: "Rose", emoji: "🌹" },
-  { id: "sunflower", name: "Sunflower", emoji: "🌻" },
-  { id: "lily", name: "Lily", emoji: "🪷" },
-  { id: "tulip", name: "Tulip", emoji: "🌷" },
-  { id: "cherry", name: "Cherry Blossom", emoji: "🌸" },
-  { id: "hibiscus", name: "Hibiscus", emoji: "🌺" },
-  { id: "daisy", name: "Daisy", emoji: "🌼" },
-  { id: "lotus", name: "Lotus", emoji: "🪲" },
-];
 
 function gardenHealth(done: number, total: number) {
   const ratio = total === 0 ? 1 : done / total;
@@ -57,10 +49,14 @@ export default function GardenView() {
   const placedIds = Object.values(game.garden);
   const luck = gardenLuck(placedIds);
 
-  const placedSet = new Set(placedIds);
-  const tray = SHOP_ITEMS.filter((item) =>
-    (game.accessories[item.id] || 0) > 0 && !placedSet.has(item.id)
-  );
+  const placedCounts: Record<string, number> = {};
+  for (const id of placedIds) placedCounts[id] = (placedCounts[id] || 0) + 1;
+
+  const ownedCount = (id: string) => game.accessories[id] ?? game.spirits[id] ?? 0;
+
+  const trayFlowers = SHOP_ITEMS.filter((item) => ownedCount(item.id) > (placedCounts[item.id] || 0));
+  const traySpirits = SPIRITS.filter((s) => ownedCount(s.id) > (placedCounts[s.id] || 0));
+  const tray = [...trayFlowers, ...traySpirits];
 
   function handleDragStart(e: React.DragEvent, spiritId: string) {
     setDraggedSpirit(spiritId);
@@ -181,52 +177,59 @@ export default function GardenView() {
           backgroundAttachment: "fixed",
         }}
       >
-        {/* Sunny GPA Board */}
-        <div className="absolute top-6 left-6 right-6 rounded-2xl border-4 border-neon-yellow/80 bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 max-w-sm shadow-lg">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-900">📊 Your GPA</p>
-          <p className="mt-2 font-display text-4xl font-bold text-amber-950">{gpa.toFixed(2)}</p>
-          <p className="text-sm text-amber-800">of 4.0</p>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {modules.slice(0, 3).map((m) => {
+        {/* compact GPA strip — lives inside the garden card, doesn't eat a slot */}
+        <div className="mx-4 mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-neon-yellow/50 bg-black/30 px-4 py-2 backdrop-blur-sm">
+          <span className="text-xs font-bold uppercase tracking-wide text-neon-yellow">📊 GPA {gpa.toFixed(2)}</span>
+          <div className="flex flex-wrap gap-1.5">
+            {modules.map((m) => {
               const g = m.grade != null ? scoreToGrade(m.grade) : null;
               return (
-                <div key={m.code} className="rounded-lg bg-white/60 p-2 text-center border border-amber-200">
-                  <p className="text-xs font-bold text-amber-900">{m.code}</p>
-                  <p className="text-sm font-bold text-amber-950">{g?.letter || "—"}</p>
-                </div>
+                <span
+                  key={m.code}
+                  className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/70"
+                >
+                  {m.code} <span className="text-white">{g?.letter ?? "—"}</span>
+                </span>
               );
             })}
           </div>
         </div>
 
         {/* Grid of draggable slots */}
-        <div className="grid gap-2 p-6 mt-32" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}>
+        <div className="grid gap-2 p-6" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}>
           {slots.map((slot) => {
             const itemId = game.garden[slot];
-            const item = itemId ? SHOP_ITEMS.find((s) => s.id === itemId) : null;
+            const flower = itemId ? SHOP_ITEM_BY_ID[itemId] : null;
+            const spirit = !flower && itemId ? SPIRIT_BY_ID[itemId] : null;
+            const filled = !!flower || !!spirit;
 
             return (
               <div
                 key={slot}
-                draggable={!!item}
+                draggable={filled}
                 onDragStart={(e) => {
-                  if (item) handleDragStart(e, itemId);
+                  if (filled) handleDragStart(e, itemId);
                 }}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDropOnSlot(e, slot)}
                 onClick={() => handleClickSlot(slot)}
                 className={`relative h-24 rounded-lg border-2 flex items-center justify-center cursor-move transition ${
-                  item
+                  filled
                     ? "border-dashed border-edge bg-black/20 hover:bg-black/30"
                     : "border-dashed border-white/20 bg-white/5 hover:bg-white/10"
                 }`}
               >
-                {item ? (
+                {flower ? (
                   <div className="text-center">
-                    <div className="flex justify-center mb-1 text-5xl">
-                      {item.emoji}
+                    <div className="flex justify-center mb-1 text-5xl">{flower.emoji}</div>
+                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{flower.name}</p>
+                  </div>
+                ) : spirit ? (
+                  <div className="text-center">
+                    <div className="flex justify-center">
+                      <SpiritArt spirit={spirit} size={56} walking />
                     </div>
-                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{item.name}</p>
+                    <p className="text-[10px] text-white/60 truncate max-w-full px-1">{spirit.name}</p>
                   </div>
                 ) : (
                   <p className="text-xs text-white/30">Drag here</p>
@@ -241,22 +244,28 @@ export default function GardenView() {
       <div className="rounded-2xl border border-edge bg-panel/50 p-4">
         <p className="mb-3 text-sm font-semibold text-white">Available flowers & pets</p>
         <div className="flex flex-wrap gap-2">
-          {tray.map((item) => (
-            <button
-              key={item.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, item.id)}
-              onClick={() => setSelected(item.id === selected ? null : item.id)}
-              className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 transition ${
-                selected === item.id
-                  ? "border-neon-yellow bg-neon-yellow/20 text-neon-yellow"
-                  : "border-edge bg-white/5 text-white/80 hover:bg-white/10"
-              }`}
-            >
-              <span className="text-2xl">{item.emoji}</span>
-              <span className="text-xs font-semibold">{item.name}</span>
-            </button>
-          ))}
+          {tray.map((item) => {
+            const remaining = ownedCount(item.id) - (placedCounts[item.id] || 0);
+            return (
+              <button
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item.id)}
+                onClick={() => setSelected(item.id === selected ? null : item.id)}
+                className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 transition ${
+                  selected === item.id
+                    ? "border-neon-yellow bg-neon-yellow/20 text-neon-yellow"
+                    : "border-edge bg-white/5 text-white/80 hover:bg-white/10"
+                }`}
+              >
+                <span className="text-2xl">{item.emoji}</span>
+                <span className="text-xs font-semibold">{item.name}</span>
+                <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-white/60">
+                  ×{remaining}
+                </span>
+              </button>
+            );
+          })}
         </div>
         {tray.length === 0 && (
           <p className="text-xs text-white/40">Buy flowers & pets from the shop to place them here!</p>

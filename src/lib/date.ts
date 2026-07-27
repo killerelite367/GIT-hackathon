@@ -90,3 +90,16 @@ export function weekStart(iso: string): string {
 export function dayOfWeekMon0(iso: string): number {
   return (fromISODate(iso).getDay() + 6) % 7;
 }
+
+/** Sunday (ISO date) of the week containing `iso`. */
+export function weekEnd(iso: string): string {
+  return addDays(weekStart(iso), 6);
+}
+
+/** "Today" / "Tomorrow" / "Wed 29 Jul" — used for the day-level planner. */
+export function dayLabel(iso: string): string {
+  const d = daysUntil(iso);
+  if (d === 0) return "Today";
+  if (d === 1) return "Tomorrow";
+  return shortDate(iso);
+}

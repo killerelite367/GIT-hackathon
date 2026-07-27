@@ -22,7 +22,7 @@ export function useDailyReminder() {
     const briefing = buildBriefing(assignments, blocks);
     if (briefing.allClear) return;
     firedRef.current = true;
-    showReminder("StudyQuest", briefingHeadline(briefing));
+    showReminder("Study Buddies", briefingHeadline(briefing));
     setReminders(true, todayISO());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.remindersEnabled, game.lastReminderDate]);

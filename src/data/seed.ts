@@ -1,5 +1,5 @@
 import type { AppData } from "../types";
-import { todayISO, addDays } from "../lib/date";
+import { todayISO, addDays, weekEnd } from "../lib/date";
 
 /**
  * First-run seed data. Dates are relative to *today* so the demo always looks
@@ -7,6 +7,8 @@ import { todayISO, addDays } from "../lib/date";
  */
 export function seedData(): AppData {
   const t = todayISO();
+  // Plan a task for the day it's due if that falls within this week, else "Later".
+  const targetFor = (due: string) => (due <= weekEnd(t) ? due : null);
   return {
     modules: [
       { code: "C240", name: "Data Engineering", grade: 82, credits: 6 },
@@ -21,6 +23,7 @@ export function seedData(): AppData {
         module: "C240",
         type: "CA",
         dueDate: addDays(t, 4),
+        targetDate: targetFor(addDays(t, 4)),
         progress: 40,
         weight: 25,
         estHours: 8,
@@ -33,6 +36,7 @@ export function seedData(): AppData {
         module: "C299",
         type: "Group Project",
         dueDate: addDays(t, 6),
+        targetDate: targetFor(addDays(t, 6)),
         progress: 60,
         weight: 30,
         estHours: 10,
@@ -45,6 +49,7 @@ export function seedData(): AppData {
         module: "C216",
         type: "Reflection",
         dueDate: addDays(t, 2),
+        targetDate: targetFor(addDays(t, 2)),
         progress: 0,
         weight: 5,
         estHours: 1.5,
@@ -57,6 +62,7 @@ export function seedData(): AppData {
         module: "C118",
         type: "CA",
         dueDate: addDays(t, 10),
+        targetDate: targetFor(addDays(t, 10)),
         progress: 20,
         weight: 20,
         estHours: 7,
@@ -69,6 +75,7 @@ export function seedData(): AppData {
         module: "C299",
         type: "Quiz",
         dueDate: addDays(t, 1),
+        targetDate: targetFor(addDays(t, 1)),
         progress: 80,
         weight: 10,
         estHours: 2,
@@ -99,6 +106,7 @@ export function seedData(): AppData {
       accessories: {},
       equippedAccessories: [],
       groupMembers: [],
+      groupTasks: [],
     },
   };
 }

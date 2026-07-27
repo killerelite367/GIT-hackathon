@@ -12,7 +12,8 @@ export interface Assignment {
   title: string;
   module: string; // module code, e.g. "C240"
   type: AssignmentType;
-  dueDate: string; // ISO date (YYYY-MM-DD)
+  dueDate: string; // ISO date (YYYY-MM-DD) — the hard deadline
+  targetDate: string | null; // ISO date within this week you plan to do it, or null = "Later" (after this week)
   progress: number; // 0-100
   weight: number; // % of module grade
   estHours: number; // estimated effort in hours (drives the scheduler)
@@ -109,6 +110,7 @@ export interface GameState {
 
   // ── Group Project ──────────────────────────────────────────
   groupMembers: Array<{ email: string; contribution: number }>; // team emails + work %
+  groupTasks: Array<{ id: string; title: string; assignedIdx: number | "me" | null; done: boolean }>; // shared task list; "me" = the current user
 }
 
 /** Everything we persist for a user, in one blob. */

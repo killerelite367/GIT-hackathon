@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
  * The landing page's 3D act — "The Study Loop".
  *
  * Scrolling replays the loop the app actually puts a student through, and ends
- * on the thing only StudyQuest has: a Study Spirit summon.
+ * on the thing only Study Buddies has: a Study Spirit summon.
  *
  *   1. CHAOS   a drift of unread textbooks orbiting the headline
  *   2. ORDER   they close ranks into a planned semester — a shelf of modules

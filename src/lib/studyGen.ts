@@ -57,7 +57,7 @@ const RESPONSE_SCHEMA = {
   required: ["title", "module", "summary", "keyTerms", "flashcards", "quiz"],
 } as const;
 
-const PROMPT = `You are StudyQuest's study-material generator, used by Singapore polytechnic students revising for exams.
+const PROMPT = `You are Study Buddies's study-material generator, used by Singapore polytechnic students revising for exams.
 
 From the material provided, produce a study set:
 

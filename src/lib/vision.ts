@@ -138,7 +138,7 @@ function fileToBase64(file: File): Promise<string> {
 
 function buildPrompt(knownModules: string[]): string {
   const today = todayISO();
-  return `You are the document scanner for StudyQuest, a study planner used by Singapore polytechnic students.
+  return `You are the document scanner for Study Buddies, a study planner used by Singapore polytechnic students.
 
 Read the attached document image and extract every piece of assessed work you can find: continuous assessments, quizzes, exams, group projects, reflections, presentations, submissions.
 

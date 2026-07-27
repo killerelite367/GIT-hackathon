@@ -16,9 +16,8 @@ import LoginPage from "./views/LoginPage";
 import type { View } from "./nav";
 import type { Assignment } from "./types";
 import { useStore } from "./store/StoreContext";
-import { levelFromXp } from "./lib/gamification";
 import { useDailyReminder } from "./lib/useDailyReminder";
-import { Settings, Flame, Sun, Moon, LogOut } from "lucide-react";
+import { Settings, Sun, Moon, LogOut } from "lucide-react";
 import Logo from "./components/Logo";
 import { useTheme } from "./lib/useTheme";
 import { getCurrentUser, signOut } from "./lib/auth";
@@ -130,7 +129,7 @@ export default function App() {
     planner: {
       kicker: "Planner",
       heading: "Your semester plan",
-      sub: "Every deadline, spread into daily study blocks.",
+      sub: "Add a quest with its deadline, and watch it fall into place.",
     },
     study: {
       kicker: "Study",
@@ -183,14 +182,8 @@ export default function App() {
               <p className="mt-2 max-w-md text-[15px] text-dusk">{t.sub}</p>
             </div>
 
-            {/* Compact HUD: streak + level, and settings */}
+            {/* Settings buttons */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-night shadow-soft">
-                <Flame size={15} className="text-warm" />
-                {data.game.streakDays}
-                <span className="text-haze">·</span>
-                <span className="text-brand-deep">Lv {levelFromXp(data.game.xp)}</span>
-              </div>
               <button
                 onClick={toggleTheme}
                 aria-label={resolved === "light" ? "Switch to dark mode" : "Switch to light mode"}
@@ -228,16 +221,15 @@ export default function App() {
 
           {/* key={view} re-mounts on navigation so each screen animates in */}
           <div key={view} className="mt-8 animate-viewin">
-            {view === "today" && (
-              <TodayView
+            {view === "today" && <TodayView onFocus={openFocus} />}
+            {view === "planner" && (
+              <ScheduleView
                 onAdd={openAdd}
                 onEdit={openEdit}
                 onImport={() => setImportTab("paste")}
                 onScan={() => setImportTab("scan")}
-                onFocus={openFocus}
               />
             )}
-            {view === "planner" && <ScheduleView />}
             {view === "study" && <StudyView onGoToSettings={() => setView("settings")} />}
             {view === "grades" && <ModulesView />}
             {view === "rewards" && <RewardsView />}

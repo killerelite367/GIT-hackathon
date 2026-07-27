@@ -47,6 +47,8 @@ interface StoreValue {
   regenerateSchedule: () => void;
   toggleBlockDone: (id: string) => void;
   updateModule: (code: string, patch: Partial<Module>) => void;
+  addModule: (m: Module) => void;
+  deleteModule: (code: string) => void;
   resetAll: () => void;
   /** Summon `count` Study Spirits, spending Focus Crystals. Returns what was
    *  pulled (empty array if you can't afford it). */
@@ -270,6 +272,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [withAchievements]
   );
 
+  const addModule = useCallback((m: Module) => {
+    setData((d) => {
+      if (d.modules.some((existing) => existing.code === m.code)) return d; // no duplicate codes
+      return { ...d, modules: [...d.modules, m] };
+    });
+  }, []);
+
+  const deleteModule = useCallback((code: string) => {
+    setData((d) => ({ ...d, modules: d.modules.filter((m) => m.code !== code) }));
+  }, []);
+
   const resetAll = useCallback(() => {
     setData(resetData());
     pushToast("Reset to demo data", "info");
@@ -310,12 +323,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const placeInGarden = useCallback((spiritId: string, tile: string) => {
     setData((d) => {
-      // A spirit can only occupy one tile — clear any previous tile it held.
-      const garden: Record<string, string> = {};
-      for (const [t, id] of Object.entries(d.game.garden)) {
-        if (id !== spiritId) garden[t] = id;
-      }
-      garden[tile] = spiritId;
+      // Each owned copy can occupy its own tile — only clear whatever was
+      // already sitting in the target tile, not other tiles of the same item.
+      const garden = { ...d.game.garden, [tile]: spiritId };
       return { ...d, game: { ...d.game, garden } };
     });
   }, []);
@@ -537,7 +547,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (file: File): Promise<boolean> => {
       const parsed = await parseImportedData(file);
       if (!parsed) {
-        pushToast("Import failed — that doesn't look like a StudyQuest backup.", "info");
+        pushToast("Import failed — that doesn't look like a Study Buddies backup.", "info");
         return false;
       }
       setData(parsed);
@@ -561,6 +571,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       regenerateSchedule,
       toggleBlockDone,
       updateModule,
+      addModule,
+      deleteModule,
       resetAll,
       pullGacha,
       equipSpirit,
@@ -591,6 +603,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       regenerateSchedule,
       toggleBlockDone,
       updateModule,
+      addModule,
+      deleteModule,
       resetAll,
       pullGacha,
       equipSpirit,

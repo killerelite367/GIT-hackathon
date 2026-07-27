@@ -1,7 +1,7 @@
 import type { Assignment, GameState } from "../types";
 
 /**
- * StudyQuest Gacha — "Study Spirits".
+ * Study Buddies Gacha — "Study Spirits".
  *
  * The twist that separates this from every coin-shop gacha: the ONLY currency is
  * studying. You earn Focus Crystals by completing real coursework, then spend

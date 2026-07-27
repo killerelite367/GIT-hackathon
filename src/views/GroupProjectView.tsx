@@ -1,22 +1,18 @@
 import { useState } from "react";
+import { Plus, Trash2, Check } from "lucide-react";
 import { useStore } from "../store/StoreContext";
-import { Plus, Trash2, Edit2 } from "lucide-react";
-
-const TURTLE_SHELLS = [
-  "bg-gradient-to-br from-green-400 to-green-600",
-  "bg-gradient-to-br from-blue-400 to-blue-600",
-  "bg-gradient-to-br from-purple-400 to-purple-600",
-  "bg-gradient-to-br from-yellow-400 to-yellow-600",
-  "bg-gradient-to-br from-pink-400 to-pink-600",
-  "bg-gradient-to-br from-cyan-400 to-cyan-600",
-];
+import { SPIRITS, SPIRIT_BY_ID } from "../lib/gacha";
+import SpiritArt from "../components/SpiritArt";
 
 export default function GroupProjectView() {
-  const { data, updateData } = useStore();
+  const { data, updateData, equipSpirit } = useStore();
   const { game } = data;
   const [newEmail, setNewEmail] = useState("");
-  const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editingContribution, setEditingContribution] = useState("");
+  const [newTask, setNewTask] = useState("");
+
+  const owned = SPIRITS.filter((s) => (game.spirits[s.id] ?? 0) > 0);
+  const DEFAULT_SPIRIT = SPIRIT_BY_ID["apple"];
+  const equipped = (game.equippedSpirit ? SPIRIT_BY_ID[game.equippedSpirit] : null) ?? DEFAULT_SPIRIT;
 
   const addMember = () => {
     if (!newEmail.trim()) return;
@@ -24,58 +20,110 @@ export default function GroupProjectView() {
       alert("Max 6 team members!");
       return;
     }
-
-    const members = [...game.groupMembers, { email: newEmail.trim(), contribution: 0 }];
     updateData({
       ...data,
-      game: { ...game, groupMembers: members },
+      game: {
+        ...game,
+        groupMembers: [...game.groupMembers, { email: newEmail.trim(), contribution: 0 }],
+      },
     });
     setNewEmail("");
   };
 
-  const updateContribution = (idx: number, value: number) => {
-    const members = [...game.groupMembers];
-    members[idx].contribution = Math.max(0, Math.min(100, value));
-
-    // Auto-normalize if total is over 100
-    const total = members.reduce((sum, m) => sum + m.contribution, 0);
-    if (total > 100) {
-      const scale = 100 / total;
-      members.forEach(m => m.contribution = Math.round(m.contribution * scale));
-    }
-
-    updateData({
-      ...data,
-      game: { ...game, groupMembers: members },
-    });
-  };
-
   const deleteMember = (idx: number) => {
     const members = game.groupMembers.filter((_, i) => i !== idx);
-    updateData({
-      ...data,
-      game: { ...game, groupMembers: members },
+    // Unassign tasks that pointed at the removed member; shift indices down.
+    const tasks = game.groupTasks.map((t) => {
+      if (t.assignedIdx === idx) return { ...t, assignedIdx: null };
+      if (typeof t.assignedIdx === "number" && t.assignedIdx > idx) {
+        return { ...t, assignedIdx: t.assignedIdx - 1 };
+      }
+      return t;
     });
+    updateData({ ...data, game: { ...game, groupMembers: members, groupTasks: tasks } });
   };
 
-  const totalContribution = game.groupMembers.reduce((sum, m) => sum + m.contribution, 0);
-
-  // Calculate turtle positions in a circle
-  const getTurtlePosition = (index: number, total: number) => {
-    const angleStep = (360 / Math.max(total, 1));
-    const angle = (index * angleStep - 90) * (Math.PI / 180);
-    const radius = Math.min(120, 60 + total * 8);
-    const x = 200 + radius * Math.cos(angle);
-    const y = 200 + radius * Math.sin(angle);
-    const rotation = index * angleStep;
-    return { x, y, rotation };
+  const addTask = () => {
+    if (!newTask.trim()) return;
+    const task = {
+      id: `task_${Date.now()}`,
+      title: newTask.trim(),
+      assignedIdx: "me" as const,
+      done: false,
+    };
+    updateData({ ...data, game: { ...game, groupTasks: [...game.groupTasks, task] } });
+    setNewTask("");
   };
+
+  const assignTask = (taskId: string, idx: number | "me" | null) => {
+    const tasks = game.groupTasks.map((t) => (t.id === taskId ? { ...t, assignedIdx: idx } : t));
+    updateData({ ...data, game: { ...game, groupTasks: tasks } });
+  };
+
+  const toggleTask = (taskId: string) => {
+    const tasks = game.groupTasks.map((t) => (t.id === taskId ? { ...t, done: !t.done } : t));
+    updateData({ ...data, game: { ...game, groupTasks: tasks } });
+  };
+
+  const deleteTask = (taskId: string) => {
+    updateData({ ...data, game: { ...game, groupTasks: game.groupTasks.filter((t) => t.id !== taskId) } });
+  };
+
+  const assigneeLabel = (idx: number | "me" | null) => {
+    if (idx === "me") return "Me";
+    if (idx === null) return "Unassigned";
+    return game.groupMembers[idx] ? `Member ${idx + 1}` : "Unassigned";
+  };
+
+  const activeTasks = game.groupTasks.filter((t) => !t.done);
+  const completedTasks = game.groupTasks.filter((t) => t.done);
 
   return (
     <div className="space-y-6">
-      {/* Add member form */}
-      <div className="rounded-lg border border-line bg-surface p-4 shadow-soft">
-        <h3 className="mb-3 text-sm font-bold text-haze">🐢 Add Team Member</h3>
+      {/* Pond — everyone on the team gets a character here */}
+      <div className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
+        <h3 className="mb-3 text-sm font-bold text-haze">🌊 The Pond</h3>
+        <div
+          className="relative flex h-44 flex-wrap items-end justify-center gap-4 overflow-x-auto overflow-y-hidden rounded-xl border border-line/50 px-4 pb-3 pt-6"
+          style={{ background: "linear-gradient(180deg,#7ec8ff 0%,#bfe8ff 60%,#e8f7ff 100%)" }}
+        >
+          <div className="flex flex-col items-center">
+            <SpiritArt spirit={equipped} size={64} walking />
+            <p className="mt-1 rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-bold text-white">You</p>
+          </div>
+          {game.groupMembers.map((m, idx) => (
+            <div key={idx} className="flex flex-col items-center">
+              <SpiritArt spirit={DEFAULT_SPIRIT} size={64} walking />
+              <p className="mt-1 rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-bold text-white">
+                {m.email.split("@")[0]}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {owned.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {owned.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => equipSpirit(s.id)}
+                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                  game.equippedSpirit === s.id
+                    ? "border-neon-cyan bg-neon-cyan/15 text-neon-cyan"
+                    : "border-line bg-surface2 text-haze hover:text-night"
+                }`}
+              >
+                <span className="text-lg">{s.emoji}</span>
+                {s.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Team members */}
+      <div className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
+        <h3 className="mb-3 text-sm font-bold text-haze">👥 Team</h3>
         <div className="flex gap-2">
           <input
             type="email"
@@ -83,228 +131,135 @@ export default function GroupProjectView() {
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMember()}
-            className="flex-1 rounded border border-line bg-surface2 px-3 py-2 text-sm text-night placeholder-haze focus:border-neon-purple focus:outline-none"
+            className="flex-1 rounded-lg border border-line bg-surface2 px-3 py-2 text-sm text-night placeholder-haze focus:border-brand/50 focus:outline-none"
           />
           <button
             onClick={addMember}
             disabled={game.groupMembers.length >= 6}
-            className="rounded bg-brand px-4 py-2 font-bold text-white disabled:opacity-50 hover:bg-brand/80 transition-colors flex items-center gap-2"
+            className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand/80 disabled:opacity-50"
           >
             <Plus size={16} /> Add
           </button>
         </div>
-      </div>
-
-      {game.groupMembers.length > 0 && (
-        <>
-          {/* Turtle circle visualization */}
-          <div className="rounded-lg border border-line bg-surface p-6 shadow-soft">
-            <h3 className="mb-4 text-center text-sm font-bold text-haze">👥 Team Turtles</h3>
-
-            <svg viewBox="0 0 400 400" className="w-full max-w-md mx-auto drop-shadow-lg">
-              {/* Pond water */}
-              <defs>
-                <radialGradient id="pondGradient" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#4ade80" />
-                  <stop offset="100%" stopColor="#22c55e" />
-                </radialGradient>
-                <filter id="shadow">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
-                </filter>
-              </defs>
-
-              {/* Pond background with gradient */}
-              <ellipse cx="200" cy="200" rx="180" ry="160" fill="url(#pondGradient)" opacity="0.3" />
-              <ellipse cx="200" cy="200" rx="190" ry="170" fill="none" stroke="#86efac" strokeWidth="2" opacity="0.5" />
-
-              {/* Lily pads */}
-              {game.groupMembers.map((_member, idx) => {
-                const { x, y } = getTurtlePosition(idx, game.groupMembers.length);
-                return (
-                  <g key={`lilypad-${idx}`}>
-                    {/* Lily pad (circular green leaf) */}
-                    <circle cx={x} cy={y} r="26" className="fill-green-600" opacity="0.7" />
-                    <circle cx={x} cy={y} r="26" fill="none" stroke="#16a34a" strokeWidth="1.5" />
-                    {/* Lily pad veins */}
-                    <line x1={x} y1={y - 20} x2={x} y2={y + 20} stroke="#15803d" strokeWidth="1" opacity="0.5" />
-                    <line x1={x - 20} y1={y} x2={x + 20} y2={y} stroke="#15803d" strokeWidth="1" opacity="0.5" />
-                  </g>
-                );
-              })}
-
-              {/* Turtles on lily pads */}
-              {game.groupMembers.map((member, idx) => {
-                const { x, y, rotation } = getTurtlePosition(idx, game.groupMembers.length);
-                const contribution = member.contribution;
-                const isWorking = contribution > 0;
-
-                return (
-                  <g key={`turtle-${idx}`} transform={`translate(${x} ${y}) rotate(${rotation})`} filter="url(#shadow)">
-                    {/* 3D shadow effect */}
-                    <ellipse cx="1.5" cy="2" rx="20" ry="24" className="fill-black" opacity="0.25" />
-
-                    {/* Turtle shell - rounded dome shape with pattern */}
-                    <ellipse cx="0" cy="0" rx="20" ry="26" className={TURTLE_SHELLS[idx % TURTLE_SHELLS.length]} opacity={isWorking ? 1 : 0.4} />
-
-                    {/* Shell dome highlight */}
-                    <ellipse cx="-8" cy="-8" rx="10" ry="8" fill="white" opacity={isWorking ? 0.25 : 0.1} />
-
-                    {/* Shell pattern - hexagon tiles */}
-                    <circle cx="-6" cy="-2" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
-                    <circle cx="0" cy="-4" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
-                    <circle cx="6" cy="-2" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
-                    <circle cx="-4" cy="6" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
-                    <circle cx="4" cy="6" r="3" fill="white" opacity={isWorking ? 0.2 : 0.08} />
-
-                    {/* Cute little turtle legs */}
-                    <ellipse cx="-12" cy="8" rx="5" ry="8" className="fill-green-700" opacity={isWorking ? 0.9 : 0.35} />
-                    <ellipse cx="12" cy="8" rx="5" ry="8" className="fill-green-700" opacity={isWorking ? 0.9 : 0.35} />
-                    <ellipse cx="-8" cy="20" rx="4" ry="6" className="fill-green-600" opacity={isWorking ? 0.85 : 0.3} />
-                    <ellipse cx="8" cy="20" rx="4" ry="6" className="fill-green-600" opacity={isWorking ? 0.85 : 0.3} />
-
-                    {/* Cute tail poking out */}
-                    <path d="M 0 28 Q 2 36 0 44" stroke="#557a55" strokeWidth="3" fill="none" opacity={isWorking ? 0.8 : 0.3} strokeLinecap="round" />
-
-                    {/* Turtle head - cute rounded */}
-                    <circle cx="0" cy="-32" r="12" className="fill-green-600" opacity={isWorking ? 1 : 0.4} />
-                    <circle cx="0" cy="-34" r="10" className="fill-green-500" opacity={isWorking ? 0.95 : 0.38} />
-
-                    {/* Cute snout/mouth */}
-                    <circle cx="0" cy="-26" r="4" className="fill-green-700" opacity={isWorking ? 0.7 : 0.3} />
-
-                    {/* Turtle eyes - BIG and cute! */}
-                    <circle cx="-4" cy="-35" r="3.5" className="fill-white" opacity={isWorking ? 1 : 0.5} />
-                    <circle cx="4" cy="-35" r="3.5" className="fill-white" opacity={isWorking ? 1 : 0.5} />
-                    <circle cx="-3.5" cy="-35" r="2" className="fill-black" />
-                    <circle cx="4.5" cy="-35" r="2" className="fill-black" />
-
-                    {/* Cute eye shine - gives life! */}
-                    {isWorking && (
-                      <>
-                        <circle cx="-2.2" cy="-36.5" r="0.8" className="fill-white" />
-                        <circle cx="5.2" cy="-36.5" r="0.8" className="fill-white" />
-                      </>
-                    )}
-
-                    {/* Contribution percentage label */}
-                    {contribution > 0 && (
-                      <text
-                        x="0"
-                        y="8"
-                        textAnchor="middle"
-                        className="font-bold text-white text-[13px]"
-                        dominantBaseline="middle"
-                        fontWeight="900"
-                        filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"
-                      >
-                        {contribution}%
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-
-              {/* Water ripples animation hint */}
-              <circle cx="200" cy="200" r="180" fill="none" stroke="#86efac" strokeWidth="1" opacity="0.2" />
-            </svg>
-
-            {/* Work breakdown */}
-            <div className="mt-4 text-center">
-              <p className="text-sm text-haze">Total Work Assigned: <span className="font-bold text-neon-cyan">{totalContribution}%</span></p>
-              {totalContribution < 100 && (
-                <p className="text-xs text-neon-purple mt-1">⚠️ {100 - totalContribution}% unassigned</p>
-              )}
-              {totalContribution > 100 && (
-                <p className="text-xs text-neon-cyan mt-1">💯 Over 100%! Auto-normalized.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Member list with contribution controls */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-bold text-haze">📊 Contributions</h3>
-            {game.groupMembers.map((member, idx) => (
-              <div
-                key={idx}
-                className="rounded-lg border border-line bg-surface p-3 shadow-soft"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-night truncate">{member.email}</p>
-                    {member.contribution === 0 && (
-                      <p className="text-xs text-neon-purple">🦗 Slacker turtle (no work assigned)</p>
-                    )}
-                  </div>
-
-                  {editingIdx === idx ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={editingContribution}
-                        onChange={(e) => setEditingContribution(e.target.value)}
-                        className="w-16 rounded border border-neon-purple bg-surface2 px-2 py-1 text-sm font-bold text-night"
-                      />
-                      <span className="text-xs font-bold text-haze">%</span>
-                      <button
-                        onClick={() => {
-                          updateContribution(idx, parseInt(editingContribution) || 0);
-                          setEditingIdx(null);
-                        }}
-                        className="rounded bg-neon-cyan px-2 py-1 text-xs font-bold text-ink hover:bg-neon-cyan/80 transition-colors"
-                      >
-                        ✓
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-neon-cyan">{member.contribution}%</p>
-                        <div className="w-20 h-1 bg-line rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-neon-purple to-neon-cyan transition-all"
-                            style={{ width: `${member.contribution}%` }}
-                          />
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setEditingIdx(idx);
-                          setEditingContribution(String(member.contribution));
-                        }}
-                        className="rounded bg-neon-purple/30 p-1.5 text-neon-purple hover:bg-neon-purple/50 transition-colors"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => deleteMember(idx)}
-                        className="rounded bg-red-500/30 p-1.5 text-red-500 hover:bg-red-500/50 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )}
-                </div>
+        {game.groupMembers.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            {game.groupMembers.map((m, idx) => (
+              <div key={idx} className="flex items-center justify-between rounded-lg bg-surface2 px-3 py-1.5 text-sm">
+                <span className="text-night">
+                  <span className="font-semibold text-haze">Member {idx + 1}:</span> {m.email}
+                </span>
+                <button onClick={() => deleteMember(idx)} className="text-haze hover:text-red-500">
+                  <Trash2 size={14} />
+                </button>
               </div>
             ))}
           </div>
+        )}
+      </div>
 
-          {/* Work distribution tips */}
-          <div className="rounded-lg border border-neon-purple/30 bg-neon-purple/10 p-3">
-            <p className="text-xs text-haze">
-              💡 <strong>Turtle Tip:</strong> Each turtle's shell color represents a team member. Bright shells = doing work, faded = slacking! Edit each member's contribution % to split the work fairly.
-            </p>
-          </div>
-        </>
-      )}
-
-      {game.groupMembers.length === 0 && (
-        <div className="rounded-lg border-2 border-dashed border-line p-8 text-center">
-          <p className="text-lg font-bold text-haze mb-2">🐢 No team yet!</p>
-          <p className="text-sm text-haze">Add your teammates above to start tracking the group project.</p>
+      {/* Task list */}
+      <div className="rounded-2xl border border-line bg-surface p-4 shadow-soft">
+        <h3 className="mb-3 text-sm font-bold text-haze">✅ Tasks</h3>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="e.g. Draft slide 3"
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
+            className="flex-1 rounded-lg border border-line bg-surface2 px-3 py-2 text-sm text-night placeholder-haze focus:border-brand/50 focus:outline-none"
+          />
+          <button
+            onClick={addTask}
+            className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand/80"
+          >
+            <Plus size={16} /> Add
+          </button>
         </div>
-      )}
+
+        {game.groupTasks.length === 0 ? (
+          <p className="mt-4 text-center text-xs text-haze">No tasks yet — add one above and assign it below.</p>
+        ) : (
+          <>
+            <div className="mt-3 space-y-2">
+              {activeTasks.length === 0 ? (
+                <p className="text-xs text-haze">All done! 🎉</p>
+              ) : (
+                activeTasks.map((t) => (
+                  <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface2 p-2.5">
+                    <button
+                      onClick={() => toggleTask(t.id)}
+                      aria-label={`Mark ${t.title} as done`}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-line text-transparent transition hover:border-brand"
+                    >
+                      <Check size={14} />
+                    </button>
+
+                    <span className="flex-1 text-sm font-medium text-night">{t.title}</span>
+
+                    <select
+                      value={t.assignedIdx === null ? "" : String(t.assignedIdx)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        assignTask(t.id, v === "" ? null : v === "me" ? "me" : Number(v));
+                      }}
+                      className="rounded-lg border border-line bg-surface px-2 py-1 text-xs font-semibold text-night outline-none focus:border-brand/50"
+                    >
+                      <option value="">Unassigned</option>
+                      <option value="me">Me</option>
+                      {game.groupMembers.map((m, idx) => (
+                        <option key={idx} value={idx}>
+                          Member {idx + 1} ({m.email})
+                        </option>
+                      ))}
+                    </select>
+
+                    <button onClick={() => deleteTask(t.id)} className="text-haze hover:text-red-500">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {completedTasks.length > 0 && (
+              <div className="mt-4 border-t border-line pt-3">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-haze">
+                  Completed
+                  <span className="ml-1.5 font-normal normal-case text-haze">({completedTasks.length})</span>
+                </p>
+                <div className="space-y-2">
+                  {completedTasks.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface2/50 p-2.5 opacity-60"
+                    >
+                      <button
+                        onClick={() => toggleTask(t.id)}
+                        aria-label={`Mark ${t.title} as not done`}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-neon-cyan bg-neon-cyan text-black transition"
+                      >
+                        <Check size={14} />
+                      </button>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-haze line-through">
+                          {t.title}
+                        </span>
+                        <span className="text-[10px] font-semibold text-haze">by {assigneeLabel(t.assignedIdx)}</span>
+                      </span>
+
+                      <button onClick={() => deleteTask(t.id)} className="text-haze hover:text-red-500">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

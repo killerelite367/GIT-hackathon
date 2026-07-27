@@ -1,29 +1,35 @@
 import { useState } from "react";
-import { Calculator, Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useStore } from "../store/StoreContext";
-import { computeGpa, scoreToGrade, scoreNeededFor } from "../lib/gpa";
+import { computeGpa, scoreToGrade } from "../lib/gpa";
 import GpaRing from "../components/GpaRing";
 
 export default function ModulesView() {
-  const { data, updateModule } = useStore();
+  const { data, updateModule, addModule, deleteModule } = useStore();
   const { modules } = data;
   const gpa = computeGpa(modules);
-
-  const [target, setTarget] = useState(3.7);
-  const [focusModule, setFocusModule] = useState(modules[0]?.code ?? "");
-  const needed = scoreNeededFor(modules, focusModule, target);
 
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newCredits, setNewCredits] = useState("4");
   const [newGrade, setNewGrade] = useState("");
 
-  const addModule = () => {
-    if (!newCode.trim() || !newName.trim()) {
+  const handleAddModule = () => {
+    const code = newCode.trim().toUpperCase();
+    if (!code || !newName.trim()) {
       alert("Please enter module code and name");
       return;
     }
-    alert("✅ Module added locally");
+    if (modules.some((m) => m.code === code)) {
+      alert(`${code} already exists`);
+      return;
+    }
+    addModule({
+      code,
+      name: newName.trim(),
+      credits: Number(newCredits) || 0,
+      grade: newGrade === "" ? null : Number(newGrade),
+    });
     setNewCode("");
     setNewName("");
     setNewCredits("4");
@@ -79,7 +85,7 @@ export default function ModulesView() {
             className="rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night placeholder-haze focus:border-brand/50 focus:outline-none"
           />
           <button
-            onClick={addModule}
+            onClick={handleAddModule}
             className="col-span-2 rounded-lg bg-neon-cyan px-4 py-2 font-bold text-black hover:bg-neon-cyan/90 transition sm:col-span-1 flex items-center justify-center gap-2"
           >
             <Plus size={16} /> Add
@@ -155,6 +161,15 @@ export default function ModulesView() {
                       <div className="text-[10px] text-haze">{g.point.toFixed(1)}</div>
                     </div>
                   )}
+                  <button
+                    onClick={() => {
+                      if (confirm(`Remove ${m.code}? This can't be undone.`)) deleteModule(m.code);
+                    }}
+                    aria-label={`Remove ${m.code}`}
+                    className="shrink-0 rounded-lg p-1.5 text-haze transition hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             );
@@ -163,53 +178,6 @@ export default function ModulesView() {
         </div>
       </div>
 
-      {/* What-if calculator */}
-      <div className="rounded-2xl border border-line bg-surface p-5 shadow-soft">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tightish text-night">
-          <Calculator size={18} className="text-brand" /> What-if calculator
-        </h3>
-        <p className="mt-1 text-sm text-dusk">What score does one module need to hit a target GPA?</p>
-        <div className="mt-4 flex flex-wrap items-end gap-4">
-          <label className="text-xs font-semibold uppercase tracking-wide text-haze">
-            Module
-            <select
-              value={focusModule}
-              onChange={(e) => setFocusModule(e.target.value)}
-              className="mt-1 block rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night outline-none focus:border-brand/50"
-            >
-              {modules.map((m) => (
-                <option key={m.code} value={m.code}>
-                  {m.code}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-wide text-haze">
-            Target GPA
-            <input
-              type="number"
-              min={0}
-              max={4}
-              step={0.1}
-              value={target}
-              onChange={(e) => setTarget(Number(e.target.value))}
-              className="mt-1 block w-24 rounded-lg border border-line bg-surface2 px-3 py-2 text-sm font-medium text-night outline-none focus:border-brand/50"
-            />
-          </label>
-          <div className="rounded-xl border border-line bg-surface2 px-4 py-2.5">
-            {needed == null ? (
-              <span className="text-sm font-semibold text-berry-deep">
-                Not reachable with this module alone
-              </span>
-            ) : (
-              <span className="text-sm font-medium text-dusk">
-                Need <span className="font-mono text-lg font-bold text-brand-deep">{needed}</span> in{" "}
-                {focusModule}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

@@ -8,6 +8,11 @@ import {
   Wand2,
   Database,
   Home,
+  CalendarRange,
+  Layers,
+  GraduationCap,
+  Trophy,
+  Users,
   ScanLine,
   Eye,
   EyeOff,
@@ -65,6 +70,39 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       <h3 className="mb-3 font-display text-base font-bold tracking-tightish text-night">{title}</h3>
       {children}
     </section>
+  );
+}
+
+function GuideItem({
+  icon,
+  title,
+  desc,
+  sub,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  sub?: { title: string; desc: string }[];
+}) {
+  return (
+    <div className="flex gap-3 border-t border-line py-3.5 first:border-t-0 first:pt-0">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-surface2 text-brand-deep">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-night">{title}</p>
+        <p className="text-xs text-dusk">{desc}</p>
+        {sub && (
+          <ul className="mt-2 space-y-1.5">
+            {sub.map((s) => (
+              <li key={s.title} className="text-xs text-dusk">
+                <span className="font-semibold text-night">{s.title}</span> — {s.desc}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -192,7 +230,7 @@ function ScanSettings({ onScanDocument }: { onScanDocument: () => void }) {
           </label>
           <p className="mt-1.5 text-[11px] text-haze">
             {isDefaultWebhook()
-              ? "Using StudyQuest's shared scan workflow — nothing to set up. The API key lives on the server, never in this page. Paste your own URL above to point at a different n8n instance."
+              ? "Using Study Buddies's shared scan workflow — nothing to set up. The API key lives on the server, never in this page. Paste your own URL above to point at a different n8n instance."
               : "Pointing at your own n8n instance. Clear the field to fall back to the shared workflow."}
           </p>
         </>
@@ -265,6 +303,51 @@ export default function SettingsView({
 
   return (
     <div className="max-w-2xl space-y-6">
+      <Card title="How to use this app">
+        <GuideItem
+          icon={<Home size={16} />}
+          title="Today"
+          desc="What you've planned to work on today, plus anything due today you haven't planned yet. Mark it done or jump straight into a focus session."
+        />
+        <GuideItem
+          icon={<CalendarRange size={16} />}
+          title="Planner"
+          desc="Add a quest — a title and a due date is all it needs. New quests land on Monday by default; use the ▲▼ arrows in “This week” to shift each one to the day you'll actually do it, or push it to “Next week & beyond”. “All deadlines” lists everything, soonest first."
+        />
+        <GuideItem
+          icon={<Layers size={16} />}
+          title="Study"
+          desc="Paste or scan your notes and get a summary, flashcards, and a quiz generated from the same material — so they don't drift apart."
+        />
+        <GuideItem
+          icon={<GraduationCap size={16} />}
+          title="Grades"
+          desc="Add or remove modules, type in a running score, and watch your credit-weighted GPA update live."
+        />
+        <GuideItem
+          icon={<Trophy size={16} />}
+          title="Rewards"
+          desc="Finishing real study work earns Focus Crystals — the only currency here, no real money."
+          sub={[
+            { title: "Summon", desc: "spend crystals to pull Study Spirits." },
+            { title: "Garden", desc: "place flowers (bought in Shop) and spirits (your pets) into tiles in your GPA Garden." },
+            { title: "Workshop", desc: "fuse 3 copies of the same spirit into a rarer one." },
+            { title: "Shop", desc: "buy flowers with crystals to decorate the Garden." },
+            { title: "Group Project", desc: "add teammates, assign tasks to yourself or them, tick them off as they're done." },
+          ]}
+        />
+        <GuideItem
+          icon={<Users size={16} />}
+          title="Friends"
+          desc="A preview of a friend's GPA Garden — like their progress, see how they've decorated it."
+        />
+        <GuideItem
+          icon={<ScanLine size={16} />}
+          title="Settings (this page)"
+          desc="Set up AI document scanning, turn on daily reminders, back up or restore your data, and reset to the demo semester."
+        />
+      </Card>
+
       <ScanSettings onScanDocument={onScanDocument} />
 
       <Card title="Reminders">
@@ -296,7 +379,7 @@ export default function SettingsView({
             Export
           </Button>
         </Row>
-        <Row title="Restore from a backup" desc="Load a previously exported StudyQuest file.">
+        <Row title="Restore from a backup" desc="Load a previously exported Study Buddies file.">
           <Button
             variant="secondary"
             size="sm"
@@ -346,13 +429,13 @@ export default function SettingsView({
         </Row>
         <Row
           title="Landing page"
-          desc="Revisit the StudyQuest intro page — handy for demos."
+          desc="Revisit the Study Buddies intro page — handy for demos."
         >
           <Button variant="secondary" size="sm" icon={<Home size={14} />} onClick={onShowLanding}>
             View
           </Button>
         </Row>
-        <Row title="StudyQuest" desc="A gamified study diary built for RP students · Semester 2026-S2.">
+        <Row title="Study Buddies" desc="A gamified study diary built for RP students · Semester 2026-S2.">
           <span />
         </Row>
       </Card>

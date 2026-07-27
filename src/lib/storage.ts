@@ -1,5 +1,6 @@
 import type { AppData } from "../types";
 import { seedData } from "../data/seed";
+import { todayISO, weekEnd } from "./date";
 
 const KEY = "studyquest:v1";
 
@@ -12,7 +13,13 @@ function mergeWithDefaults(parsed: Partial<AppData>): AppData {
   const base = seedData();
   return {
     modules: parsed.modules ?? base.modules,
-    assignments: parsed.assignments ?? base.assignments,
+    // Backfill targetDate for assignments saved before that field existed.
+    // `undefined` = never had the field (legacy); `null` is a real "Later" value, not missing.
+    assignments: (parsed.assignments ?? base.assignments).map((a) => ({
+      ...a,
+      targetDate:
+        a.targetDate !== undefined ? a.targetDate : a.dueDate <= weekEnd(todayISO()) ? a.dueDate : null,
+    })),
     blocks: parsed.blocks ?? base.blocks,
     game: { ...base.game, ...parsed.game },
     // Anything added here must also be listed above: this function rebuilds the
@@ -24,7 +31,7 @@ function mergeWithDefaults(parsed: Partial<AppData>): AppData {
 }
 
 /**
- * Local persistence. StudyQuest works fully offline against localStorage so
+ * Local persistence. Study Buddies works fully offline against localStorage so
  * the demo is real and stateful with zero backend setup. The Supabase client
  * (src/lib/supabase.ts) can later replace this behind the same AppData shape.
  */

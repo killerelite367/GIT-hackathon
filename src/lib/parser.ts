@@ -1,5 +1,5 @@
 import type { Assignment, AssignmentType } from "../types";
-import { todayISO, toISODate, daysUntil } from "./date";
+import { todayISO, toISODate, daysUntil, weekStart } from "./date";
 
 /**
  * Syllabus / brief parser — the differentiator.
@@ -209,6 +209,8 @@ export function toAssignments(rows: ParsedAssignment[]): Assignment[] {
     module: r.module,
     type: r.type,
     dueDate: r.dueDate,
+    // Everything imported lands on Monday of this week — shift each one to its real day from there.
+    targetDate: weekStart(todayISO()),
     progress: 0,
     weight: r.weight,
     estHours: r.estHours,

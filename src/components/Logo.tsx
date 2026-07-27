@@ -1,10 +1,11 @@
 /**
- * The StudyQuest brand mark.
+ * The Study Buddies brand mark.
  *
- * A "Q" whose tail is a checkmark — the initial and a completed quest in one
- * stroke. Drawn on a 32-unit grid with round caps so it stays legible from a
- * 16px favicon up to hero size, and it inherits `currentColor` so the same
- * glyph works on the violet tile, on white, and on the dark canvas.
+ * A rough sketch of the "textbook buddy" summon character from the gacha —
+ * a rounded book body, round eyes, a smile, and two little feet — reduced to
+ * a mark simple enough to survive a 16px favicon. Drawn on a 32-unit grid
+ * and inherits `currentColor` so the same glyph works on the violet tile,
+ * on white, and on the dark canvas.
  *
  * Stroke weight is scaled up slightly at small sizes: a hairline that reads
  * correctly at 40px disappears at 16px.
@@ -17,7 +18,7 @@ export function LogoMark({
   size?: number;
   className?: string;
 }) {
-  const stroke = size <= 16 ? 4 : size <= 22 ? 3.8 : 3.4;
+  const stroke = size <= 16 ? 3 : size <= 22 ? 2.8 : 2.5;
   return (
     <svg
       width={size}
@@ -26,27 +27,23 @@ export function LogoMark({
       fill="none"
       className={className}
       role="img"
-      aria-label="StudyQuest"
+      aria-label="Study Buddies"
     >
-      {/* The tail runs out to the right, so the raw glyph sits right-of-centre
-          on the canvas. Nudge it back to optical centre inside the tile. */}
-      <g transform="translate(-1.7 0.8)">
-        {/* Ring, left open at the lower right so the tail reads as a tail */}
-        <path
-          d="M20.4 22.6 A8.6 8.6 0 1 1 24.6 15.2"
-          stroke="currentColor"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-        />
-        {/* The tail, drawn as a check */}
-        <path
-          d="M18.6 20.4 L21.4 23.6 L28 15.4"
-          stroke="currentColor"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+      {/* book body */}
+      <rect x="7.5" y="8.5" width="17" height="16" rx="6" stroke="currentColor" strokeWidth={stroke} />
+      {/* little feet peeking out the bottom */}
+      <path d="M11.5 24.5 L11.5 27" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" />
+      <path d="M20.5 24.5 L20.5 27" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" />
+      {/* eyes */}
+      <circle cx="12.6" cy="15.6" r="1.7" fill="currentColor" />
+      <circle cx="19.4" cy="15.6" r="1.7" fill="currentColor" />
+      {/* smile */}
+      <path
+        d="M13 19.2 Q16 21.4 19 19.2"
+        stroke="currentColor"
+        strokeWidth={stroke * 0.8}
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -83,7 +80,7 @@ export default function Logo({
       </div>
       {wordmark && (
         <span className={`font-display font-bold tracking-tightish ${s.text} ${textClass}`}>
-          StudyQuest
+          Study Buddies
         </span>
       )}
     </div>

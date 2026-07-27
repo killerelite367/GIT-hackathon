@@ -24,7 +24,7 @@ import "../landing.css";
  * The landing page — a brand surface, not app chrome.
  *
  * A fixed WebGL canvas sits behind the content and a scrubbed timeline flies
- * the StudyQuest mark into a planner board (see lib/questScene). The three
+ * the Study Buddies mark into a planner board (see lib/questScene). The three
  * beats of that scene are the three real features: the parser filling your
  * semester, the burnout radar catching an overloaded week, and focus sessions
  * paying out crystals.
@@ -86,7 +86,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           <span className="lp-nav-mark">
             <LogoMark size={17} />
           </span>
-          <span>StudyQuest</span>
+          <span>Study Buddies</span>
         </a>
         <div className="lp-nav-links">
           <a href="#features">Features</a>
@@ -113,12 +113,12 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             </span>
           </h1>
           <p className="lp-sub">
-            StudyQuest reads your module guides, pulls out every deadline and weightage, and
+            Study Buddies reads your module guides, pulls out every deadline and weightage, and
             spreads the work across your semester — so you always know what to do next.
           </p>
           <div className="lp-hero-ctas">
             <button ref={ctaRef} onClick={onEnter} className="lp-btn lp-btn-primary">
-              Open StudyQuest <ArrowRight size={18} className="lp-arrow" />
+              Open Study Buddies <ArrowRight size={18} className="lp-arrow" />
             </button>
             <a href="#loop" className="lp-btn lp-btn-ghost">
               Watch the loop
@@ -140,7 +140,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           rather than told twice. That version also hardcoded a #00ff41 neon
           green, which is outside the token set and doesn't survive light mode.
         */}
-        <section className="loop-scene" id="loop" aria-label="The StudyQuest loop">
+        <section className="loop-scene" id="loop" aria-label="The Study Buddies loop">
           <div className="loop-pin">
             <div className="caption-stack">
               <div className="scene-caption">
@@ -239,7 +239,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
         <section className="lp-sheet lp-statement" id="why">
           <p ref={statementRef} className="lp-statement-text">
             Most planners make you type in every deadline yourself — which is exactly why most
-            planners end up <b>empty</b>. StudyQuest reads the module guide and does it <b>for you</b>.
+            planners end up <b>empty</b>. Study Buddies reads the module guide and does it <b>for you</b>.
             That's the whole point.
           </p>
         </section>
@@ -253,7 +253,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
               <div className="lp-step-body">
                 <h3>Scan or paste your syllabus</h3>
                 <p>
-                  Snap a photo of your module guide, or paste the text. StudyQuest extracts every
+                  Snap a photo of your module guide, or paste the text. Study Buddies extracts every
                   assessment, its weightage and its deadline.
                 </p>
               </div>
@@ -318,7 +318,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             Free, works offline, and nothing to sign up for.
           </p>
           <button onClick={onEnter} className="lp-btn lp-btn-primary lp-btn-xl" data-reveal>
-            Open StudyQuest <ArrowRight size={20} className="lp-arrow" />
+            Open Study Buddies <ArrowRight size={20} className="lp-arrow" />
           </button>
         </section>
 
