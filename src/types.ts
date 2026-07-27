@@ -104,6 +104,9 @@ export interface GameState {
   // ── Book Binding ──────────────────────────────────────────
   // (uses `spirits` counts + bindingGlue; no extra state needed)
 
+  // ── Altar of Sacrifice ───────────────────────────────────────
+  vouchers: string[]; // every DEMO voucher code earned, most recent last
+
   // ── Shop (Accessories) ─────────────────────────────────────
   accessories: Record<string, number>; // accessory id -> quantity owned
   equippedAccessories: string[]; // currently equipped accessory ids

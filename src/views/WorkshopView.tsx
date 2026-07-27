@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Hammer, Flame, AlertTriangle, Check, X, BookMarked, Plus } from "lucide-react";
+import { Hammer, Flame, AlertTriangle, Check, X, BookMarked, Plus, Sparkles } from "lucide-react";
 import { useStore } from "../store/StoreContext";
 import SpiritArt from "../components/SpiritArt";
 import { SPIRIT_BY_ID, RARITY, RARITY_ORDER, type Spirit, type Rarity } from "../lib/gacha";
 
 export default function WorkshopView() {
-  const { data, bindSpirits, exchangeSecrets } = useStore();
+  const { data, bindSpirits, exchangeSecrets, giftSecrets } = useStore();
   const { game } = data;
 
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
@@ -16,7 +16,6 @@ export default function WorkshopView() {
 
   const [altar, setAltar] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
-  const [voucher, setVoucher] = useState<string | null>(null);
 
   const owned = Object.entries(game.spirits)
     .map(([id, n]) => ({ s: SPIRIT_BY_ID[id], n }))
@@ -69,7 +68,6 @@ export default function WorkshopView() {
   const altarCount: Record<string, number> = {};
   for (const id of altar) altarCount[id] = (altarCount[id] ?? 0) + 1;
   function toggleAltar(id: string) {
-    setVoucher(null);
     setConfirming(false);
     const have = game.spirits[id] ?? 0;
     if (altar.length >= 2 || (altarCount[id] ?? 0) >= have) return;
@@ -79,7 +77,6 @@ export default function WorkshopView() {
     if (altar.length !== 2) return;
     const code = exchangeSecrets([altar[0], altar[1]] as [string, string]);
     if (code) {
-      setVoucher(code);
       setAltar([]);
       setConfirming(false);
     }
@@ -199,12 +196,23 @@ export default function WorkshopView() {
 
       {/* ── Altar of Sacrifice ── */}
       <div className="relative overflow-hidden rounded-2xl border border-neon-pink/30 p-5" style={{ background: "radial-gradient(90% 70% at 50% 0%, rgba(255,59,92,0.12), transparent 60%), #140a0c" }}>
-        <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-          <Flame size={18} className="text-neon-pink" /> Altar of Sacrifice
-        </h3>
-        <p className="mt-1 text-sm text-white/55">
-          Offer <span className="font-semibold text-neon-pink">two ??? (Secret) pets</span> to receive a voucher. They are gone forever.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
+              <Flame size={18} className="text-neon-pink" /> Altar of Sacrifice
+            </h3>
+            <p className="mt-1 text-sm text-white/55">
+              Offer <span className="font-semibold text-neon-pink">two ??? (Secret) pets</span> to receive a voucher. They are gone forever.
+            </p>
+          </div>
+          <button
+            onClick={giftSecrets}
+            title="Demo: gift 2 ??? (Secret) pets so you can test the Altar without grinding the 0.02% pull rate"
+            className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-neon-pink/50 bg-neon-pink/10 px-2.5 text-xs font-semibold text-neon-pink transition hover:bg-neon-pink/20"
+          >
+            <Sparkles size={14} /> +2 ???
+          </button>
+        </div>
         <div className="mt-4 flex items-center justify-center gap-4">
           {[0, 1].map((i) => {
             const id = altar[i];
@@ -234,7 +242,7 @@ export default function WorkshopView() {
         )}
         <div className="mt-5 flex flex-col items-center gap-3">
           {altar.length > 0 && (
-            <button onClick={() => { setAltar([]); setConfirming(false); setVoucher(null); }} className="flex items-center gap-1 text-xs text-white/50 hover:text-white"><X size={12} /> clear altar</button>
+            <button onClick={() => { setAltar([]); setConfirming(false); }} className="flex items-center gap-1 text-xs text-white/50 hover:text-white"><X size={12} /> clear altar</button>
           )}
           {!confirming ? (
             <button onClick={() => setConfirming(true)} disabled={altar.length !== 2} className="rounded-xl border border-neon-pink/50 bg-neon-pink/15 px-6 py-2.5 text-sm font-bold text-neon-pink transition hover:bg-neon-pink/25 active:scale-95 disabled:opacity-40">
@@ -250,14 +258,29 @@ export default function WorkshopView() {
               </div>
             </div>
           )}
-          {voucher && (
-            <div className="w-full max-w-sm rounded-xl border border-neon-yellow/40 bg-neon-yellow/5 p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-neon-yellow">$10 Voucher</p>
-              <p className="mt-1 font-mono text-lg font-bold tracking-widest text-white">{voucher}</p>
-              <p className="mt-2 text-[11px] text-white/40">⚠️ DEMO only — not a real, redeemable voucher. Real redemption needs the secured backend (Grab API + ledger) from GDD §8.</p>
-            </div>
-          )}
         </div>
+
+        {game.vouchers.length > 0 && (
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <p className="mb-2 text-center text-[11px] uppercase tracking-wider text-white/40">
+              Your vouchers <span className="text-white/60">({game.vouchers.length})</span>
+            </p>
+            <div className="mx-auto flex max-w-sm flex-col gap-2">
+              {[...game.vouchers].reverse().map((code, i) => (
+                <div
+                  key={code + i}
+                  className="flex items-center justify-between rounded-xl border border-neon-yellow/40 bg-neon-yellow/5 px-4 py-2.5"
+                >
+                  <span className="text-xs uppercase tracking-wider text-neon-yellow">$10 Voucher</span>
+                  <span className="font-mono text-sm font-bold tracking-widest text-white">{code}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-center text-[11px] text-white/40">
+              ⚠️ DEMO only — not real, redeemable vouchers. Real redemption needs the secured backend (Grab API + ledger) from GDD §8.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Recipe Book modal ── */}

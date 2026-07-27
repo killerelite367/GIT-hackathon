@@ -58,6 +58,9 @@ interface StoreValue {
   /** Demo-only: grant crystals directly so high rarities can be chased without
    *  waiting on real study progress. */
   giftCrystals: (amount: number) => void;
+  /** Demo-only: grant one of each ??? (Secret) spirit so the Altar of
+   *  Sacrifice can be tested without the 0.02% pull rate. */
+  giftSecrets: () => void;
   /** Place an owned spirit onto a GPA Garden tile ("row,col"). */
   placeInGarden: (spiritId: string, tile: string) => void;
   /** Clear a GPA Garden tile. */
@@ -424,13 +427,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           garden[tile] = sid;
         }
-        return { ...d, game: { ...d.game, spirits, garden } };
+        return {
+          ...d,
+          game: { ...d.game, spirits, garden, vouchers: [...d.game.vouchers, code] },
+        };
       });
       pushToast("🔥 Sacrifice complete — DEMO voucher generated.", "level");
       return code;
     },
     [data.game.spirits, pushToast]
   );
+
+  /** Demo-only: grant one copy of every ??? (Secret) spirit so the Altar of
+   *  Sacrifice can be tested without grinding the 0.02% pull rate. */
+  const giftSecrets = useCallback(() => {
+    setData((d) => {
+      const spirits = { ...d.game.spirits };
+      for (const s of SPIRITS) {
+        if (s.rarity === "secret") spirits[s.id] = (spirits[s.id] ?? 0) + 1;
+      }
+      return { ...d, game: { ...d.game, spirits } };
+    });
+    pushToast("🔮 Gifted 2 ??? (Secret) pets for testing", "crystal");
+  }, [pushToast]);
 
   const logFocusMinutes = useCallback(
     (assignmentId: string, minutes: number) => {
@@ -591,6 +610,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pullGacha,
       equipSpirit,
       giftCrystals,
+      giftSecrets,
       placeInGarden,
       removeFromGarden,
       bindSpirits,
@@ -623,6 +643,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pullGacha,
       equipSpirit,
       giftCrystals,
+      giftSecrets,
       placeInGarden,
       removeFromGarden,
       bindSpirits,

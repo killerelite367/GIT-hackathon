@@ -107,6 +107,7 @@ export function seedData(): AppData {
       equippedAccessories: [],
       groupMembers: [],
       groupTasks: [],
+      vouchers: [],
     },
   };
 }
