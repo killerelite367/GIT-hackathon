@@ -30,6 +30,10 @@ import { supabase } from "./lib/supabase";
  */
 const APP_ROUTE = "#/app";
 
+/** Does this hash carry a Supabase OAuth result (session, or an auth error)? */
+const isOAuthFragment = (hash: string) =>
+  /[#&](access_token|error_description)=/.test(hash);
+
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -54,10 +58,35 @@ export default function App() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
+    /*
+     * Supabase returns from an OAuth round-trip with the session in the URL
+     * fragment (#access_token=...). A URL only has ONE fragment, so that
+     * REPLACES the "#/app" we asked to come back to — `inApp` reads false and
+     * the user lands on the marketing page, signed in, with a raw access token
+     * sitting in the address bar.
+     *
+     * By the time getCurrentUser() resolves, supabase-js has already parsed and
+     * stored the session (detectSessionInUrl), so the fragment is spent and
+     * safe to replace. Using replaceState keeps the token out of history.
+     */
+    const finishOAuthReturn = () => {
+      if (!isOAuthFragment(window.location.hash)) return;
+      // Best-effort tidy so a raw token isn't left in the address bar. This can
+      // lose a race with supabase-js, which does its own rewriting of the URL —
+      // which is exactly why `inApp` below does NOT depend on this succeeding.
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search + APP_ROUTE
+      );
+      setHash(APP_ROUTE);
+    };
+
     const checkUser = async () => {
       const currentUser = await getCurrentUser();
       console.log("App: Initial checkUser result:", currentUser?.email || "null");
       setUser(currentUser);
+      finishOAuthReturn();
       setCheckingAuth(false);
     };
     checkUser();
@@ -81,7 +110,19 @@ export default function App() {
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
-  const inApp = hash.startsWith(APP_ROUTE);
+  /*
+   * An OAuth return counts as being in the app.
+   *
+   * Supabase comes back with the session in the URL fragment
+   * (#access_token=...), and a URL has only one fragment, so that REPLACES the
+   * "#/app" we asked to return to. Matching on the hash alone would drop the
+   * user on the marketing page, signed in, with a raw token in the address bar.
+   *
+   * Deriving it here rather than relying on rewriting the URL is deliberate:
+   * supabase-js rewrites the URL on its own schedule, so any fix that depends
+   * on winning that race is flaky. This renders correctly whoever wins.
+   */
+  const inApp = hash.startsWith(APP_ROUTE) || isOAuthFragment(hash);
 
   const enterApp = () => {
     window.location.hash = "#/app"; // fires hashchange

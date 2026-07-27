@@ -47,6 +47,7 @@ interface StoreValue {
   regenerateSchedule: () => void;
   toggleBlockDone: (id: string) => void;
   updateModule: (code: string, patch: Partial<Module>) => void;
+  /** Add a module. Codes are the identity here, so a duplicate updates in place. */
   addModule: (m: Module) => void;
   deleteModule: (code: string) => void;
   resetAll: () => void;
@@ -272,12 +273,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [withAchievements]
   );
 
-  const addModule = useCallback((m: Module) => {
-    setData((d) => {
-      if (d.modules.some((existing) => existing.code === m.code)) return d; // no duplicate codes
-      return { ...d, modules: [...d.modules, m] };
-    });
-  }, []);
+  const addModule = useCallback(
+    (m: Module) => {
+      setData((d) => {
+        /*
+         * Module code is the identity used everywhere else (the GPA engine,
+         * the what-if solver, assignment lookups all key off it), so adding a
+         * code that already exists has to update that module rather than
+         * insert a second one — two rows sharing a code would double-count in
+         * the credit-weighted GPA.
+         */
+        const exists = d.modules.some((x) => x.code === m.code);
+        const modules = exists
+          ? d.modules.map((x) => (x.code === m.code ? { ...x, ...m } : x))
+          : [...d.modules, m];
+        return withAchievements({ ...d, modules });
+      });
+    },
+    [withAchievements]
+  );
 
   const deleteModule = useCallback((code: string) => {
     setData((d) => ({ ...d, modules: d.modules.filter((m) => m.code !== code) }));

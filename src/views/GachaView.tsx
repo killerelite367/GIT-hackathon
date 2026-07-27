@@ -127,8 +127,19 @@ export default function GachaView() {
             ))}
           </div>
 
-          {/* Sound + demo toggles */}
-          <div className="absolute right-4 top-4 z-10 flex gap-2">
+          {/*
+            Sound + demo toggles.
+
+            These were `absolute right-4 top-4` at every width, which takes them
+            out of flow — on a 375px screen the three pills landed directly on
+            top of the centred "legendary summons" title. There is room for that
+            overlap on a laptop and none on a phone.
+
+            So: normal flow on mobile (they sit above the title and wrap), and
+            absolutely positioned from `sm:` up, which keeps the desktop layout
+            exactly as it was.
+          */}
+          <div className="relative z-10 mb-3 flex flex-wrap items-center justify-center gap-2 sm:absolute sm:right-4 sm:top-4 sm:mb-0 sm:flex-nowrap sm:justify-end">
             <button
               onClick={() => giftCrystals(100000)}
               title="Demo: gift 100,000 crystals to chase the rare pulls"
