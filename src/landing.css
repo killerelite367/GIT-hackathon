@@ -40,8 +40,23 @@
 .lp-nav {
   position: fixed;
   top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
+  /*
+   * Centred with auto margins, NOT `left: 50% + translateX(-50%)`.
+   *
+   * With `left: 50%` a shrink-to-fit fixed element's containing block starts at
+   * the halfway mark, so its available width is only HALF the viewport — the
+   * transform re-centres it visually but the layout width was already capped.
+   * "StudyQuest" fit inside that half; the longer "Study Buddies" did not, and
+   * every item in the pill wrapped onto two lines.
+   *
+   * left/right:0 + margin auto + width:max-content centres it while letting it
+   * use the full viewport.
+   */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  max-width: calc(100vw - 24px);
   z-index: 20;
   display: flex;
   align-items: center;
@@ -64,6 +79,9 @@
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: -0.02em;
+  /* A two-word brand ("Study Buddies") must never break across lines. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .lp-nav-mark {
   display: grid;
@@ -77,6 +95,8 @@
 .lp-nav-links {
   display: flex;
   gap: clamp(10px, 2.2vw, 24px);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .lp-nav-links a {
   color: rgb(var(--c-dusk));
