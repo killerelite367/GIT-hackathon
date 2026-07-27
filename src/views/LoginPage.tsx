@@ -26,10 +26,8 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
 
       // Always succeed - create local user regardless
       const user = data?.user ?? { email, id: `local_${Date.now()}` };
-      console.log("LoginPage: Creating user:", user.email);
       localStorage.setItem("local_user", JSON.stringify(user));
       setIsLoading(false);
-      console.log("LoginPage: Calling onLogin");
       onLogin(user);
     } catch (err) {
       console.error("LoginPage: Exception during login:", err);

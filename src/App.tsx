@@ -84,7 +84,6 @@ export default function App() {
 
     const checkUser = async () => {
       const currentUser = await getCurrentUser();
-      console.log("App: Initial checkUser result:", currentUser?.email || "null");
       setUser(currentUser);
       finishOAuthReturn();
       setCheckingAuth(false);
@@ -94,10 +93,8 @@ export default function App() {
     // Listen for auth state changes (OAuth redirects, email login, etc.)
     if (supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event) => {
-          console.log("App: Auth state changed:", event);
+        async () => {
           const currentUser = await getCurrentUser();
-          console.log("App: onAuthStateChange result:", currentUser?.email || "null");
           setUser(currentUser);
         }
       );
